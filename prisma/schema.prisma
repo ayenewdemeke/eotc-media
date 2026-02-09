@@ -1,0 +1,1125 @@
+// EOTC Media - Complete Database Schema
+// Migrated from Laravel to Next.js + Prisma + PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =====================================================
+// AUTHENTICATION & AUTHORIZATION
+// =====================================================
+
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String
+  image         String?
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified_at")
+  password      String
+  accessToken   String?   @map("access_token") @db.Text
+  rememberToken String?   @map("remember_token")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  roles              RoleUser[]
+  cbBooks            CbBook[]
+  cbLikes            CbLike[]
+  cbComments         CbBookComment[]
+  cbCopyrightReports CbCopyrightReport[]
+  hmHymns            HmHymn[]
+  hmFavorites        HmFavorite[]
+  hmComments         HmComment[]
+  smSermons          SmSermon[]
+  smFavorites        SmFavorite[]
+  qzQuestions        QzQuestion[]
+  qzRoomsHosted      QzRoom[]
+  qzRoomMemberships  QzRoomMember[]
+  qzRoundAnswers     QzRoundAnswer[]
+  blHighlights       BlHighlight[]
+  accounts           Account[]
+  sessions           Session[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int     @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       Int      @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users RoleUser[]
+
+  @@map("roles")
+}
+
+model RoleUser {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  roleId    Int      @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("role_user")
+}
+
+model ContactUs {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String?
+  phone     String?
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("contact_us")
+}
+
+// =====================================================
+// BIBLE LIBRARY MODULE (BL)
+// Restructured: Canon → Books → Verses → Verse Texts (by Translation)
+// =====================================================
+
+// Canons (collections of books: 66-book, Ethiopic Orthodox, etc.)
+model BlCanon {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // "66-book", "Ethiopic"
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  books        BlCanonBook[]
+  translations BlTranslation[]
+
+  @@map("bl_canons")
+}
+
+// Join table: which books belong to which canons
+model BlCanonBook {
+  id       Int @id @default(autoincrement())
+  canonId  Int @map("canon_id")
+  bookId   Int @map("book_id")
+  order    Int // Order within this canon
+  optional Boolean @default(false) // Some books are optional in certain canons
+
+  canon BlCanon @relation(fields: [canonId], references: [id], onDelete: Cascade)
+  book  BlBook  @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([canonId, bookId])
+  @@map("bl_canon_books")
+}
+
+// Books (Genesis, Exodus, Enoch, etc.)
+model BlBook {
+  id           Int      @id @default(autoincrement())
+  osisCode     String   @unique // Standard OSIS code (Gen, Exod, Enoch, etc.)
+  englishName  String   @map("english_name")
+  geezName     String?  @map("geez_name")
+  amharicName  String?  @map("amharic_name")
+  oromifaName  String?  @map("oromifa_name")
+  tigrignaName String?  @map("tigrigna_name")
+  slug         String?  @unique
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  canons BlCanonBook[]
+  verses BlVerse[]
+
+  @@map("bl_books")
+}
+
+// Translations (Amharic 1954, KJV, etc.)
+model BlTranslation {
+  id           Int      @id @default(autoincrement())
+  canonId      Int      @map("canon_id")
+  code         String   @unique // "am-1954", "en-kjv", "om-ethiopic"
+  name         String // "Amharic 1954", "King James Version"
+  language     String // "am", "en", "om"
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  canon      BlCanon      @relation(fields: [canonId], references: [id], onDelete: Cascade)
+  verseTexts BlVerseText[]
+
+  @@map("bl_translations")
+}
+
+// Verses (translation-independent references)
+model BlVerse {
+  id        Int      @id @default(autoincrement())
+  bookId    Int      @map("book_id")
+  chapter   Int
+  verse     Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  book       BlBook        @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  texts      BlVerseText[]
+  highlights BlHighlight[]
+
+  @@unique([bookId, chapter, verse])
+  @@map("bl_verses")
+}
+
+// Verse texts (translation-specific)
+model BlVerseText {
+  id            Int      @id @default(autoincrement())
+  verseId       Int      @map("verse_id")
+  translationId Int      @map("translation_id")
+  text          String   @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  verse       BlVerse       @relation(fields: [verseId], references: [id], onDelete: Cascade)
+  translation BlTranslation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  @@unique([verseId, translationId])
+  @@map("bl_verse_texts")
+}
+
+// Highlights (now references verses, works across all translations)
+model BlHighlight {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  verseId   Int      @map("verse_id")
+  color     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verse BlVerse @relation(fields: [verseId], references: [id], onDelete: Cascade)
+
+  @@map("bl_highlights")
+}
+
+// =====================================================
+// LITURGY MODULE (LT)
+// =====================================================
+
+model LtSection {
+  id          Int       @id @default(autoincrement())
+  nameGeez    String    @map("name_geez")
+  nameAmharic String    @map("name_amharic")
+  nameEnglish String    @map("name_english")
+  orderIndex  Int       @map("order_index")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  texts    LtLiturgicalText[]
+
+  @@map("lt_sections")
+}
+
+model LtRole {
+  id           Int      @id @default(autoincrement())
+  roleKey      String   @unique @map("role_key")
+  nameAmharic  String   @map("name_amharic")
+  nameEnglish  String   @map("name_english")
+  orderIndex   Int      @map("order_index")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  texts LtLiturgicalText[]
+
+  @@map("lt_roles")
+}
+
+model LtLiturgicalText {
+  id                          Int      @id @default(autoincrement())
+  sectionId                   Int      @map("section_id")
+  orderIndex                  Int      @map("order_index")
+  roleId                      Int      @map("role_id")
+  textGeez                    String   @map("text_geez") @db.Text
+  textAmharic                 String   @map("text_amharic") @db.Text
+  textEnglishTransliteration  String   @map("text_english_transliteration") @db.Text
+  textEnglishTranslation      String   @map("text_english_translation") @db.Text
+  remark                      String?  @db.Text
+  audioGeezFilePath           String?  @map("audio_geez_file_path")
+  audioEzilFilePath           String?  @map("audio_ezil_file_path")
+  audioArarayFilePath         String?  @map("audio_araray_file_path")
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+
+  section LtSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  role    LtRole    @relation(fields: [roleId], references: [id])
+
+  @@map("lt_liturgical_texts")
+}
+
+// =====================================================
+// CHRISTIAN BOOKS MODULE (CB)
+// =====================================================
+
+model CbLanguage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  books CbBookLanguage[]
+
+  @@map("cb_languages")
+}
+
+model CbCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subCategories CbSubCategory[]
+  books         CbBookCategory[]
+
+  @@map("cb_categories")
+}
+
+model CbSubCategory {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category CbCategory          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  books    CbBookSubCategory[]
+
+  @@map("cb_sub_categories")
+}
+
+model CbApprovalStatus {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  books CbBook[]
+
+  @@map("cb_approval_statuses")
+}
+
+model CbAuthor {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  books CbAuthorBook[]
+
+  @@map("cb_authors")
+}
+
+model CbBook {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  approvalStatusId Int      @map("approval_status_id")
+  name             String
+  slug             String   @unique
+  author           String
+  description      String?  @db.Text
+  image            String?
+  file             String
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvalStatus CbApprovalStatus @relation(fields: [approvalStatusId], references: [id])
+
+  languages        CbBookLanguage[]
+  categories       CbBookCategory[]
+  subCategories    CbBookSubCategory[]
+  authors          CbAuthorBook[]
+  likes            CbLike[]
+  comments         CbBookComment[]
+  copyrightReports CbCopyrightReport[]
+
+  @@map("cb_books")
+}
+
+model CbBookLanguage {
+  id         Int      @id @default(autoincrement())
+  bookId     Int      @map("book_id")
+  languageId Int      @map("language_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  book     CbBook     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  language CbLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@map("cb_book_language")
+}
+
+model CbBookCategory {
+  id         Int      @id @default(autoincrement())
+  bookId     Int      @map("book_id")
+  categoryId Int      @map("category_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  book     CbBook     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  category CbCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("cb_book_category")
+}
+
+model CbBookSubCategory {
+  id            Int      @id @default(autoincrement())
+  bookId        Int      @map("book_id")
+  subCategoryId Int      @map("sub_category_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  book        CbBook        @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  subCategory CbSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  @@map("cb_book_sub_category")
+}
+
+model CbAuthorBook {
+  id        Int      @id @default(autoincrement())
+  authorId  Int      @map("author_id")
+  bookId    Int      @map("book_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  author CbAuthor @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  book   CbBook   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("cb_author_book")
+}
+
+model CbLike {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  bookId    Int      @map("book_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book CbBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@map("cb_likes")
+}
+
+model CbBookComment {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  bookId    Int      @map("book_id")
+  comment   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book CbBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("cb_book_comments")
+}
+
+model CbCopyrightReport {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  bookId    Int      @map("book_id")
+  reason    String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book CbBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("cb_copyright_reports")
+}
+
+// =====================================================
+// HYMNS MODULE (HM)
+// =====================================================
+
+model HmLanguage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  hymns HmHymnLanguage[]
+
+  @@map("hm_languages")
+}
+
+model HmCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subCategories HmSubCategory[]
+  hymns         HmCategoryHymn[]
+
+  @@map("hm_categories")
+}
+
+model HmSubCategory {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category HmCategory          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  hymns    HmHymnSubCategory[]
+
+  @@map("hm_sub_categories")
+}
+
+model HmApprovalStatus {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  hymns HmHymn[]
+
+  @@map("hm_approval_statuses")
+}
+
+model HmSinger {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  hymns HmHymnSinger[]
+
+  @@map("hm_singers")
+}
+
+model HmChannel {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  hymns HmHymn[]
+
+  @@map("hm_channels")
+}
+
+model HmHymn {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @map("user_id")
+  approvalStatusId  Int       @map("approval_status_id")
+  channelId         Int       @map("channel_id")
+  slug              String    @unique
+  videoId           String    @map("video_id")
+  publishedAt       DateTime? @map("published_at") @db.Date
+  singer            String?
+  title             String
+  lyrics            String?   @db.Text
+  lyricsSuggestion  String?   @map("lyrics_suggestion") @db.Text
+  description       String?   @db.Text
+  thumbnailDefault  String    @map("thumbnail_default")
+  thumbnailMedium   String    @map("thumbnail_medium")
+  thumbnailHigh     String    @map("thumbnail_high")
+  thumbnailStandard String?   @map("thumbnail_standard")
+  thumbnailMaxres   String?   @map("thumbnail_maxres")
+  clicksCount       Int       @default(0) @map("clicks_count")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvalStatus HmApprovalStatus @relation(fields: [approvalStatusId], references: [id])
+  channel        HmChannel        @relation(fields: [channelId], references: [id])
+
+  languages     HmHymnLanguage[]
+  categories    HmCategoryHymn[]
+  subCategories HmHymnSubCategory[]
+  singers       HmHymnSinger[]
+  favorites     HmFavorite[]
+  comments      HmComment[]
+
+  @@map("hm_hymns")
+}
+
+model HmHymnLanguage {
+  id         Int      @id @default(autoincrement())
+  hymnId     Int      @map("hymn_id")
+  languageId Int      @map("language_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  hymn     HmHymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+  language HmLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@map("hm_hymn_language")
+}
+
+model HmCategoryHymn {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  hymnId     Int      @map("hymn_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category HmCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  hymn     HmHymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+
+  @@map("hm_category_hymn")
+}
+
+model HmHymnSubCategory {
+  id            Int      @id @default(autoincrement())
+  hymnId        Int      @map("hymn_id")
+  subCategoryId Int      @map("sub_category_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  hymn        HmHymn        @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+  subCategory HmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  @@map("hm_hymn_sub_category")
+}
+
+model HmHymnSinger {
+  id        Int      @id @default(autoincrement())
+  hymnId    Int      @map("hymn_id")
+  singerId  Int      @map("singer_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  hymn   HmHymn   @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+  singer HmSinger @relation(fields: [singerId], references: [id], onDelete: Cascade)
+
+  @@map("hm_hymn_singer")
+}
+
+model HmFavorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  hymnId    Int      @map("hymn_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hymn HmHymn @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, hymnId])
+  @@map("hm_favorites")
+}
+
+model HmComment {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  hymnId    Int      @map("hymn_id")
+  comment   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hymn HmHymn @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+
+  @@map("hm_comments")
+}
+
+// =====================================================
+// SERMONS MODULE (SM)
+// =====================================================
+
+model SmLanguage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sermons SmLanguageSermon[]
+
+  @@map("sm_languages")
+}
+
+model SmCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subCategories SmSubCategory[]
+  sermons       SmCategorySermon[]
+
+  @@map("sm_categories")
+}
+
+model SmSubCategory {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category SmCategory            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sermons  SmSermonSubCategory[]
+
+  @@map("sm_sub_categories")
+}
+
+model SmApprovalStatus {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sermons SmSermon[]
+
+  @@map("sm_approval_statuses")
+}
+
+model SmPreacher {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sermons SmPreacherSermon[]
+
+  @@map("sm_preachers")
+}
+
+model SmChannel {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sermons SmSermon[]
+
+  @@map("sm_channels")
+}
+
+model SmSermon {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @map("user_id")
+  approvalStatusId  Int       @map("approval_status_id")
+  channelId         Int       @map("channel_id")
+  slug              String    @unique
+  videoId           String    @map("video_id")
+  publishedAt       DateTime? @map("published_at") @db.Date
+  preacher          String?
+  title             String
+  description       String?   @db.Text
+  thumbnailDefault  String    @map("thumbnail_default")
+  thumbnailMedium   String    @map("thumbnail_medium")
+  thumbnailHigh     String    @map("thumbnail_high")
+  thumbnailStandard String?   @map("thumbnail_standard")
+  thumbnailMaxres   String?   @map("thumbnail_maxres")
+  clicksCount       Int       @default(0) @map("clicks_count")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvalStatus SmApprovalStatus @relation(fields: [approvalStatusId], references: [id])
+  channel        SmChannel        @relation(fields: [channelId], references: [id])
+
+  languages     SmLanguageSermon[]
+  categories    SmCategorySermon[]
+  subCategories SmSermonSubCategory[]
+  preachers     SmPreacherSermon[]
+  favorites     SmFavorite[]
+
+  @@map("sm_sermons")
+}
+
+model SmLanguageSermon {
+  id         Int      @id @default(autoincrement())
+  languageId Int      @map("language_id")
+  sermonId   Int      @map("sermon_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  language SmLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@map("sm_language_sermon")
+}
+
+model SmCategorySermon {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  sermonId   Int      @map("sermon_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category SmCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@map("sm_category_sermon")
+}
+
+model SmSermonSubCategory {
+  id            Int      @id @default(autoincrement())
+  sermonId      Int      @map("sermon_id")
+  subCategoryId Int      @map("sub_category_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  sermon      SmSermon      @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+  subCategory SmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  @@map("sm_sermon_sub_category")
+}
+
+model SmPreacherSermon {
+  id         Int      @id @default(autoincrement())
+  preacherId Int      @map("preacher_id")
+  sermonId   Int      @map("sermon_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  preacher SmPreacher @relation(fields: [preacherId], references: [id], onDelete: Cascade)
+  sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@map("sm_preacher_sermon")
+}
+
+model SmFavorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  sermonId  Int      @map("sermon_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sermon SmSermon @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sermonId])
+  @@map("sm_favorites")
+}
+
+// =====================================================
+// QUIZ MODULE (QZ)
+// =====================================================
+
+model QzLanguage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  questions QzLanguageQuestion[]
+
+  @@map("qz_languages")
+}
+
+model QzCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subCategories QzSubCategory[]
+  questions     QzCategoryQuestion[]
+
+  @@map("qz_categories")
+}
+
+model QzSubCategory {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category  QzCategory              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  questions QzQuestionSubCategory[]
+
+  @@map("qz_sub_categories")
+}
+
+model QzApprovalStatus {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  questions QzQuestion[]
+
+  @@map("qz_approval_statuses")
+}
+
+model QzQuestionType {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  questions QzQuestion[]
+
+  @@map("qz_question_types")
+}
+
+model QzDifficulty {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  questions QzQuestion[]
+
+  @@map("qz_difficulties")
+}
+
+model QzQuestion {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  approvalStatusId Int      @map("approval_status_id")
+  typeId           Int      @map("type_id")
+  difficultyId     Int?     @map("qz_difficulty_id")
+  questionText     String   @map("question_text") @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approvalStatus QzApprovalStatus @relation(fields: [approvalStatusId], references: [id])
+  type           QzQuestionType   @relation(fields: [typeId], references: [id])
+  difficulty     QzDifficulty?    @relation(fields: [difficultyId], references: [id])
+
+  choices        QzChoice[]
+  languages      QzLanguageQuestion[]
+  categories     QzCategoryQuestion[]
+  subCategories  QzQuestionSubCategory[]
+  roundQuestions QzRoundQuestion[]
+
+  @@map("qz_questions")
+}
+
+model QzChoice {
+  id         Int      @id @default(autoincrement())
+  questionId Int      @map("question_id")
+  choiceText String   @map("choice_text") @db.Text
+  isCorrect  Boolean  @default(false) @map("is_correct")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("qz_choices")
+}
+
+model QzLanguageQuestion {
+  id         Int      @id @default(autoincrement())
+  languageId Int      @map("language_id")
+  questionId Int      @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  language QzLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("qz_language_question")
+}
+
+model QzCategoryQuestion {
+  id         Int      @id @default(autoincrement())
+  categoryId Int      @map("category_id")
+  questionId Int      @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  category QzCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("qz_category_question")
+}
+
+model QzQuestionSubCategory {
+  id            Int      @id @default(autoincrement())
+  questionId    Int      @map("question_id")
+  subCategoryId Int      @map("sub_category_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  question    QzQuestion    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  subCategory QzSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+
+  @@map("qz_question_sub_category")
+}
+
+model QzRoom {
+  id                Int      @id @default(autoincrement())
+  hostUserId        Int      @map("host_user_id")
+  name              String?
+  roomCode          String   @unique @map("room_code")
+  status            String   @default("waiting") // waiting, active, finished
+  totalRoundsPlayed Int      @default(0) @map("total_rounds_played")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  host    User           @relation(fields: [hostUserId], references: [id], onDelete: Cascade)
+  members QzRoomMember[]
+  rounds  QzRound[]
+
+  @@map("qz_rooms")
+}
+
+model QzRoomMember {
+  id        Int      @id @default(autoincrement())
+  roomId    Int      @map("room_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  room QzRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  rounds QzRoomMemberRound[]
+
+  @@unique([roomId, userId])
+  @@map("qz_room_members")
+}
+
+model QzRoomMemberRound {
+  id           Int      @id @default(autoincrement())
+  roomMemberId Int      @map("room_member_id")
+  roundId      Int      @map("round_id")
+  isReady      Boolean  @default(false) @map("is_ready")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  roomMember QzRoomMember @relation(fields: [roomMemberId], references: [id], onDelete: Cascade)
+  round      QzRound      @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@unique([roomMemberId, roundId])
+  @@map("qz_room_member_round")
+}
+
+model QzRound {
+  id           Int       @id @default(autoincrement())
+  roomId       Int       @map("room_id")
+  roundNumber  Int       @map("round_number")
+  timerSeconds Int       @default(30) @map("timer_seconds")
+  status       String    @default("active") // active, finished
+  startedAt    DateTime? @map("started_at")
+  endedAt      DateTime? @map("ended_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  room QzRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  questions    QzRoundQuestion[]
+  results      QzRoundResult[]
+  memberRounds QzRoomMemberRound[]
+
+  @@map("qz_rounds")
+}
+
+model QzRoundQuestion {
+  id         Int      @id @default(autoincrement())
+  roundId    Int      @map("round_id")
+  questionId Int      @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  round    QzRound    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  answers QzRoundAnswer[]
+
+  @@map("qz_round_questions")
+}
+
+model QzRoundAnswer {
+  id              Int      @id @default(autoincrement())
+  roundQuestionId Int      @map("round_question_id")
+  userId          Int      @map("user_id")
+  choiceId        Int      @map("choice_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  roundQuestion QzRoundQuestion @relation(fields: [roundQuestionId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("qz_round_answers")
+}
+
+model QzRoundResult {
+  id        Int      @id @default(autoincrement())
+  roundId   Int      @map("round_id")
+  userId    Int      @map("user_id")
+  score     Int      @default(0)
+  rank      Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  round QzRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@map("qz_round_results")
+}
+
+// =====================================================
+// STATISTICS & FEATURED
+// =====================================================
+
+model DailyStat {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique @db.Date
+  visits    Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("daily_stats")
+}
+
+model FeaturedItem {
+  id         Int      @id @default(autoincrement())
+  name       String
+  moduleType String   @map("module_type") // hymn, sermon, book
+  itemId     Int      @map("item_id")
+  orderBy    Int      @map("order_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("featured_items")
+}
