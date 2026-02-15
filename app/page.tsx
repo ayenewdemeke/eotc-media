@@ -81,7 +81,7 @@ export default async function Home() {
 
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-blue-50 via-gray-50 to-blue-50 pt-20 pb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header Image */}
           <div className="relative mb-8 overflow-hidden rounded-2xl shadow-xl">
             <Image
@@ -126,7 +126,7 @@ export default async function Home() {
       </div>
 
       {/* Features Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Link
