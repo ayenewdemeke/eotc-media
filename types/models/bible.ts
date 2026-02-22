@@ -2,37 +2,23 @@
 
 export interface BlBook {
   id: number
-  categoryId: number
-  subCategoryId: number
+  osisCode: string
   englishName: string
-  geezName: string
-  amharicName: string
-  oromifaName: string
-  tigrignaName: string
-  slug: string
+  geezName: string | null
+  amharicName: string | null
+  oromifaName: string | null
+  tigrignaName: string | null
+  slug: string | null
   createdAt: Date
   updatedAt: Date
 }
 
-export interface BlCategory {
+export interface BlTranslation {
   id: number
-  englishName: string
-  geezName: string
-  amharicName: string
-  oromifaName: string
-  tigrignaName: string
-  createdAt: Date
-  updatedAt: Date
-}
-
-export interface BlSubCategory {
-  id: number
-  categoryId: number
-  englishName: string
-  geezName: string
-  amharicName: string
-  oromifaName: string
-  tigrignaName: string
+  canonId: number
+  code: string     // e.g. "am-1954", "en-kjv"
+  name: string     // e.g. "Amharic 1954", "King James Version"
+  language: string // e.g. "am", "en"
   createdAt: Date
   updatedAt: Date
 }
@@ -42,37 +28,31 @@ export interface BlVerse {
   bookId: number
   chapter: number
   verse: number
-  text: string
+  text: string              // computed — flattened from texts[0].text
   createdAt: Date
   updatedAt: Date
-  highlight?: string | null
+  highlight?: string | null // computed — from BlHighlight.color
   book?: BlBook
+  texts?: Array<{ text: string }> // raw Prisma include before flattening
 }
 
 export interface BlHighlight {
   id: number
   userId: number
-  bookId: number
-  chapter: number
-  verse: number
+  verseId: number
   color: string | null
   createdAt: Date
   updatedAt: Date
 }
 
+export interface BibleSearchResult {
+  verseId: number
+  bookId: number
+  bookName: string
+  chapter: number
+  verse: number
+  text: string
+}
+
 export type BibleLanguage = 'amharic' | 'english' | 'oromifa' | 'hebrew-greek' | 'greek'
 export type BibleVersion = '1954' | 'kjv' | 'v1' | 'masoretic-textus-receptus' | 'septuagint'
-
-export interface BibleChapterData {
-  currentBook: BlBook
-  currentChapter: number
-  currentBookName: string
-  oldTestamentBooks: BlBook[]
-  newTestamentBooks: BlBook[]
-  language: BibleLanguage
-  version: BibleVersion
-  verses: BlVerse[]
-  chapterNumbers: number[]
-  dir: 'ltr' | 'rtl'
-  selectedVerse?: string
-}

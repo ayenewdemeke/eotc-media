@@ -1,58 +1,79 @@
 import { notFound } from "next/navigation"
+import type { Metadata } from "next"
 import { auth } from "@/auth"
 import { getBooks, getBook, getChapterVerses } from "@/lib/api/bible"
 import { BibleLanguage, BibleVersion } from "@/types/models/bible"
 import Navbar from "@/components/Navbar"
-import Footer from "@/components/Footer"
 import BibleReader from "@/components/bible/BibleReader"
 
 interface PageProps {
-  params: {
+  params: Promise<{
     language: BibleLanguage
     version: BibleVersion
     book: string
     chapter: string
-  }
-  searchParams: {
+  }>
+  searchParams: Promise<{
     verse?: string
+  }>
+}
+
+function getBookDisplayName(
+  book: NonNullable<Awaited<ReturnType<typeof getBook>>>,
+  language: BibleLanguage
+): string {
+  if (language === "amharic") return book.amharicName ?? book.englishName
+  if (language === "oromifa") return book.oromifaName ?? book.englishName
+  return book.englishName
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { language, book, chapter } = await params
+  const bookId = parseInt(book)
+  const chapterNum = parseInt(chapter)
+  if (isNaN(bookId) || isNaN(chapterNum)) return {}
+  const currentBook = await getBook(bookId)
+  if (!currentBook) return {}
+  const bookName = getBookDisplayName(currentBook, language)
+  return {
+    title: `${bookName} ${chapterNum} — Holy Bible | EOTC Media`,
+    description: `Read ${bookName} chapter ${chapterNum} in the Holy Bible on EOTC Media.`,
   }
 }
 
 export default async function BibleChapterPage({ params, searchParams }: PageProps) {
   const session = await auth()
   const { language, version, book, chapter } = await params
-  const awaitedSearchParams = await searchParams
-  const selectedVerse = awaitedSearchParams.verse || ''
+  const { verse: selectedVerse = "" } = await searchParams
 
   const bookId = parseInt(book)
   const chapterNum = parseInt(chapter)
 
-  if (isNaN(bookId) || isNaN(chapterNum)) {
-    notFound()
-  }
+  if (isNaN(bookId) || isNaN(chapterNum)) notFound()
 
-  const { books } = await getBooks();
-  const currentBook = await getBook(bookId);
-  if (!currentBook) {
-    notFound();
-  }
+  const [{ books }, currentBook] = await Promise.all([
+    getBooks(),
+    getBook(bookId),
+  ])
+
+  if (!currentBook) notFound()
+
   const { verses, chapterNumbers } = await getChapterVerses(
     language,
     version,
     bookId,
     chapterNum,
     session?.user?.id ? parseInt(session.user.id) : undefined
-  );
-  // Determine book name based on language
-  let currentBookName = currentBook.englishName;
-  if (language === 'amharic') currentBookName = currentBook.amharicName;
-  else if (language === 'oromifa') currentBookName = currentBook.oromifaName;
-  // Determine text direction
-  const dir = (language === 'hebrew-greek' && bookId < 40) ? 'rtl' : 'ltr';
+  )
+
+  const currentBookName = getBookDisplayName(currentBook, language)
+  const dir = language === "hebrew-greek" && bookId < 40 ? "rtl" : "ltr"
+
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen">
       <Navbar />
-      <main className="flex-1">
+      {/* pt-16 accounts for the fixed Navbar (h-16) */}
+      <div className="pt-16">
         <BibleReader
           currentBook={currentBook}
           currentChapter={chapterNum}
@@ -66,8 +87,7 @@ export default async function BibleChapterPage({ params, searchParams }: PagePro
           selectedVerse={selectedVerse}
           user={session?.user || null}
         />
-      </main>
-      <Footer />
+      </div>
     </div>
-  );
+  )
 }

@@ -1,32 +1,48 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { BibleLanguage, BibleVersion, BlBook, BlVerse } from "@/types/models/bible"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { useRouter } from "next/navigation"
+import {
+  BookOpen,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet"
+import { BlBook, BlVerse, BibleLanguage, BibleVersion } from "@/types/models/bible"
+import BookSidebar from "./BookSidebar"
+import VerseList from "./VerseList"
+import HighlightPopover from "./HighlightPopover"
+import BibleSearchSheet from "./BibleSearchSheet"
 
 interface BibleReaderProps {
-  currentBook: BlBook;
-  currentChapter: number;
-  currentBookName: string;
-  books: BlBook[];
-  language: BibleLanguage;
-  version: BibleVersion;
-  verses: BlVerse[];
-  chapterNumbers: number[];
-  dir: 'ltr' | 'rtl';
-  selectedVerse?: string;
-  user: any;
+  currentBook: BlBook
+  currentChapter: number
+  currentBookName: string
+  books: BlBook[]
+  language: BibleLanguage
+  version: BibleVersion
+  verses: BlVerse[]
+  chapterNumbers: number[]
+  dir: "ltr" | "rtl"
+  selectedVerse?: string
+  user: { name?: string | null; id?: string } | null
 }
+
+const FONT_SIZES = [15, 17, 20] as const
 
 export default function BibleReader({
   currentBook,
@@ -39,401 +55,486 @@ export default function BibleReader({
   chapterNumbers,
   dir,
   selectedVerse,
-  user
+  user,
 }: BibleReaderProps) {
   const router = useRouter()
-  const [showHighlightMenu, setShowHighlightMenu] = useState(false)
-  const [selectedVerseNum, setSelectedVerseNum] = useState<number | null>(null)
-  const [showChapterSelector, setShowChapterSelector] = useState(false)
-  const [bookSearch, setBookSearch] = useState('')
-  const chapterSelectorRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdowns when clicking outside
+  const parsed = selectedVerse ? parseInt(selectedVerse, 10) : null
+  const initialVerse = parsed && !isNaN(parsed) ? parsed : null
+
+  const [activeVerse, setActiveVerse] = useState<number | null>(initialVerse)
+  const [highlightVerseNum, setHighlightVerseNum] = useState<number | null>(null)
+  const [highlightPos, setHighlightPos] = useState<{ top: number; left: number } | null>(null)
+  const [currentHighlightColor, setCurrentHighlightColor] = useState<string | null>(null)
+  const [localHighlights, setLocalHighlights] = useState<Map<number, string>>(
+    () => new Map(verses.filter(v => v.highlight).map(v => [v.id, v.highlight!]))
+  )
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [fontSizeIdx, setFontSizeIdx] = useState(1)
+  const [isChapterNavOpen, setIsChapterNavOpen] = useState(false)
+
+  // Separate refs for mobile and desktop chapter nav (both may be in DOM simultaneously)
+  const mobileChapterNavRef = useRef<HTMLDivElement>(null)
+  const desktopChapterNavRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to selected verse on load
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (chapterSelectorRef.current && !chapterSelectorRef.current.contains(event.target as Node)) {
-        setShowChapterSelector(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    if (!initialVerse) return
+    setTimeout(() => {
+      document.getElementById(`verse-${initialVerse}`)?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 300)
+  }, [initialVerse])
 
-  const getBookName = (book: BlBook) => {
-    if (language === 'amharic') return book.amharicName
-    if (language === 'oromifa') return book.oromifaName
-    return book.englishName
+  // Arrow key chapter navigation
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === "INPUT" || tag === "TEXTAREA") return
+      if (e.key === "ArrowLeft" && currentChapter > 1)
+        router.push(`/bible/${language}/${version}/${currentBook.id}/${currentChapter - 1}`)
+      if (e.key === "ArrowRight" && currentChapter < chapterNumbers.length)
+        router.push(`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [currentChapter, chapterNumbers.length, language, version, currentBook.id, router])
+
+  // Close chapter popover on click outside (checks both mobile + desktop refs)
+  useEffect(() => {
+    if (!isChapterNavOpen) return
+    function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node
+      if (
+        mobileChapterNavRef.current?.contains(target) ||
+        desktopChapterNavRef.current?.contains(target)
+      ) return
+      setIsChapterNavOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [isChapterNavOpen])
+
+  function handleVerseClick(verseNum: number, verseId: number, el: HTMLElement) {
+    setActiveVerse(prev => prev === verseNum ? null : verseNum)
+    if (!user) return
+    const rect = el.getBoundingClientRect()
+    const top = Math.min(rect.bottom + 6, window.innerHeight - 120)
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - 220))
+    setHighlightVerseNum(verseNum)
+    setHighlightPos({ top, left })
+    setCurrentHighlightColor(localHighlights.get(verseId) ?? null)
   }
 
-  const filteredBooks = books.filter(book =>
-    getBookName(book)?.toLowerCase().includes(bookSearch.toLowerCase())
+  function closeHighlight() {
+    setHighlightVerseNum(null)
+    setHighlightPos(null)
+  }
+
+  async function handleHighlight(color: string) {
+    if (highlightVerseNum === null) return
+    const verse = verses.find(v => v.verse === highlightVerseNum)
+    if (!verse) return
+    const prev = localHighlights.get(verse.id)
+    setLocalHighlights(m => {
+      const next = new Map(m)
+      if (color) next.set(verse.id, color)
+      else next.delete(verse.id)
+      return next
+    })
+    closeHighlight()
+    try {
+      await fetch("/api/bible/highlight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId: currentBook.id, chapter: currentChapter, verse: highlightVerseNum, color }),
+      })
+    } catch {
+      setLocalHighlights(m => {
+        const next = new Map(m)
+        if (prev) next.set(verse.id, prev)
+        else next.delete(verse.id)
+        return next
+      })
+    }
+  }
+
+  const fontSize = FONT_SIZES[fontSizeIdx]
+  const activeVerseText = verses.find(v => v.verse === activeVerse)?.text ?? null
+
+  // Chapter grid — shared between mobile and desktop popovers
+  const chapterGrid = (
+    <div className="grid grid-cols-7 gap-1 max-h-[55vh] overflow-y-auto">
+      {chapterNumbers.map(ch => (
+        <Link
+          key={ch}
+          href={`/bible/${language}/${version}/${currentBook.id}/${ch}`}
+          onClick={() => setIsChapterNavOpen(false)}
+          className={`flex items-center justify-center h-8 rounded-lg text-xs font-semibold transition-all ${
+            ch === currentChapter
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-600 hover:bg-slate-100"
+          }`}
+        >
+          {ch}
+        </Link>
+      ))}
+    </div>
   )
 
-  // Group books into Old Testament and New Testament
-  const oldTestamentBooks = filteredBooks.filter(book => book.id <= 39)
-  const newTestamentBooks = filteredBooks.filter(book => book.id > 39)
-
-  const handleVerseClick = (verseNum: number) => {
-    setSelectedVerseNum(verseNum)
-    if (user) {
-      setShowHighlightMenu(true)
-    }
-  }
-
-  const handleHighlight = async (color: string) => {
-    if (!user || !selectedVerseNum) return
-
-    try {
-      const response = await fetch('/api/bible/highlight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookId: currentBook.id,
-          chapter: currentChapter,
-          verse: selectedVerseNum,
-          color
-        })
-      })
-
-      if (response.ok) {
-        window.location.reload()
-      }
-    } catch (error) {
-      console.error('Error highlighting verse:', error)
-    }
-
-    setShowHighlightMenu(false)
-    setSelectedVerseNum(null)
-  }
-
-  const parsedSelectedVerse = selectedVerse ? Number.parseInt(selectedVerse, 10) : null
-  const activeVerse = selectedVerseNum ?? (Number.isNaN(parsedSelectedVerse) ? null : parsedSelectedVerse)
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100">
-      <div className="pt-16">
-        {/* Top Reading Bar */}
-        <div className="sticky top-14 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/70">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Holy Bible</p>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-semibold text-slate-900">{currentBookName}</h1>
-                  <span className="text-sm font-medium text-slate-500">Chapter {currentChapter}</span>
-                </div>
-              </div>
+    <div className="min-h-screen bg-white">
 
-              {/* Version Selector */}
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Language</span>
-                <Select
-                  value={`${language}__${version}`}
-                  onValueChange={(value) => {
-                    const [newLang, newVer] = value.split('__')
-                    router.push(`/bible/${newLang}/${newVer}/${currentBook.id}/${currentChapter}`)
-                  }}
-                >
-                  <SelectTrigger className="h-9 min-w-[200px] bg-white/90 border-slate-200/80 shadow-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper" align="end" sideOffset={8}>
-                    <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
-                    <SelectItem value="english__kjv">English KJV</SelectItem>
-                    <SelectItem value="oromifa__v1">Oromifa</SelectItem>
-                    <SelectItem value="hebrew-greek__masoretic-textus-receptus">Hebrew/Greek</SelectItem>
-                    <SelectItem value="greek__septuagint">Greek Septuagint</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* ═══════════════════════════════════════════════════
+          MOBILE-ONLY top bar (hidden on lg+)
+      ═══════════════════════════════════════════════════ */}
+      <div className="sticky top-16 z-30 lg:hidden bg-white/95 backdrop-blur-sm border-b border-slate-100/80">
+        <div className="px-4 h-11 flex items-center justify-between gap-3">
+          {/* Breadcrumb with chapter selector */}
+          <nav className="flex items-center gap-1.5 text-sm min-w-0">
+            <span className="text-slate-600 font-medium truncate max-w-[120px]">{currentBookName}</span>
+            <span className="text-slate-300 select-none">/</span>
+            {/* Mobile chapter selector */}
+            <div ref={mobileChapterNavRef} className="relative shrink-0">
+              <button
+                onClick={() => setIsChapterNavOpen(v => !v)}
+                className="flex items-center gap-1 text-slate-800 font-semibold hover:text-blue-600 transition-colors"
+              >
+                {currentChapter}
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isChapterNavOpen ? "rotate-180" : ""}`} />
+              </button>
+              {isChapterNavOpen && (
+                // Fixed position keeps the popover within the viewport on all screen sizes
+                <div className="fixed inset-x-4 z-[200] bg-white rounded-2xl shadow-xl border border-slate-100 p-3" style={{ top: "7.25rem" }}>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">
+                    {currentBookName}
+                  </p>
+                  {chapterGrid}
+                </div>
+              )}
             </div>
+          </nav>
+          {/* Controls */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
+            <Select
+              value={`${language}__${version}`}
+              onValueChange={value => {
+                const [l, v] = value.split("__")
+                router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
+              }}
+            >
+              <SelectTrigger className="h-8 text-xs w-[116px] bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-lg">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
+                <SelectItem value="english__kjv">English KJV</SelectItem>
+                <SelectItem value="oromifa__v1">Oromifa</SelectItem>
+                <SelectItem value="hebrew-greek__masoretic-textus-receptus">Hebrew / Greek</SelectItem>
+                <SelectItem value="greek__septuagint">Greek LXX</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-
-        {/* Main Layout */}
-        <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[1.05fr_2.2fr_1.25fr] gap-6">
-          {/* Left: Books */}
-          <aside className="order-2 lg:order-1">
-            <div className="lg:sticky lg:top-28 space-y-4">
-              <Card className="border-slate-200/70 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.45)]">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">Books</CardTitle>
-                  <CardDescription className="text-xs">Search and select a book to read.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Input
-                    type="text"
-                    placeholder="Search books..."
-                    value={bookSearch}
-                    onChange={(e) => setBookSearch(e.target.value)}
-                  />
-                  <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-slate-100/80 bg-white/70">
-                    {oldTestamentBooks.length > 0 && (
-                      <div>
-                        <div className="px-4 py-2 bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">
-                          Old Testament
-                        </div>
-                        {oldTestamentBooks.map((book) => (
-                          <Link
-                            key={book.id}
-                            href={`/bible/${language}/${version}/${book.id}/1`}
-                            className={`block px-4 py-2.5 text-sm transition-colors ${
-                              book.id === currentBook.id ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            {getBookName(book)}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    {newTestamentBooks.length > 0 && (
-                      <div>
-                        <div className="px-4 py-2 bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-widest">
-                          New Testament
-                        </div>
-                        {newTestamentBooks.map((book) => (
-                          <Link
-                            key={book.id}
-                            href={`/bible/${language}/${version}/${book.id}/1`}
-                            className={`block px-4 py-2.5 text-sm transition-colors ${
-                              book.id === currentBook.id ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-                            }`}
-                          >
-                            {getBookName(book)}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </aside>
-
-          {/* Center: Verses */}
-          <section className="order-1 lg:order-2">
-            <div className="rounded-2xl bg-white border border-slate-200/80 shadow-[0_12px_40px_-22px_rgba(15,23,42,0.5)]">
-              <div className="px-6 py-5 border-b border-slate-100/80 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-slate-400">Reading</p>
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    {currentBookName} <span className="text-slate-400">•</span> Chapter {currentChapter}
-                  </h2>
-                </div>
-                <div className="relative" ref={chapterSelectorRef}>
-                  <button
-                    onClick={() => setShowChapterSelector(!showChapterSelector)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
-                    Jump to chapter
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {showChapterSelector && (
-                    <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50">
-                      <div className="px-4 py-3 border-b border-slate-100">
-                        <span className="text-sm font-medium text-slate-600">Select Chapter</span>
-                      </div>
-                      <div className="p-3 max-h-80 overflow-y-auto">
-                        <div className="grid grid-cols-6 gap-2">
-                          {chapterNumbers.map((chap) => (
-                            <Link
-                              key={chap}
-                              href={`/bible/${language}/${version}/${currentBook.id}/${chap}`}
-                              className={`flex items-center justify-center w-10 h-10 text-sm rounded-lg transition-all ${
-                                chap === currentChapter
-                                  ? 'bg-blue-600 text-white font-semibold shadow-md'
-                                  : 'bg-slate-50 text-slate-700 hover:bg-blue-100 hover:text-blue-700'
-                              }`}
-                              onClick={() => setShowChapterSelector(false)}
-                            >
-                              {chap}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="px-6 py-6" dir={dir}>
-                {verses.length === 0 ? (
-                  <div className="text-center py-16">
-                    <svg className="w-16 h-16 mx-auto text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    <p className="text-slate-500 text-lg">No verses found for this chapter.</p>
-                    <p className="text-slate-400 text-sm mt-2">Try selecting a different chapter or translation.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {verses.map((verse) => (
-                      <div
-                        key={verse.id}
-                        id={`verse-${verse.verse}`}
-                        className={`group flex gap-4 p-3 -mx-3 rounded-xl transition-colors ${
-                          activeVerse === verse.verse
-                            ? 'bg-amber-50 border border-amber-200'
-                            : 'hover:bg-slate-50'
-                        }`}
-                        style={verse.highlight ? { backgroundColor: verse.highlight } : undefined}
-                      >
-                        <button
-                          type="button"
-                          className={`flex-shrink-0 w-9 h-9 flex items-center justify-center text-sm font-bold rounded-full transition-colors ${
-                            user ? 'hover:bg-blue-100 hover:text-blue-700' : ''
-                          } ${
-                            activeVerse === verse.verse
-                              ? 'bg-amber-200 text-amber-800'
-                              : 'bg-slate-100 text-slate-500'
-                          }`}
-                          onClick={() => handleVerseClick(verse.verse)}
-                          title={user ? "Click to highlight" : "Sign in to highlight"}
-                        >
-                          {verse.verse}
-                        </button>
-                        <p className="flex-1 text-[17px] leading-8 text-slate-900 font-medium">
-                          {verse.text}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between px-6 py-5 border-t border-slate-100">
-                {currentChapter > 1 ? (
-                  <Link
-                    href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter - 1}`}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-700 font-medium hover:bg-slate-50 transition-all shadow-sm"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    <span>Chapter {currentChapter - 1}</span>
-                  </Link>
-                ) : (
-                  <div></div>
-                )}
-
-                <span className="text-xs text-slate-400">
-                  {currentChapter} of {chapterNumbers.length}
-                </span>
-
-                {currentChapter < chapterNumbers.length ? (
-                  <Link
-                    href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-white font-medium hover:bg-blue-700 transition-all shadow-sm"
-                  >
-                    <span>Chapter {currentChapter + 1}</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                ) : (
-                  <div></div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Right: Explanation */}
-          <aside className="order-3">
-            <div className="lg:sticky lg:top-28 space-y-4">
-              <Card className="border-slate-200/70 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.45)]">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">Explanation</CardTitle>
-                    {activeVerse && (
-                      <span className="text-xs font-medium text-slate-400">Verse {activeVerse}</span>
-                    )}
-                  </div>
-                  <CardDescription>Notes, cross references, and explanations.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-slate-600">
-                    No commentary is available yet. When explanations or cross references exist, they will appear here.
-                  </p>
-                  <p className="mt-3 text-xs text-slate-400">
-                    Click a verse number to focus it.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-slate-200/70 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.45)]">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">Reading Tools</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-slate-600">
-                    Highlight verses by clicking the verse number. Sign in to save highlights.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </aside>
         </div>
       </div>
 
-      {/* Highlight Menu Modal */}
-      {showHighlightMenu && user && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900">Highlight Verse {selectedVerseNum}</h3>
-              <p className="text-sm text-gray-500 mt-1">Choose a color to highlight this verse</p>
-            </div>
-            <div className="p-6">
-              <div className="grid grid-cols-4 gap-3 mb-6">
+      {/* ═══════════════════════════════════════════════════
+          THREE-COLUMN BODY
+      ═══════════════════════════════════════════════════ */}
+      <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr_256px]">
+
+        {/* ── Left: book navigation ─────────────────────────
+            z-10 ensures the chapter popover floats above the
+            center column (which follows later in DOM order)
+        ──────────────────────────────────────────────────── */}
+        <aside className="hidden lg:flex lg:flex-col border-r border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)] z-10">
+          {/* Left column header: book + chapter selector */}
+          <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100">
+            <nav className="flex items-center gap-1 text-sm flex-wrap">
+              <Link
+                href={`/bible/${language}/${version}/${currentBook.id}/1`}
+                className="text-slate-500 font-medium hover:text-slate-700 transition-colors truncate max-w-[120px]"
+              >
+                {currentBookName}
+              </Link>
+              <span className="text-slate-300 select-none mx-0.5">/</span>
+              {/* Desktop chapter selector */}
+              <div ref={desktopChapterNavRef} className="relative">
                 <button
-                  onClick={() => handleHighlight('#fef08a')}
-                  className="h-12 rounded-xl border-2 border-transparent hover:border-yellow-400 hover:scale-105 transition-all shadow-sm"
-                  style={{ backgroundColor: '#fef08a' }}
-                  title="Yellow"
-                />
-                <button
-                  onClick={() => handleHighlight('#bfdbfe')}
-                  className="h-12 rounded-xl border-2 border-transparent hover:border-blue-400 hover:scale-105 transition-all shadow-sm"
-                  style={{ backgroundColor: '#bfdbfe' }}
-                  title="Blue"
-                />
-                <button
-                  onClick={() => handleHighlight('#bbf7d0')}
-                  className="h-12 rounded-xl border-2 border-transparent hover:border-green-400 hover:scale-105 transition-all shadow-sm"
-                  style={{ backgroundColor: '#bbf7d0' }}
-                  title="Green"
-                />
-                <button
-                  onClick={() => handleHighlight('#fecaca')}
-                  className="h-12 rounded-xl border-2 border-transparent hover:border-red-400 hover:scale-105 transition-all shadow-sm"
-                  style={{ backgroundColor: '#fecaca' }}
-                  title="Red"
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleHighlight('')}
-                  className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+                  onClick={() => setIsChapterNavOpen(v => !v)}
+                  className="flex items-center gap-1 text-slate-800 font-semibold hover:text-blue-600 transition-colors"
                 >
-                  Remove Highlight
+                  {currentChapter}
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isChapterNavOpen ? "rotate-180" : ""}`} />
                 </button>
-                <button
-                  onClick={() => {
-                    setShowHighlightMenu(false)
-                    setSelectedVerseNum(null)
-                  }}
-                  className="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
-                >
-                  Cancel
-                </button>
+                {isChapterNavOpen && (
+                  <div className="absolute top-full left-0 mt-2 z-[200] bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-3 w-[272px]">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">
+                      {currentBookName}
+                    </p>
+                    {chapterGrid}
+                  </div>
+                )}
               </div>
+            </nav>
+          </div>
+          {/* Book list */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto px-3 py-3"
+            style={{ scrollbarWidth: "none" }}
+          >
+            <BookSidebar
+              books={books}
+              currentBook={currentBook}
+              language={language}
+              version={version}
+            />
+          </div>
+        </aside>
+
+        {/* ── Center: reading area ────────────────────────── */}
+        <main className="px-6 sm:px-10 py-8 sm:py-10 pb-28 lg:pb-16">
+          {/* Chapter heading */}
+          <div className="mb-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-1.5">
+              {currentBookName}
+            </p>
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-[26px] font-bold text-slate-900 leading-none">
+                {currentChapter}
+              </h1>
+              <span className="text-sm text-slate-400 font-medium">of {chapterNumbers.length}</span>
+              <span className="text-xs text-slate-300 ml-0.5">· {verses.length} verses</span>
             </div>
           </div>
+
+          <VerseList
+            verses={verses}
+            dir={dir}
+            activeVerse={activeVerse}
+            user={user}
+            localHighlights={localHighlights}
+            fontSize={fontSize}
+            onVerseClick={handleVerseClick}
+          />
+
+          {/* Prev / Next — language-neutral */}
+          <div className="flex items-center justify-between mt-14 pt-6 border-t border-slate-100">
+            {currentChapter > 1 ? (
+              <Link
+                href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter - 1}`}
+                className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group"
+              >
+                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                {currentChapter - 1}
+              </Link>
+            ) : <div />}
+
+            <span className="text-xs text-slate-400 font-medium">
+              {currentBookName} · {currentChapter} / {chapterNumbers.length}
+            </span>
+
+            {currentChapter < chapterNumbers.length ? (
+              <Link
+                href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`}
+                className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group"
+              >
+                {currentChapter + 1}
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            ) : <div />}
+          </div>
+        </main>
+
+        {/* ── Right: controls + verse panel ──────────────── */}
+        <aside className="hidden lg:flex lg:flex-col border-l border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)]">
+          {/* Right column header: translation + search */}
+          <div className="flex-shrink-0 px-5 py-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <Select
+                value={`${language}__${version}`}
+                onValueChange={value => {
+                  const [l, v] = value.split("__")
+                  router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
+                }}
+              >
+                <SelectTrigger className="flex-1 h-8 text-xs bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
+                  <SelectItem value="english__kjv">English KJV</SelectItem>
+                  <SelectItem value="oromifa__v1">Oromifa</SelectItem>
+                  <SelectItem value="hebrew-greek__masoretic-textus-receptus">Hebrew / Greek</SelectItem>
+                  <SelectItem value="greek__septuagint">Greek LXX</SelectItem>
+                </SelectContent>
+              </Select>
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex-shrink-0"
+                title="Search"
+              >
+                <Search className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Right column content */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-4">
+            {/* Selected verse */}
+            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+                Selected Verse
+              </p>
+              {activeVerse && activeVerseText ? (
+                <div>
+                  <p className="text-xs font-bold text-blue-600 mb-2">
+                    {currentBookName} {currentChapter}:{activeVerse}
+                  </p>
+                  <p className="text-[13px] text-slate-700 leading-relaxed font-serif">
+                    {activeVerseText.length > 160
+                      ? activeVerseText.slice(0, 157) + "…"
+                      : activeVerseText}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Tap a verse number to see it here.
+                </p>
+              )}
+            </div>
+
+            {/* Text size */}
+            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+                Text Size
+              </p>
+              <div className="flex items-center gap-1.5">
+                {(["S", "M", "L"] as const).map((label, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setFontSizeIdx(i)}
+                    className={`flex-1 flex items-center justify-center h-8 rounded-lg text-xs font-bold transition-all ${
+                      fontSizeIdx === i
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Commentary placeholder */}
+            <div className="rounded-xl border border-dashed border-slate-200 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-1.5">
+                Commentary
+              </p>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Verse commentary coming soon.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════
+          MOBILE BOTTOM BAR
+      ═══════════════════════════════════════════════════ */}
+      <div className="fixed bottom-0 inset-x-0 bg-white/96 backdrop-blur-sm border-t border-slate-200 px-5 py-3 flex items-center justify-between lg:hidden z-30">
+        <button
+          onClick={() => setIsMobileNavOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          Books
+        </button>
+
+        <div className="flex items-center gap-4 text-sm font-semibold text-slate-600">
+          {currentChapter > 1 ? (
+            <Link
+              href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter - 1}`}
+              className="flex items-center gap-1 hover:text-slate-900 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {currentChapter - 1}
+            </Link>
+          ) : <span className="w-9" />}
+
+          <span className="text-xs text-slate-400 font-medium min-w-[4rem] text-center">
+            {currentChapter} / {chapterNumbers.length}
+          </span>
+
+          {currentChapter < chapterNumbers.length ? (
+            <Link
+              href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`}
+              className="flex items-center gap-1 hover:text-slate-900 transition-colors"
+            >
+              {currentChapter + 1}
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          ) : <span className="w-9" />}
         </div>
-      )}
+
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+        >
+          <Search className="w-3.5 h-3.5" />
+          Search
+        </button>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════
+          MOBILE BOOK DRAWER
+          onOpenAutoFocus: prevent keyboard from appearing
+          when the drawer opens (user taps the search input
+          explicitly if they want to search)
+      ═══════════════════════════════════════════════════ */}
+      <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
+        <SheetContent
+          side="left"
+          className="w-72 p-0"
+          showCloseButton={false}
+          onOpenAutoFocus={e => e.preventDefault()}
+        >
+          <SheetTitle className="sr-only">Book Navigation</SheetTitle>
+          <div className="p-4 h-full overflow-hidden flex flex-col">
+            <BookSidebar
+              books={books}
+              currentBook={currentBook}
+              language={language}
+              version={version}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ═══════════════════════════════════════════════════
+          HIGHLIGHT POPOVER & SEARCH SHEET
+      ═══════════════════════════════════════════════════ */}
+      <HighlightPopover
+        verseNum={highlightVerseNum}
+        position={highlightPos}
+        currentColor={currentHighlightColor}
+        onHighlight={handleHighlight}
+        onClose={closeHighlight}
+      />
+
+      <BibleSearchSheet
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        language={language}
+        version={version}
+        currentBookId={currentBook.id}
+      />
     </div>
   )
 }
