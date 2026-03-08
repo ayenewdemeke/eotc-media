@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/admin/layout/AdminHeader"
-import { TextForm } from "@/components/admin/forms/TextForm"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { TextForm } from "@/components/admin/liturgy/forms/TextForm"
 
 export default function NewTextPage() {
   return (

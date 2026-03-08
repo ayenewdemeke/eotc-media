@@ -236,8 +236,6 @@ export default function BibleReader({
                 <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
                 <SelectItem value="english__kjv">English KJV</SelectItem>
                 <SelectItem value="oromifa__v1">Oromifa</SelectItem>
-                <SelectItem value="hebrew-greek__masoretic-textus-receptus">Hebrew / Greek</SelectItem>
-                <SelectItem value="greek__septuagint">Greek LXX</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -371,8 +369,6 @@ export default function BibleReader({
                   <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
                   <SelectItem value="english__kjv">English KJV</SelectItem>
                   <SelectItem value="oromifa__v1">Oromifa</SelectItem>
-                  <SelectItem value="hebrew-greek__masoretic-textus-receptus">Hebrew / Greek</SelectItem>
-                  <SelectItem value="greek__septuagint">Greek LXX</SelectItem>
                 </SelectContent>
               </Select>
               <button

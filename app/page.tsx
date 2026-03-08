@@ -81,7 +81,7 @@ export default async function Home() {
 
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-blue-50 via-gray-50 to-blue-50 pt-20 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header Image */}
           <div className="relative mb-8 overflow-hidden rounded-2xl shadow-xl">
             <Image
@@ -108,7 +108,7 @@ export default async function Home() {
               Ethiopian Orthodox Tewahedo Church Media Resources
             </p>
 
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-[1320px] mx-auto">
               <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-6">
                 <p className="text-gray-700 leading-relaxed mb-4">
                   በዚህ ድረ ገጽ <strong>የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያንና የሌሎች ኦሬንታል አብያተ ክርስቲያናት</strong> የሚዲያ ውጤቶችን መጽሃፍ ቅዱስን ጨምሮ የተለያዩ መጻህፍትን፣ መዝሙራት፣ ስብከቶች እና
@@ -126,7 +126,7 @@ export default async function Home() {
       </div>
 
       {/* Features Grid */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Link
@@ -172,7 +172,7 @@ export default async function Home() {
 
       {/* CTA Section */}
       <div className="bg-gradient-to-br from-blue-600 to-blue-700 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
               Join our community

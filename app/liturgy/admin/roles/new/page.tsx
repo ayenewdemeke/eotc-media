@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/admin/layout/AdminHeader"
-import { RoleForm } from "@/components/admin/forms/RoleForm"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { RoleForm } from "@/components/admin/liturgy/forms/RoleForm"
 
 export default function NewRolePage() {
   return (

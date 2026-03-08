@@ -483,21 +483,28 @@ model CbCopyrightReport {
 
 model HmLanguage {
   id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
   name      String
+  slug      String?  @unique
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  hymns HmHymnLanguage[]
+  categories HmCategory[]
+  hymns      HmHymnLanguage[]
 
   @@map("hm_languages")
 }
 
 model HmCategory {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  userId     Int?     @map("user_id")
+  languageId Int?     @map("language_id")
+  name       String
+  slug       String?  @unique
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
+  language      HmLanguage?     @relation(fields: [languageId], references: [id])
   subCategories HmSubCategory[]
   hymns         HmCategoryHymn[]
 
@@ -506,8 +513,10 @@ model HmCategory {
 
 model HmSubCategory {
   id         Int      @id @default(autoincrement())
+  userId     Int?     @map("user_id")
   categoryId Int      @map("category_id")
   name       String
+  slug       String?  @unique
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
@@ -540,10 +549,20 @@ model HmSinger {
 }
 
 model HmChannel {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               Int       @id @default(autoincrement())
+  title            String
+  slug             String    @unique
+  ytChannelId      String?   @unique @map("yt_channel_id")
+  handle           String    @default("")
+  description      String?
+  thumbnailDefault String?   @map("thumbnail_default")
+  thumbnailMedium  String?   @map("thumbnail_medium")
+  thumbnailHigh    String?   @map("thumbnail_high")
+  coverImage       String?   @map("cover_image")
+  country          String?
+  publishedAt      DateTime? @map("published_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   hymns HmHymn[]
 

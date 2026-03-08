@@ -72,15 +72,20 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
-  const isActive = (path: string) => pathname?.startsWith(path)
+  const isActive = (link: { href: string; activePrefix?: string }) =>
+    pathname?.startsWith(link.activePrefix ?? link.href)
+
+  const roles = (user as { roles?: string[] })?.roles ?? []
+  const hasLiturgyAdmin = roles.some(r => ["super_admin", "admin", "liturgy_admin"].includes(r))
+  const hasHymnAdmin = roles.some(r => ["super_admin", "admin", "hymn_admin"].includes(r))
 
   const navLinks = [
-    { href: "/bible/amharic/1954/1/1", label: "መጽሃፍ ቅዱስ", labelEn: "Bible", icon: BookOpen },
-    { href: "/liturgy", label: "ቅዳሴ", labelEn: "Liturgy", icon: Mic },
+    { href: "/bible/amharic/1954/1/1", activePrefix: "/bible", label: "መጽሃፍ ቅዱስ", labelEn: "Bible", icon: BookOpen },
+    { href: "/liturgy", activePrefix: "/liturgy", label: "ቅዳሴ", labelEn: "Liturgy", icon: Mic },
+    { href: "/hymns", activePrefix: "/hymns", label: "መዝሙራት", labelEn: "Hymns", icon: Music },
   ]
 
   const moreLinks = [
-    { href: "/hymns", label: "መዝሙራት", labelEn: "Hymns", icon: Music },
     { href: "/quiz", label: "ጥያቄዎች", labelEn: "Quiz", icon: HelpCircle },
     { href: "/books", label: "መጻህፍት", labelEn: "Books", icon: BookMarked },
     { href: "/sermons", label: "ስብከቶች", labelEn: "Sermons", icon: MessageSquare },
@@ -89,7 +94,7 @@ export default function Navbar() {
   if (status === "loading") {
     return (
       <nav className="fixed top-0 w-full h-16 bg-white border-b border-gray-200 z-50">
-        <div className="max-w-4xl mx-auto px-4 h-full flex items-center justify-between">
+        <div className="max-w-[1320px] mx-auto px-4 h-full flex items-center justify-between">
           <div className="animate-pulse h-8 w-36 bg-gray-200 rounded-lg" />
           <div className="animate-pulse h-9 w-24 bg-gray-200 rounded-lg" />
         </div>
@@ -106,10 +111,11 @@ export default function Navbar() {
             : "bg-white border-b border-gray-200"
         }`}
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1320px] mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 flex-shrink-0 group">
+            {/* Logo + Desktop Navigation grouped on the left */}
+            <div className="flex items-center">
+            <Link href="/" className="flex items-center gap-3 flex-shrink-0 group mr-2">
               <div className="relative">
                 <Image
                   src="/icons/icon.png"
@@ -141,14 +147,14 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive(link.href)
+                    isActive(link)
                       ? "bg-blue-50 text-blue-700"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
                   <link.icon className="h-4 w-4" />
                   <span>{link.label}</span>
-                  {isActive(link.href) && (
+                  {isActive(link) && (
                     <span className="absolute -bottom-[1px] left-3 right-3 h-[2px] bg-blue-600 rounded-full" />
                   )}
                 </Link>
@@ -178,7 +184,7 @@ export default function Navbar() {
                         key={link.href}
                         href={link.href}
                         className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-all ${
-                          isActive(link.href)
+                          isActive(link)
                             ? "bg-blue-50 text-blue-700 font-semibold"
                             : "text-gray-700 hover:bg-gray-50"
                         }`}
@@ -194,6 +200,7 @@ export default function Navbar() {
                 )}
               </div>
             </div>
+            </div>{/* end left group */}
 
             {/* Right Side */}
             <div className="flex items-center gap-3">
@@ -239,13 +246,24 @@ export default function Navbar() {
                           <User className="h-4 w-4 text-gray-400" />
                           Profile
                         </Link>
-                        <Link
-                          href="/liturgy/admin"
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          <Settings className="h-4 w-4 text-gray-400" />
-                          Liturgy admin
-                        </Link>
+                        {hasLiturgyAdmin && (
+                          <Link
+                            href="/liturgy/admin"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="h-4 w-4 text-gray-400" />
+                            Liturgy Admin
+                          </Link>
+                        )}
+                        {hasHymnAdmin && (
+                          <Link
+                            href="/hymns/admin"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="h-4 w-4 text-gray-400" />
+                            Hymn Admin
+                          </Link>
+                        )}
                       </div>
                       <div className="border-t border-gray-100 py-1.5">
                         <button
@@ -326,14 +344,14 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium transition-all ${
-                    isActive(link.href)
+                    isActive(link)
                       ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600"
                       : "text-gray-700 hover:bg-gray-50 border-l-4 border-transparent"
                   }`}
                 >
-                  <link.icon className={`h-5 w-5 ${isActive(link.href) ? "text-blue-500" : "text-gray-400"}`} />
+                  <link.icon className={`h-5 w-5 ${isActive(link) ? "text-blue-500" : "text-gray-400"}`} />
                   <span className="flex-1">{link.label}</span>
-                  <span className={`text-xs ${isActive(link.href) ? "text-blue-400" : "text-gray-400"}`}>
+                  <span className={`text-xs ${isActive(link) ? "text-blue-400" : "text-gray-400"}`}>
                     {link.labelEn}
                   </span>
                 </Link>
@@ -349,14 +367,14 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium transition-all ${
-                    isActive(link.href)
+                    isActive(link)
                       ? "bg-blue-50 text-blue-700 border-l-4 border-blue-600"
                       : "text-gray-700 hover:bg-gray-50 border-l-4 border-transparent"
                   }`}
                 >
-                  <link.icon className={`h-5 w-5 ${isActive(link.href) ? "text-blue-500" : "text-gray-400"}`} />
+                  <link.icon className={`h-5 w-5 ${isActive(link) ? "text-blue-500" : "text-gray-400"}`} />
                   <span className="flex-1">{link.label}</span>
-                  <span className={`text-xs ${isActive(link.href) ? "text-blue-400" : "text-gray-400"}`}>
+                  <span className={`text-xs ${isActive(link) ? "text-blue-400" : "text-gray-400"}`}>
                     {link.labelEn}
                   </span>
                 </Link>
@@ -375,13 +393,24 @@ export default function Navbar() {
                   <User className="h-5 w-5 text-gray-400" />
                   Profile
                 </Link>
-                <Link
-                  href="/liturgy/admin"
-                  className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  <Settings className="h-5 w-5 text-gray-400" />
-                  Liturgy admin
-                </Link>
+                {hasLiturgyAdmin && (
+                  <Link
+                    href="/liturgy/admin"
+                    className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="h-5 w-5 text-gray-400" />
+                    Liturgy Admin
+                  </Link>
+                )}
+                {hasHymnAdmin && (
+                  <Link
+                    href="/hymns/admin"
+                    className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="h-5 w-5 text-gray-400" />
+                    Hymn Admin
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-red-600 hover:bg-red-50 w-full cursor-pointer transition-colors"

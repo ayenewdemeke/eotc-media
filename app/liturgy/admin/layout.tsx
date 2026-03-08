@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { AdminSidebar } from "@/components/admin/layout/AdminSidebar"
+import { LiturgyAdminSidebar } from "@/components/admin/liturgy/LiturgyAdminSidebar"
 import { hasLiturgyAdminAccess } from "@/lib/auth-helpers"
 
 export const dynamic = "force-dynamic"
@@ -23,7 +23,7 @@ export default async function LiturgyAdminLayout({
 
   return (
     <SidebarProvider>
-      <AdminSidebar moduleName="Liturgy" moduleBasePath="/liturgy" />
+      <LiturgyAdminSidebar />
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   )

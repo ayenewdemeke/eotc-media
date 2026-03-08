@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { AdminHeader } from "@/components/admin/layout/AdminHeader"
-import { SectionForm } from "@/components/admin/forms/SectionForm"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { SectionForm } from "@/components/admin/liturgy/forms/SectionForm"
 
 export const dynamic = "force-dynamic"
 

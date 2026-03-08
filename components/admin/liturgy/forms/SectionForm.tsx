@@ -24,7 +24,7 @@ const sectionSchema = z.object({
   nameGeez: z.string().min(1, "Ge'ez name is required"),
   nameAmharic: z.string().min(1, "Amharic name is required"),
   nameEnglish: z.string().min(1, "English name is required"),
-  orderIndex: z.coerce.number().int().min(0, "Order index must be a positive number"),
+  orderIndex: z.number().int().min(0, "Order index must be a positive number"),
 })
 
 type SectionFormValues = z.infer<typeof sectionSchema>

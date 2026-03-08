@@ -6,10 +6,10 @@ import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal, Plus, Pencil, Trash2, ArrowUpDown } from "lucide-react"
 import { toast } from "sonner"
 
-import { AdminHeader } from "@/components/admin/layout/AdminHeader"
-import { DataTable } from "@/components/admin/ui/DataTable"
-import { DeleteDialog } from "@/components/admin/ui/DeleteDialog"
-import { RoleForm } from "@/components/admin/forms/RoleForm"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { DataTable } from "@/components/admin/shared/DataTable"
+import { DeleteDialog } from "@/components/admin/shared/DeleteDialog"
+import { RoleForm } from "@/components/admin/liturgy/forms/RoleForm"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,

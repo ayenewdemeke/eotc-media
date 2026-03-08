@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { AdminHeader } from "@/components/admin/layout/AdminHeader"
-import { StatsCard } from "@/components/admin/ui/StatsCard"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { StatsCard } from "@/components/admin/shared/StatsCard"
 import { Layers, Users, FileText } from "lucide-react"
 
 export const dynamic = "force-dynamic"

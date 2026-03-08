@@ -1,5 +1,5 @@
-import { AdminHeader } from "@/components/admin/layout/AdminHeader"
-import { SectionForm } from "@/components/admin/forms/SectionForm"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { SectionForm } from "@/components/admin/liturgy/forms/SectionForm"
 
 export default function NewSectionPage() {
   return (

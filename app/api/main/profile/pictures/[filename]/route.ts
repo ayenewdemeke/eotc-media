@@ -4,11 +4,11 @@ import path from "path";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    // Next.js App Router: params may be a Promise, so await if needed
-    const filename = (typeof params.then === 'function') ? (await params).filename : params.filename;
+    // Next.js 16: params is now a Promise and must be awaited
+    const { filename } = await params;
     const filePath = path.join(process.cwd(), "storage", "uploads", "profiles", filename);
 
     const fileBuffer = await readFile(filePath);

@@ -150,6 +150,10 @@
   --sidebar: hsl(240 5.9% 10%);
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -216,6 +220,14 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Prevent Radix UI scroll lock from shifting layout.
+   Uses html body[...] for higher specificity to beat the library's runtime-injected !important styles. */
+html body[data-scroll-locked] {
+  overflow: auto !important;
+  padding-right: 0 !important;
+  margin-right: 0 !important;
 }
 
 @layer base {
