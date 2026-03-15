@@ -748,10 +748,20 @@ model SmPreacher {
 }
 
 model SmChannel {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               Int       @id @default(autoincrement())
+  name             String
+  slug             String?   @unique
+  ytChannelId      String?   @unique @map("yt_channel_id")
+  handle           String    @default("")
+  description      String?
+  thumbnailDefault String?   @map("thumbnail_default")
+  thumbnailMedium  String?   @map("thumbnail_medium")
+  thumbnailHigh    String?   @map("thumbnail_high")
+  coverImage       String?   @map("cover_image")
+  country          String?
+  publishedAt      DateTime? @map("published_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   sermons SmSermon[]
 

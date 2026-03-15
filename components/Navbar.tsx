@@ -78,6 +78,8 @@ export default function Navbar() {
   const roles = (user as { roles?: string[] })?.roles ?? []
   const hasLiturgyAdmin = roles.some(r => ["super_admin", "admin", "liturgy_admin"].includes(r))
   const hasHymnAdmin = roles.some(r => ["super_admin", "admin", "hymn_admin"].includes(r))
+  const hasSermonAdmin = roles.some(r => ["super_admin", "admin", "sermon_admin"].includes(r))
+  const hasBookAdmin = roles.some(r => ["super_admin", "admin", "book_admin"].includes(r))
 
   const navLinks = [
     { href: "/bible/amharic/1954/1/1", activePrefix: "/bible", label: "መጽሃፍ ቅዱስ", labelEn: "Bible", icon: BookOpen },
@@ -264,6 +266,24 @@ export default function Navbar() {
                             Hymn Admin
                           </Link>
                         )}
+                        {hasSermonAdmin && (
+                          <Link
+                            href="/sermons/admin"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="h-4 w-4 text-gray-400" />
+                            Sermon Admin
+                          </Link>
+                        )}
+                        {hasBookAdmin && (
+                          <Link
+                            href="/books/admin"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="h-4 w-4 text-gray-400" />
+                            Book Admin
+                          </Link>
+                        )}
                       </div>
                       <div className="border-t border-gray-100 py-1.5">
                         <button
@@ -409,6 +429,24 @@ export default function Navbar() {
                   >
                     <Settings className="h-5 w-5 text-gray-400" />
                     Hymn Admin
+                  </Link>
+                )}
+                {hasSermonAdmin && (
+                  <Link
+                    href="/sermons/admin"
+                    className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="h-5 w-5 text-gray-400" />
+                    Sermon Admin
+                  </Link>
+                )}
+                {hasBookAdmin && (
+                  <Link
+                    href="/books/admin"
+                    className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="h-5 w-5 text-gray-400" />
+                    Book Admin
                   </Link>
                 )}
                 <button

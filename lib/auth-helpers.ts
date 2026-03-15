@@ -22,3 +22,27 @@ export function checkHymnAdminAccess(session: Session | null): void {
   if (!session?.user) throw new Error("Unauthorized")
   if (!hasHymnAdminAccess(session)) throw new Error("Forbidden: Hymn admin access required")
 }
+
+const SERMON_ADMIN_ROLES = ["super_admin", "admin", "sermon_admin"]
+
+export function hasSermonAdminAccess(session: Session | null): boolean {
+  if (!session?.user?.roles || !Array.isArray(session.user.roles)) return false
+  return session.user.roles.some(role => role && SERMON_ADMIN_ROLES.includes(role))
+}
+
+export function checkSermonAdminAccess(session: Session | null): void {
+  if (!session?.user) throw new Error("Unauthorized")
+  if (!hasSermonAdminAccess(session)) throw new Error("Forbidden: Sermon admin access required")
+}
+
+const BOOK_ADMIN_ROLES = ["super_admin", "admin", "book_admin"]
+
+export function hasBookAdminAccess(session: Session | null): boolean {
+  if (!session?.user?.roles || !Array.isArray(session.user.roles)) return false
+  return session.user.roles.some(role => role && BOOK_ADMIN_ROLES.includes(role))
+}
+
+export function checkBookAdminAccess(session: Session | null): void {
+  if (!session?.user) throw new Error("Unauthorized")
+  if (!hasBookAdminAccess(session)) throw new Error("Forbidden: Book admin access required")
+}
