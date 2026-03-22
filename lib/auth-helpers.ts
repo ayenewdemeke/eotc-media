@@ -46,3 +46,15 @@ export function checkBookAdminAccess(session: Session | null): void {
   if (!session?.user) throw new Error("Unauthorized")
   if (!hasBookAdminAccess(session)) throw new Error("Forbidden: Book admin access required")
 }
+
+const QUIZ_ADMIN_ROLES = ["super_admin", "admin", "quiz_admin"]
+
+export function hasQuizAdminAccess(session: Session | null): boolean {
+  if (!session?.user?.roles || !Array.isArray(session.user.roles)) return false
+  return session.user.roles.some(role => role && QUIZ_ADMIN_ROLES.includes(role))
+}
+
+export function checkQuizAdminAccess(session: Session | null): void {
+  if (!session?.user) throw new Error("Unauthorized")
+  if (!hasQuizAdminAccess(session)) throw new Error("Forbidden: Quiz admin access required")
+}
