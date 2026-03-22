@@ -126,7 +126,7 @@ export default function SermonInfiniteGrid({
             {initialTotal.toLocaleString()} sermon{initialTotal !== 1 ? "s" : ""}
           </p>
           <span className="text-slate-300 text-xs select-none">|</span>
-          <Select modal={false} value={activeSort} onValueChange={applySort}>
+          <Select value={activeSort} onValueChange={applySort}>
             <SelectTrigger className="h-6 text-xs w-auto min-w-0 bg-transparent border-0 shadow-none px-0 focus:ring-0 text-slate-400 cursor-pointer gap-1">
               <SelectValue />
             </SelectTrigger>

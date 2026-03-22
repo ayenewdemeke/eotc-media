@@ -104,7 +104,7 @@ export default function SermonSearchFilters({
           <SelectTrigger className={`${triggerCls} w-full sm:w-[145px]`}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent modal={false}>
+          <SelectContent>
             <SelectItem value="_">ቋንቋ ይምረጡ</SelectItem>
             {languages.map(lang => (
               <SelectItem key={lang.id} value={String(lang.id)}>{lang.name}</SelectItem>
@@ -116,7 +116,7 @@ export default function SermonSearchFilters({
           <SelectTrigger className={`${triggerCls} w-full sm:w-[185px]`}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent modal={false}>
+          <SelectContent>
             <SelectItem value="_">የምድብ አይነት ይምረጡ</SelectItem>
             {visibleCategories.map(cat => (
               <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
@@ -128,7 +128,7 @@ export default function SermonSearchFilters({
           <SelectTrigger className={`${triggerCls} w-full sm:w-[185px]`}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent modal={false}>
+          <SelectContent>
             <SelectItem value="_">ምድብ ይምረጡ</SelectItem>
             {visibleSubCategories.map(sc => (
               <SelectItem key={sc.id} value={String(sc.id)}>{sc.name}</SelectItem>
