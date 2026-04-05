@@ -36,9 +36,9 @@ export default async function Home() {
       description: "የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን የቅዳሴ ስርዓቶች",
       descriptionEn: "Ethiopian Orthodox Tewahedo Church liturgical services",
       href: "/liturgy",
-      color: "from-purple-500 to-purple-600",
-      bgColor: "bg-purple-50",
-      iconColor: "text-purple-600"
+      color: "from-blue-500 to-blue-600",
+      bgColor: "bg-blue-50",
+      iconColor: "text-blue-600"
     },
     {
       icon: BookMarked,
@@ -79,54 +79,46 @@ export default async function Home() {
     <>
       <Navbar />
 
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-50 via-gray-50 to-blue-50 pt-20 pb-12">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header Image */}
-          <div className="relative mb-8 overflow-hidden rounded-2xl shadow-xl">
-            <Image
-              src="/images/ui/header.jpg"
-              alt="EOTC Media"
-              width={1200}
-              height={300}
-              className="w-full h-auto object-cover"
-              style={{ maxHeight: '280px' }}
-              unoptimized
-              priority
-            />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-          </div>
+      {/* Hero Section — full-bleed image with text overlay */}
+      <div className="relative w-full h-[380px] sm:h-[440px] lg:h-[500px] overflow-hidden">
+        <Image
+          src="/images/ui/header.jpg"
+          alt="EOTC Media"
+          fill
+          className="object-cover object-center"
+          unoptimized
+          priority
+        />
+        {/* Multi-stop gradient: dark at bottom, lighter at top */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
 
-          <div className="text-center mb-12">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight">
-              የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን
-              <br />
-              <span className="text-gray-700">የሚዲያ ውጤቶች</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-8">
-              Ethiopian Orthodox Tewahedo Church Media Resources
-            </p>
+        {/* Centered text */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 sm:pb-14 px-4 text-center">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug drop-shadow mb-2">
+            የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን
+          </h1>
+          <p className="text-sm sm:text-base text-white/75 font-medium tracking-wide">
+            Ethiopian Orthodox Tewahedo Church · Media Resources
+          </p>
+        </div>
+      </div>
 
-            <div className="max-w-[1320px] mx-auto">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-6">
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  በዚህ ድረ ገጽ <strong>የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያንና የሌሎች ኦሬንታል አብያተ ክርስቲያናት</strong> የሚዲያ ውጤቶችን መጽሃፍ ቅዱስን ጨምሮ የተለያዩ መጻህፍትን፣ መዝሙራት፣ ስብከቶች እና
-                  ሌሎችንም ያገኛሉ። በተጨማሪም{" "}
-                  <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium underline">አካውንት በመክፈት</Link> እርስዎ ያለዎትን መንፈሳዊ ስራዎች ለሌሎች ማጋራት ይችላሉ።
-                </p>
-                <p className="text-gray-700 leading-relaxed">
-                  On this website, media resources of the <strong>Ethiopian Orthodox Tewahedo (EOTC) and other Oriental Orthodox Churches</strong> are provided, including the Bible, various books, hymns, sermons, and more. You can also{" "}
-                  <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium underline">open an account</Link> and share your spiritual resources with others.
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Intro strip */}
+      <div className="border-b border-neutral-100 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-7 text-center space-y-2">
+          <p className="text-sm sm:text-[15px] text-neutral-600 leading-relaxed">
+            በዚህ ድረ ገጽ <strong className="text-neutral-800">የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያንና የሌሎች ኦሬንታል አብያተ ክርስቲያናት</strong> የሚዲያ ውጤቶችን — መጽሃፍ ቅዱስ፣ መጻህፍት፣ መዝሙራት፣ ስብከቶች — ያገኛሉ።{" "}
+            <Link href="/auth/login" className="text-blue-600 hover:underline font-medium">አካውንት በመክፈት</Link> መንፈሳዊ ስራዎችዎን ለሌሎች ማጋራት ይችላሉ።
+          </p>
+          <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
+            Bible, books, hymns, sermons and more from the EOTC and Oriental Orthodox Churches.{" "}
+            <Link href="/auth/login" className="text-blue-500 hover:underline">Sign in</Link> to contribute.
+          </p>
         </div>
       </div>
 
       {/* Features Grid */}
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <Link
@@ -171,35 +163,35 @@ export default async function Home() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 py-16">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-neutral-900 py-14">
+        <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
               Join our community
             </h2>
-            <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-neutral-400 text-sm sm:text-base mb-8 max-w-xl mx-auto leading-relaxed">
               Share your spiritual resources with others and contribute to the Ethiopian Orthodox Tewahedo Church community
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               {!user && (
                 <Link
                   href="/auth/register"
-                  className="inline-flex items-center justify-center px-8 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 transition-colors shadow-lg"
+                  className="inline-flex items-center justify-center px-7 py-2.5 bg-white text-neutral-900 rounded-lg font-semibold text-sm hover:bg-neutral-100 transition-colors"
                 >
                   Create account
                 </Link>
               )}
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center px-8 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-400 transition-colors"
+                className="inline-flex items-center justify-center px-7 py-2.5 bg-neutral-800 text-neutral-200 rounded-lg font-semibold text-sm hover:bg-neutral-700 transition-colors border border-neutral-700"
               >
                 Contact us
               </Link>
               <a
-                href="https://github.com/eotc-media/eotc-media"
+                href="https://github.com/ayenewdemeke/eotc-media"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-3 bg-transparent text-white rounded-xl font-semibold border-2 border-white hover:bg-white hover:text-blue-600 transition-colors"
+                className="inline-flex items-center justify-center px-7 py-2.5 bg-transparent text-neutral-400 rounded-lg font-semibold text-sm border border-neutral-700 hover:border-neutral-500 hover:text-neutral-200 transition-colors"
               >
                 Contribute on GitHub
               </a>

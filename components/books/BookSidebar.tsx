@@ -29,17 +29,17 @@ export default function BookSidebar({ userId }: BookSidebarProps) {
     <>
       <Link href="/books" className={linkClass("/books")}>
         <BookMarked className="w-4 h-4 flex-shrink-0" />
-        All Books
+        All books
       </Link>
       {userId ? (
         <Link href="/books/my-books" className={linkClass("/books/my-books")}>
           <User className="w-4 h-4 flex-shrink-0" />
-          My Books
+          My books
         </Link>
       ) : (
         <Link href="/auth/login" className={dimLink}>
           <User className="w-4 h-4 flex-shrink-0" />
-          My Books
+          My books
         </Link>
       )}
     </>

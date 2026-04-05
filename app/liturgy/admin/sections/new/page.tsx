@@ -6,7 +6,7 @@ export default function NewSectionPage() {
     <>
       <AdminHeader
         breadcrumbs={[
-          { label: "Liturgy Admin", href: "/liturgy/admin" },
+          { label: "Liturgy admin", href: "/liturgy/admin" },
           { label: "Sections", href: "/liturgy/admin/sections" },
           { label: "New section" },
         ]}

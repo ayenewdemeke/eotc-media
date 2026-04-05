@@ -7,9 +7,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await auth()
   if (!hasQuizAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
-  const { name } = await req.json()
+  const { name, languageId } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 })
-  const category = await prisma.qzCategory.update({ where: { id: parseInt(id) }, data: { name: name.trim() } })
+  const category = await prisma.qzCategory.update({ where: { id: parseInt(id) }, data: { name: name.trim(), languageId: languageId ?? null } })
   return NextResponse.json(category)
 }
 

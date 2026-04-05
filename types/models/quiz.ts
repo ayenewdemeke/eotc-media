@@ -26,6 +26,7 @@ export interface QzChoice {
 
 export interface QzCategory {
   id: number
+  languageId?: number | null
   name: string
   subCategories?: QzSubCategory[]
 }

@@ -51,7 +51,7 @@ export async function getQuestionsFilterData(): Promise<{
   difficulties: QzDifficulty[]
 }> {
   const [categories, subCategories, languages, difficulties] = await Promise.all([
-    prisma.qzCategory.findMany({ orderBy: { id: 'asc' } }),
+    prisma.qzCategory.findMany({ orderBy: { id: 'asc' }, select: { id: true, name: true, languageId: true } }),
     prisma.qzSubCategory.findMany({ orderBy: { id: 'asc' } }),
     prisma.qzLanguage.findMany({ orderBy: { id: 'asc' } }),
     prisma.qzDifficulty.findMany({ orderBy: { id: 'asc' } }),
@@ -89,7 +89,7 @@ export async function getQuestions({
     where.userId = userId
   } else if (!approvalStatusId) {
     // public view: only approved (status id for "Approved" — look up by name)
-    const approved = await prisma.qzApprovalStatus.findFirst({ where: { name: { contains: 'Approved', mode: 'insensitive' } } })
+    const approved = await prisma.qzApprovalStatus.findFirst({ where: { name: 'Accepted' } })
     if (approved) where.approvalStatusId = approved.id
   }
 
@@ -146,22 +146,25 @@ export async function getQuestion(id: number): Promise<QzQuestion | null> {
 
 export async function getRandomQuestions({
   categoryId,
+  subCategoryId,
   languageId,
   difficultyId,
   count = 10,
 }: {
   categoryId?: number
+  subCategoryId?: number
   languageId?: number
   difficultyId?: number
   count?: number
 } = {}): Promise<QzQuestion[]> {
   const approved = await prisma.qzApprovalStatus.findFirst({
-    where: { name: { contains: 'Approved', mode: 'insensitive' } },
+    where: { name: 'Accepted' },
   })
 
   const where: Record<string, unknown> = {}
   if (approved) where.approvalStatusId = approved.id
   if (categoryId) where.categories = { some: { categoryId } }
+  if (subCategoryId) where.subCategories = { some: { subCategoryId } }
   if (languageId) where.languages = { some: { languageId } }
   if (difficultyId) where.difficultyId = difficultyId
 

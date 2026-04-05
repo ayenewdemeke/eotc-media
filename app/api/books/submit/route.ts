@@ -11,7 +11,7 @@ function generateSlug(name: string): string {
 async function saveFile(file: File, dir: string): Promise<string> {
   const ext = file.name.split('.').pop() ?? 'bin'
   const filename = `book_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}.${ext}`
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'books', dir)
+  const uploadDir = path.join(process.cwd(), 'storage', 'uploads', 'books', dir)
   await mkdir(uploadDir, { recursive: true })
   const buffer = Buffer.from(await file.arrayBuffer())
   await writeFile(path.join(uploadDir, filename), buffer)
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (categoryIds.length === 0) return NextResponse.json({ error: 'At least one category is required' }, { status: 400 })
   if (subCategoryIds.length === 0) return NextResponse.json({ error: 'At least one sub-category is required' }, { status: 400 })
 
-  const pendingStatus = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: 'Pending', mode: 'insensitive' } } })
+  const pendingStatus = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Submitted' } })
   if (!pendingStatus) return NextResponse.json({ error: 'System configuration incomplete' }, { status: 500 })
 
   const [fileFilename, imageFilename] = await Promise.all([

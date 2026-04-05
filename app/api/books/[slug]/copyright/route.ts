@@ -9,7 +9,8 @@ export async function POST(
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
   const book = await prisma.cbBook.findUnique({ where: { slug } })
   if (!book) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 

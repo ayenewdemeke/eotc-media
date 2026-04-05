@@ -67,7 +67,7 @@ export default async function BibleChapterPage({ params, searchParams }: PagePro
   )
 
   const currentBookName = getBookDisplayName(currentBook, language)
-  const dir = language === "hebrew-greek" && bookId < 40 ? "rtl" : "ltr"
+  const dir = "ltr"
 
   return (
     <div className="min-h-screen">

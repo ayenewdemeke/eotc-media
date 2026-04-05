@@ -35,28 +35,28 @@ export default function QuizSidebar({ userId }: QuizSidebarProps) {
       <div className="flex flex-row items-center gap-1 flex-nowrap lg:flex-col lg:items-stretch">
         <Link href="/quiz" className={linkClass("/quiz")}>
           <HelpCircle className="w-4 h-4 flex-shrink-0" />
-          All Questions
+          All questions
         </Link>
         {userId ? (
           <>
-            <Link href="/quiz/my-questions" className={linkClass("/quiz/my-questions")}>
-              <User className="w-4 h-4 flex-shrink-0" />
-              My Questions
-            </Link>
             <Link href="/quiz/rooms" className={linkClass("/quiz/rooms")}>
               <Users className="w-4 h-4 flex-shrink-0" />
-              Group Rooms
+              Group rooms
+            </Link>
+            <Link href="/quiz/my-questions" className={linkClass("/quiz/my-questions")}>
+              <User className="w-4 h-4 flex-shrink-0" />
+              My questions
             </Link>
           </>
         ) : (
           <>
             <Link href="/auth/login" className={dimLink}>
-              <User className="w-4 h-4 flex-shrink-0" />
-              My Questions
+              <Users className="w-4 h-4 flex-shrink-0" />
+              Group rooms
             </Link>
             <Link href="/auth/login" className={dimLink}>
-              <Users className="w-4 h-4 flex-shrink-0" />
-              Group Rooms
+              <User className="w-4 h-4 flex-shrink-0" />
+              My questions
             </Link>
           </>
         )}

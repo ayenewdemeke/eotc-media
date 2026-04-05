@@ -5,6 +5,8 @@ export interface HmHymn {
   title: string
   singer: string | null
   lyrics: string | null
+  lyricsSuggestion: string | null
+  aiLyrics: string | null
   description: string | null
   thumbnailDefault: string
   thumbnailMedium: string

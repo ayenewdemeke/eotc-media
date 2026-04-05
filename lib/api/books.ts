@@ -84,7 +84,7 @@ export async function getBooks(params: GetBooksParams = {}) {
     const status = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: approvalStatusName, mode: 'insensitive' } } })
     approvalStatusId = status?.id
   } else if (view !== 'my-books') {
-    const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: 'Approved', mode: 'insensitive' } } })
+    const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Accepted' } })
     approvalStatusId = approved?.id
   }
 

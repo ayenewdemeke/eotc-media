@@ -103,7 +103,7 @@ export default function CommentSection({ hymnId, comments: initial, userId }: Co
           {comments.map(comment => (
             <div key={comment.id} className="flex gap-3">
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-violet-500 flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">
                 {comment.user?.name?.[0]?.toUpperCase() ?? "?"}
               </div>
               <div className="flex-1 min-w-0">

@@ -14,7 +14,7 @@ export async function POST(
   const body = await req.json().catch(() => ({}))
   const { authorIds } = body as { authorIds?: number[] }
 
-  const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: 'Approved', mode: 'insensitive' } } })
+  const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Accepted' } })
   if (!approved) return NextResponse.json({ error: 'Approved status not found' }, { status: 500 })
 
   await prisma.cbBook.update({ where: { id: bookId }, data: { approvalStatusId: approved.id, updatedAt: new Date() } })

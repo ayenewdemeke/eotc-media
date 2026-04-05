@@ -9,6 +9,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  BookMarked,
+  MousePointerClick,
 } from "lucide-react"
 import {
   Select,
@@ -27,6 +29,7 @@ import BookSidebar from "./BookSidebar"
 import VerseList from "./VerseList"
 import HighlightPopover from "./HighlightPopover"
 import BibleSearchSheet from "./BibleSearchSheet"
+import CollectionDialog from "./CollectionDialog"
 
 interface BibleReaderProps {
   currentBook: BlBook
@@ -73,6 +76,10 @@ export default function BibleReader({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [fontSizeIdx, setFontSizeIdx] = useState(1)
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false)
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedVerseIds, setSelectedVerseIds] = useState<Set<number>>(new Set())
+  const [selectedVerseNums, setSelectedVerseNums] = useState<number[]>([])
+  const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
 
   // Separate refs for mobile and desktop chapter nav (both may be in DOM simultaneously)
   const mobileChapterNavRef = useRef<HTMLDivElement>(null)
@@ -115,7 +122,26 @@ export default function BibleReader({
     return () => document.removeEventListener("mousedown", onClickOutside)
   }, [isChapterNavOpen])
 
+  function closeSelectMode() {
+    setSelectMode(false)
+    setSelectedVerseIds(new Set())
+    setSelectedVerseNums([])
+  }
+
   function handleVerseClick(verseNum: number, verseId: number, el: HTMLElement) {
+    if (selectMode) {
+      setSelectedVerseIds(prev => {
+        const next = new Set(prev)
+        next.has(verseId) ? next.delete(verseId) : next.add(verseId)
+        return next
+      })
+      setSelectedVerseNums(prev =>
+        prev.includes(verseNum)
+          ? prev.filter(n => n !== verseNum)
+          : [...prev, verseNum].sort((a, b) => a - b)
+      )
+      return
+    }
     setActiveVerse(prev => prev === verseNum ? null : verseNum)
     if (!user) return
     const rect = el.getBoundingClientRect()
@@ -245,7 +271,7 @@ export default function BibleReader({
       {/* ═══════════════════════════════════════════════════
           THREE-COLUMN BODY
       ═══════════════════════════════════════════════════ */}
-      <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr_256px]">
+      <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr_256px]">
 
         {/* ── Left: book navigation ─────────────────────────
             z-10 ensures the chapter popover floats above the
@@ -319,6 +345,8 @@ export default function BibleReader({
             user={user}
             localHighlights={localHighlights}
             fontSize={fontSize}
+            selectMode={selectMode}
+            selectedVerseIds={selectedVerseIds}
             onVerseClick={handleVerseClick}
           />
 
@@ -383,6 +411,53 @@ export default function BibleReader({
 
           {/* Right column content */}
           <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-4">
+            {/* Select mode & collections */}
+            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+                My collections
+              </p>
+              {user ? (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      if (selectMode) {
+                        closeSelectMode()
+                      } else {
+                        setSelectMode(true)
+                      }
+                    }}
+                    className={`w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold transition-all ${
+                      selectMode
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                  >
+                    <MousePointerClick className="w-3.5 h-3.5" />
+                    {selectMode ? "Selecting…" : "Select Verses"}
+                  </button>
+                  {selectMode && selectedVerseIds.size > 0 && (
+                    <button
+                      onClick={() => setIsCollectionDialogOpen(true)}
+                      className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all"
+                    >
+                      <BookMarked className="w-3.5 h-3.5" />
+                      Save {selectedVerseIds.size} verse{selectedVerseIds.size !== 1 ? "s" : ""}
+                    </button>
+                  )}
+                  <a
+                    href="/bible/collections"
+                    className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100 border border-slate-200 bg-white transition-all"
+                  >
+                    View my collections
+                  </a>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400">
+                  <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600">Sign in</a> to save verses to collections.
+                </p>
+              )}
+            </div>
+
             {/* Selected verse */}
             <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
@@ -440,6 +515,35 @@ export default function BibleReader({
           </div>
         </aside>
       </div>
+
+      {/* Selection floating bar — appears above mobile bottom bar in select mode */}
+      {selectMode && (
+        <div className="fixed bottom-16 inset-x-0 lg:hidden z-20 px-4 pb-2">
+          <div className="bg-blue-600 text-white rounded-xl px-4 py-3 flex items-center justify-between shadow-lg">
+            <span className="text-sm font-semibold">
+              {selectedVerseIds.size > 0
+                ? `${selectedVerseIds.size} verse${selectedVerseIds.size !== 1 ? "s" : ""} selected`
+                : "Tap verses to select"}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={closeSelectMode}
+                className="text-blue-200 hover:text-white text-xs font-medium px-2 py-1 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Cancel
+              </button>
+              {selectedVerseIds.size > 0 && (
+                <button
+                  onClick={() => setIsCollectionDialogOpen(true)}
+                  className="bg-white text-blue-700 text-xs font-semibold px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  Save
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════
           MOBILE BOTTOM BAR
@@ -514,8 +618,20 @@ export default function BibleReader({
       </Sheet>
 
       {/* ═══════════════════════════════════════════════════
-          HIGHLIGHT POPOVER & SEARCH SHEET
+          COLLECTION DIALOG, HIGHLIGHT POPOVER & SEARCH SHEET
       ═══════════════════════════════════════════════════ */}
+      <CollectionDialog
+        open={isCollectionDialogOpen}
+        selectedVerseIds={[...selectedVerseIds]}
+        selectedVerseNums={selectedVerseNums}
+        bookName={currentBookName}
+        chapter={currentChapter}
+        onClose={() => {
+          setIsCollectionDialogOpen(false)
+          closeSelectMode()
+        }}
+      />
+
       <HighlightPopover
         verseNum={highlightVerseNum}
         position={highlightPos}

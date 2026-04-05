@@ -100,7 +100,7 @@ export default function EditBookPage() {
 
   return (
     <div className="p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Book</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit book</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -114,7 +114,7 @@ export default function EditBookPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval Status</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval status</label>
           <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
             {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
@@ -160,7 +160,7 @@ export default function EditBookPage() {
 
         {authors.length > 0 && (
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Linked Author Profiles</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Linked author profiles</label>
             <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
               {authors.map(a => (
                 <button key={a.id} type="button" onClick={() => toggleId(selectedAuthorIds, setSelectedAuthorIds, a.id)}

@@ -3,13 +3,13 @@ import { prisma } from "@/lib/prisma"
 export default async function BookAdminDashboard() {
   const [total, pending, approved, rejected] = await Promise.all([
     prisma.cbBook.count(),
-    prisma.cbBook.count({ where: { approvalStatus: { name: { contains: "Pending", mode: "insensitive" } } } }),
-    prisma.cbBook.count({ where: { approvalStatus: { name: { contains: "Approved", mode: "insensitive" } } } }),
-    prisma.cbBook.count({ where: { approvalStatus: { name: { contains: "Rejected", mode: "insensitive" } } } }),
+    prisma.cbBook.count({ where: { approvalStatus: { name: "Submitted" } } }),
+    prisma.cbBook.count({ where: { approvalStatus: { name: "Accepted" } } }),
+    prisma.cbBook.count({ where: { approvalStatus: { name: "Declined" } } }),
   ])
 
   const stats = [
-    { label: "Total Books", value: total, color: "bg-blue-50 text-blue-700" },
+    { label: "Total books", value: total, color: "bg-blue-50 text-blue-700" },
     { label: "Pending", value: pending, color: "bg-amber-50 text-amber-700" },
     { label: "Approved", value: approved, color: "bg-green-50 text-green-700" },
     { label: "Rejected", value: rejected, color: "bg-red-50 text-red-700" },

@@ -50,21 +50,21 @@ export default function QuizAdminDashboard() {
   }, [])
 
   const cards = [
-    { label: "Total Questions", value: stats?.total ?? "—", icon: HelpCircle, color: "text-blue-600", bg: "bg-blue-50", href: "/quiz/admin/questions" },
-    { label: "Pending Review", value: stats?.pending ?? "—", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50", href: "/quiz/admin/questions?status=pending" },
+    { label: "Total questions", value: stats?.total ?? "—", icon: HelpCircle, color: "text-blue-600", bg: "bg-blue-50", href: "/quiz/admin/questions" },
+    { label: "Pending review", value: stats?.pending ?? "—", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50", href: "/quiz/admin/questions?status=pending" },
     { label: "Approved", value: stats?.approved ?? "—", icon: CheckCircle, color: "text-green-600", bg: "bg-green-50", href: "/quiz/admin/questions" },
     { label: "Declined", value: stats?.declined ?? "—", icon: XCircle, color: "text-red-600", bg: "bg-red-50", href: "/quiz/admin/questions" },
   ]
 
   const quickLinks = [
-    { label: "Manage Languages", href: "/quiz/admin/languages", icon: Globe },
-    { label: "Manage Categories", href: "/quiz/admin/categories", icon: Tag },
-    { label: "Manage Difficulties", href: "/quiz/admin/difficulties", icon: Award },
+    { label: "Manage languages", href: "/quiz/admin/languages", icon: Globe },
+    { label: "Manage categories", href: "/quiz/admin/categories", icon: Tag },
+    { label: "Manage difficulties", href: "/quiz/admin/difficulties", icon: Award },
   ]
 
   return (
     <div className="p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Quiz Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Quiz admin dashboard</h1>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {cards.map(card => (
@@ -79,7 +79,7 @@ export default function QuizAdminDashboard() {
         ))}
       </div>
 
-      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick Links</h2>
+      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick links</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {quickLinks.map(link => (
           <Link key={link.label} href={link.href}

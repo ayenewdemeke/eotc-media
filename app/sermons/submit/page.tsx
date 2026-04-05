@@ -189,13 +189,13 @@ export default function SubmitSermonPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="text-center max-w-sm px-4">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Sermon Submitted!</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Sermon submitted!</h1>
             <p className="text-slate-500 mb-6">Your sermon has been submitted and is pending review. Thank you!</p>
             <button
               onClick={() => router.push("/sermons/my-sermons")}
               className="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
             >
-              View My Sermons
+              View my sermons
             </button>
           </div>
         </div>
@@ -207,13 +207,13 @@ export default function SubmitSermonPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <SermonSidebar userId={userId} />
 
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
             <div className="max-w-3xl">
               <div className="mb-6">
-                <h1 className="text-xl font-semibold text-slate-900">Add New Sermon</h1>
+                <h1 className="text-xl font-semibold text-slate-900">Add new sermon</h1>
                 <p className="text-sm text-slate-400 mt-0.5">Submit a YouTube sermon for review</p>
               </div>
 
@@ -320,7 +320,7 @@ export default function SubmitSermonPage() {
                     className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
                   >
                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Submit Sermon
+                    Submit sermon
                   </button>
                 </div>
               </form>

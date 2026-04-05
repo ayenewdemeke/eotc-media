@@ -22,7 +22,7 @@ export default async function HymnAdminDashboard() {
     clicksRaw,
   ] = await Promise.all([
     prisma.hmHymn.count(),
-    prisma.hmHymn.count({ where: { approvalStatus: { name: "Approved" } } }),
+    prisma.hmHymn.count({ where: { approvalStatus: { name: "Accepted" } } }),
     prisma.user.count(),
     prisma.hmHymn.aggregate({ _sum: { clicksCount: true } }),
 
@@ -41,7 +41,7 @@ export default async function HymnAdminDashboard() {
       WITH daily AS (
         SELECT DATE_TRUNC('day', created_at) AS date, COUNT(*) AS cnt
         FROM hm_hymns
-        WHERE approval_status_id IN (SELECT id FROM hm_approval_statuses WHERE name = 'Approved')
+        WHERE approval_status_id IN (SELECT id FROM hm_approval_statuses WHERE name = 'Accepted')
         GROUP BY date
       )
       SELECT date, SUM(cnt) OVER (ORDER BY date) AS value
@@ -53,7 +53,7 @@ export default async function HymnAdminDashboard() {
       WITH daily AS (
         SELECT DATE_TRUNC('day', created_at) AS date, COUNT(*) AS cnt
         FROM hm_hymns
-        WHERE approval_status_id IN (SELECT id FROM hm_approval_statuses WHERE name = 'Rejected')
+        WHERE approval_status_id IN (SELECT id FROM hm_approval_statuses WHERE name = 'Declined')
         GROUP BY date
       )
       SELECT date, SUM(cnt) OVER (ORDER BY date) AS value

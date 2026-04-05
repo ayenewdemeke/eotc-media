@@ -10,7 +10,7 @@ export async function POST(
   const session = await auth()
   if (!hasSermonAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
-  const rejected = await prisma.smApprovalStatus.findFirst({ where: { name: 'Rejected' } })
+  const rejected = await prisma.smApprovalStatus.findFirst({ where: { name: 'Declined' } })
   if (!rejected) return NextResponse.json({ error: 'Status not found' }, { status: 500 })
   await prisma.smSermon.update({ where: { id: parseInt(id) }, data: { approvalStatusId: rejected.id, updatedAt: new Date() } })
   return NextResponse.json({ ok: true })

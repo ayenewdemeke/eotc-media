@@ -1,12 +1,12 @@
 import Link from "next/link"
-import { ExternalLink } from "lucide-react"
 import { CbBook } from "@/types/models/book"
+import Pager from "@/components/ui/Pager"
 
 interface BookMyListProps {
   books: CbBook[]
   page: number
   totalPages: number
-  buildPageUrl: (page: number) => string
+  baseUrl: string
 }
 
 const statusBadge: Record<string, string> = {
@@ -15,26 +15,11 @@ const statusBadge: Record<string, string> = {
   Rejected: "bg-red-100 text-red-700",
 }
 
-function Pagination({ page, totalPages, buildPageUrl }: { page: number; totalPages: number; buildPageUrl: (p: number) => string }) {
-  if (totalPages <= 1) return null
-  return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      {page > 1 && (
-        <Link href={buildPageUrl(page - 1)} className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg hover:bg-slate-50">← Prev</Link>
-      )}
-      <span className="text-xs text-slate-400">{page} / {totalPages}</span>
-      {page < totalPages && (
-        <Link href={buildPageUrl(page + 1)} className="px-3 py-1.5 text-xs border border-slate-200 rounded-lg hover:bg-slate-50">Next →</Link>
-      )}
-    </div>
-  )
-}
-
-export default function BookMyList({ books, page, totalPages, buildPageUrl }: BookMyListProps) {
+export default function BookMyList({ books, page, totalPages, baseUrl }: BookMyListProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <Pagination page={page} totalPages={totalPages} buildPageUrl={buildPageUrl} />
+        <Pager page={page} totalPages={totalPages} baseUrl={baseUrl} />
       </div>
 
       <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto">
@@ -73,8 +58,8 @@ export default function BookMyList({ books, page, totalPages, buildPageUrl }: Bo
                   )}
                 </td>
                 <td className="px-4 py-2.5">
-                  <Link href={`/books/${book.slug}`} target="_blank" className="text-slate-400 hover:text-slate-700 transition-colors">
-                    <ExternalLink className="w-3.5 h-3.5" />
+                  <Link href={`/books/my-books/${book.id}`} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                    view
                   </Link>
                 </td>
               </tr>
@@ -84,7 +69,7 @@ export default function BookMyList({ books, page, totalPages, buildPageUrl }: Bo
       </div>
 
       <div className="mt-4">
-        <Pagination page={page} totalPages={totalPages} buildPageUrl={buildPageUrl} />
+        <Pager page={page} totalPages={totalPages} baseUrl={baseUrl} />
       </div>
     </div>
   )

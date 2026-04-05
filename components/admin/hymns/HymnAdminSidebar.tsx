@@ -30,13 +30,13 @@ const BASE = "/hymns/admin"
 
 const menuItems = [
   { title: "Dashboard", href: BASE, icon: LayoutDashboard },
-  { title: "New Hymns", href: `${BASE}/hymns?status=pending`, icon: Mic },
-  { title: "Lyrics Suggestions", href: `${BASE}/lyrics-suggestions`, icon: FileText },
-  { title: "All Hymns", href: `${BASE}/hymns`, icon: Music },
+  { title: "New hymns", href: `${BASE}/hymns?status=pending`, icon: Mic },
+  { title: "Lyrics suggestions", href: `${BASE}/lyrics-suggestions`, icon: FileText },
+  { title: "All hymns", href: `${BASE}/hymns`, icon: Music },
   { title: "Languages", href: `${BASE}/languages`, icon: Globe },
   { title: "Categories", href: `${BASE}/categories`, icon: Tag },
-  { title: "Sub Categories", href: `${BASE}/sub-categories`, icon: Layers },
-  { title: "Approval Status", href: `${BASE}/approval-statuses`, icon: CheckSquare },
+  { title: "Sub categories", href: `${BASE}/sub-categories`, icon: Layers },
+  { title: "Approval status", href: `${BASE}/approval-statuses`, icon: CheckSquare },
 ]
 
 export function HymnAdminSidebar() {
@@ -62,7 +62,7 @@ export function HymnAdminSidebar() {
             <Music className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Hymn Admin</span>
+            <span className="text-sm font-semibold">Hymn admin</span>
             <span className="text-xs text-muted-foreground">Management panel</span>
           </div>
         </div>

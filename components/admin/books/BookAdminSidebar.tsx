@@ -30,13 +30,13 @@ const BASE = "/books/admin"
 
 const menuItems = [
   { title: "Dashboard", href: BASE, icon: LayoutDashboard },
-  { title: "New Books", href: `${BASE}/books?status=pending`, icon: BookOpen },
-  { title: "All Books", href: `${BASE}/books`, icon: BookMarked },
+  { title: "New books", href: `${BASE}/books?status=pending`, icon: BookOpen },
+  { title: "All books", href: `${BASE}/books`, icon: BookMarked },
   { title: "Languages", href: `${BASE}/languages`, icon: Globe },
   { title: "Categories", href: `${BASE}/categories`, icon: Tag },
-  { title: "Sub Categories", href: `${BASE}/sub-categories`, icon: Layers },
+  { title: "Sub categories", href: `${BASE}/sub-categories`, icon: Layers },
   { title: "Authors", href: `${BASE}/authors`, icon: User },
-  { title: "Approval Status", href: `${BASE}/approval-statuses`, icon: CheckSquare },
+  { title: "Approval status", href: `${BASE}/approval-statuses`, icon: CheckSquare },
 ]
 
 export function BookAdminSidebar() {
@@ -62,7 +62,7 @@ export function BookAdminSidebar() {
             <BookMarked className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Book Admin</span>
+            <span className="text-sm font-semibold">Book admin</span>
             <span className="text-xs text-muted-foreground">Management panel</span>
           </div>
         </div>

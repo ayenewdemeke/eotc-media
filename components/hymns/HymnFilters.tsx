@@ -64,7 +64,7 @@ export default function HymnFilters({ categories, languages }: HymnFiltersProps)
             onClick={() => applyFilter("language", null)}
             className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
               !activeLanguage
-                ? "bg-violet-600 text-white border-violet-600"
+                ? "bg-blue-600 text-white border-blue-600"
                 : "text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700"
             }`}
           >
@@ -76,7 +76,7 @@ export default function HymnFilters({ categories, languages }: HymnFiltersProps)
               onClick={() => applyFilter("language", String(lang.id))}
               className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${
                 activeLanguage === String(lang.id)
-                  ? "bg-violet-600 text-white border-violet-600"
+                  ? "bg-blue-600 text-white border-blue-600"
                   : "text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700"
               }`}
             >

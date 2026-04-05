@@ -51,7 +51,7 @@ export default async function AdminBooksPage({ searchParams }: PageProps) {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">{isPending ? "New Books" : "All Books"}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{isPending ? "New books" : "All books"}</h1>
         <div className="flex gap-2">
           <Link href="/books/admin/books" className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${!isPending ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
             All

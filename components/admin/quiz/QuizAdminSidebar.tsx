@@ -16,14 +16,14 @@ const BASE = "/quiz/admin"
 
 const menuItems = [
   { title: "Dashboard", href: BASE, icon: LayoutDashboard },
-  { title: "New Questions", href: `${BASE}/questions?status=pending`, icon: HelpCircle },
-  { title: "All Questions", href: `${BASE}/questions`, icon: HelpCircle },
+  { title: "New questions", href: `${BASE}/questions?status=pending`, icon: HelpCircle },
+  { title: "All questions", href: `${BASE}/questions`, icon: HelpCircle },
   { title: "Languages", href: `${BASE}/languages`, icon: Globe },
   { title: "Categories", href: `${BASE}/categories`, icon: Tag },
-  { title: "Sub Categories", href: `${BASE}/sub-categories`, icon: Layers },
+  { title: "Sub categories", href: `${BASE}/sub-categories`, icon: Layers },
   { title: "Difficulties", href: `${BASE}/difficulties`, icon: Award },
-  { title: "Question Types", href: `${BASE}/question-types`, icon: BookType },
-  { title: "Approval Statuses", href: `${BASE}/approval-statuses`, icon: CheckSquare },
+  { title: "Question types", href: `${BASE}/question-types`, icon: BookType },
+  { title: "Approval statuses", href: `${BASE}/approval-statuses`, icon: CheckSquare },
 ]
 
 export function QuizAdminSidebar() {
@@ -49,7 +49,7 @@ export function QuizAdminSidebar() {
             <HelpCircle className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Quiz Admin</span>
+            <span className="text-sm font-semibold">Quiz admin</span>
             <span className="text-xs text-muted-foreground">Management panel</span>
           </div>
         </div>

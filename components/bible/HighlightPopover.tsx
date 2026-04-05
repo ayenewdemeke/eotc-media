@@ -8,7 +8,7 @@ const COLORS = [
   { name: "Green",  value: "#bbf7d0" },
   { name: "Blue",   value: "#bfdbfe" },
   { name: "Red",    value: "#fecaca" },
-  { name: "Purple", value: "#e9d5ff" },
+  { name: "Cyan", value: "#dbeafe" },
 ]
 
 interface HighlightPopoverProps {

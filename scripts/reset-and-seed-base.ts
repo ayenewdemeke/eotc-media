@@ -54,7 +54,7 @@ async function resetAndSeedBase() {
         data: {
           id: role.id,
           name: role.name,
-          code: role.code,
+          code: role.code ?? role.name.toLowerCase().replace(/\s+/g, '-'),
           createdAt: role.created_at ? new Date(role.created_at) : new Date(),
           updatedAt: role.updated_at ? new Date(role.updated_at) : new Date(),
         },
@@ -123,14 +123,14 @@ async function resetAndSeedBase() {
         },
       });
     }
-    console.log(`   ✓ Imported contact messages`);
+    console.log(`   ✓ Imported ${contactData.length} contact messages`);
 
     console.log("\n✅ Base tables reset and seeded successfully!");
     console.log("\n📊 Summary:");
     console.log(`   - ${rolesData.length} Roles`);
     console.log(`   - ${usersData.length} Users`);
     console.log(`   - ${roleUserData.length} User-Role relationships`);
-    console.log(`   - Contact messages imported\n`);
+    console.log(`   - ${contactData.length} Contact messages\n`);
 
   } catch (error) {
     console.error("❌ Error:", error);

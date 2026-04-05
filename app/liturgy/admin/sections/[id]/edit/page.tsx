@@ -35,7 +35,7 @@ export default async function EditSectionPage({ params }: EditSectionPageProps) 
     <>
       <AdminHeader
         breadcrumbs={[
-          { label: "Liturgy Admin", href: "/liturgy/admin" },
+          { label: "Liturgy admin", href: "/liturgy/admin" },
           { label: "Sections", href: "/liturgy/admin/sections" },
           { label: `Edit: ${section.nameEnglish}` },
         ]}

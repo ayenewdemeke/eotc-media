@@ -36,10 +36,23 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
   const [submitted, setSubmitted] = useState(false)
   const [score, setScore] = useState(0)
 
+  const filteredCategories = useMemo(
+    () => languageId
+      ? categories.filter(c => c.languageId == null || c.languageId === parseInt(languageId))
+      : categories,
+    [categories, languageId]
+  )
+
   const filteredSubCategories = useMemo(
-    () => categoryId ? subCategories.filter(sc => sc.categoryId === parseInt(categoryId)) : subCategories,
+    () => categoryId ? subCategories.filter(sc => sc.categoryId === parseInt(categoryId)) : [],
     [subCategories, categoryId]
   )
+
+  function handleLanguageChange(val: string) {
+    setLanguageId(val)
+    setCategoryId("")
+    setSubCategoryId("")
+  }
 
   function handleCategoryChange(val: string) {
     setCategoryId(val)
@@ -53,7 +66,7 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
     setSubmitted(false)
     setScore(0)
 
-    const params = new URLSearchParams({ batch: "1" })
+    const params = new URLSearchParams({ random: "1" })
     if (languageId) params.set("language", languageId)
     if (categoryId) params.set("category", categoryId)
     if (subCategoryId) params.set("subCategory", subCategoryId)
@@ -75,6 +88,10 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
     }
   }, [languageId, categoryId, subCategoryId, difficultyId])
 
+  useEffect(() => {
+    loadQuestions()
+  }, [loadQuestions])
+
   function handleSubmit() {
     let correct = 0
     questions.forEach(q => {
@@ -90,10 +107,8 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
   }
 
   function handleReset() {
-    setAnswers({})
-    setSubmitted(false)
-    setScore(0)
     window.scrollTo({ top: 0, behavior: "smooth" })
+    loadQuestions()
   }
 
   const answeredCount = Object.keys(answers).length
@@ -108,7 +123,7 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500">Language</label>
-            <select value={languageId} onChange={e => setLanguageId(e.target.value)} className={selCls}>
+            <select value={languageId} onChange={e => handleLanguageChange(e.target.value)} className={selCls}>
               <option value="">All Languages</option>
               {languages.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
@@ -117,7 +132,7 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
             <label className="text-xs font-medium text-slate-500">Category</label>
             <select value={categoryId} onChange={e => handleCategoryChange(e.target.value)} className={selCls}>
               <option value="">All Categories</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {filteredCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1">
@@ -134,14 +149,7 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
               {difficulties.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
           </div>
-          <button
-            onClick={loadQuestions}
-            disabled={loading}
-            className="flex items-center gap-2 h-9 px-5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-            {loaded ? "Reload" : "Start Quiz"}
-          </button>
+          {loading && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
         </div>
       </div>
 
@@ -205,15 +213,12 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
                       {idx + 1}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 leading-relaxed">{q.questionText}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {q.difficulty && (
+                      <div className="text-sm font-medium text-slate-900 leading-relaxed" dangerouslySetInnerHTML={{ __html: q.questionText }} />
+                      {q.difficulty && (
+                        <div className="mt-2">
                           <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">{q.difficulty.name}</span>
-                        )}
-                        {q.categories?.map(c => (
-                          <span key={c.id} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">{c.name}</span>
-                        ))}
-                      </div>
+                        </div>
+                      )}
                     </div>
                     {submitted && chosen !== undefined && (
                       q.choices?.find(c => c.id === chosen)?.isCorrect
@@ -248,9 +253,6 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
                             onChange={() => setAnswers(prev => ({ ...prev, [q.id]: choice.id }))}
                             className="w-4 h-4 accent-blue-600 flex-shrink-0 cursor-pointer"
                           />
-                          <span className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                            {String.fromCharCode(65 + ci)}
-                          </span>
                           <span className="text-sm leading-snug">{choice.choiceText}</span>
                           {showResult && choice.isCorrect && (
                             <CheckCircle className="w-4 h-4 text-green-500 ml-auto flex-shrink-0" />
@@ -285,23 +287,13 @@ export default function QuizBatchClient({ categories, subCategories, languages, 
         </>
       )}
 
-      {!loaded && !loading && (
+      {loading && (
         <div className="text-center py-20 text-slate-400">
-          <HelpCircleIcon />
-          <p className="text-lg font-medium mt-4">Ready to test your knowledge?</p>
-          <p className="text-sm mt-1">Select your filters and click <strong>Start Quiz</strong> to begin.</p>
+          <Loader2 className="w-10 h-10 mx-auto animate-spin text-slate-300" />
+          <p className="text-sm mt-4">Loading questions...</p>
         </div>
       )}
     </div>
   )
 }
 
-function HelpCircleIcon() {
-  return (
-    <svg className="w-16 h-16 mx-auto text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-      <circle cx="12" cy="12" r="10" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-      <circle cx="12" cy="17" r=".5" fill="currentColor" />
-    </svg>
-  )
-}

@@ -85,7 +85,7 @@ export default function ChannelInfiniteGrid({
             href={`/hymns/channels/${channel.id}`}
             className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 transition-colors text-center"
           >
-            <div className="relative w-14 h-14 rounded-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-blue-100 to-violet-100 flex items-center justify-center">
+            <div className="relative w-14 h-14 rounded-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
               <span className="text-lg font-bold text-blue-600">
                 {channel.title.charAt(0).toUpperCase()}
               </span>

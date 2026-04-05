@@ -20,8 +20,8 @@ export default function BookDetailClient({ book, userId }: BookDetailClientProps
   const [copyrightReason, setCopyrightReason] = useState("")
   const [hasCopyrightReport, setHasCopyrightReport] = useState(false)
 
-  const coverUrl = book.image ? `/uploads/books/images/${book.image}` : null
-  const fileUrl = `/uploads/books/files/${book.file}`
+  const coverUrl = book.image ? `/api/books/images/${book.image}` : null
+  const fileUrl = `/api/books/files/${book.file}`
 
   async function toggleLike() {
     if (!userId) { window.location.href = "/auth/login"; return }
@@ -151,7 +151,7 @@ export default function BookDetailClient({ book, userId }: BookDetailClientProps
           }`}
         >
           <Flag className="w-4 h-4" />
-          Report Copyright
+          Report copyright
         </button>
       </div>
 
@@ -160,7 +160,7 @@ export default function BookDetailClient({ book, userId }: BookDetailClientProps
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-900">Report Copyright</h3>
+              <h3 className="font-semibold text-slate-900">Report copyright</h3>
               <button onClick={() => setShowCopyright(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer"><X className="w-5 h-5" /></button>
             </div>
             <textarea

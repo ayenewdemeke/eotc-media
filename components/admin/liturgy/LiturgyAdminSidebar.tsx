@@ -48,7 +48,7 @@ export function LiturgyAdminSidebar() {
             <BookOpen className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Liturgy Admin</span>
+            <span className="text-sm font-semibold">Liturgy admin</span>
             <span className="text-xs text-muted-foreground">Management panel</span>
           </div>
         </div>

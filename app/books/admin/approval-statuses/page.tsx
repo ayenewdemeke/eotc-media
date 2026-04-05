@@ -40,7 +40,7 @@ export default function AdminBookApprovalStatusesPage() {
 
   return (
     <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Approval Statuses</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Approval statuses</h1>
 
       <div className="flex gap-2 mb-6">
         <input

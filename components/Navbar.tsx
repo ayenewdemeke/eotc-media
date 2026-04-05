@@ -76,11 +76,11 @@ export default function Navbar() {
     pathname?.startsWith(link.activePrefix ?? link.href)
 
   const roles = (user as { roles?: string[] })?.roles ?? []
-  const hasLiturgyAdmin = roles.some(r => ["super_admin", "admin", "liturgy_admin"].includes(r))
-  const hasHymnAdmin = roles.some(r => ["super_admin", "admin", "hymn_admin"].includes(r))
-  const hasSermonAdmin = roles.some(r => ["super_admin", "admin", "sermon_admin"].includes(r))
-  const hasBookAdmin = roles.some(r => ["super_admin", "admin", "book_admin"].includes(r))
-  const hasQuizAdmin = roles.some(r => ["super_admin", "admin", "quiz_admin"].includes(r))
+  const hasLiturgyAdmin = roles.some(r => ["super-admin", "admin", "liturgy-admin"].includes(r))
+  const hasHymnAdmin = roles.some(r => ["super-admin", "admin", "hymn-admin"].includes(r))
+  const hasSermonAdmin = roles.some(r => ["super-admin", "admin", "sermon-admin"].includes(r))
+  const hasBookAdmin = roles.some(r => ["super-admin", "admin", "book-admin"].includes(r))
+  const hasQuizAdmin = roles.some(r => ["super-admin", "admin", "quiz-admin"].includes(r))
 
   const navLinks = [
     { href: "/bible/amharic/1954/1/1", activePrefix: "/bible", label: "መጽሃፍ ቅዱስ", labelEn: "Bible", icon: BookOpen },
@@ -97,7 +97,7 @@ export default function Navbar() {
   if (status === "loading") {
     return (
       <nav className="fixed top-0 w-full h-16 bg-white border-b border-gray-200 z-50">
-        <div className="max-w-[1320px] mx-auto px-4 h-full flex items-center justify-between">
+        <div className="max-w-full mx-auto px-4 h-full flex items-center justify-between">
           <div className="animate-pulse h-8 w-36 bg-gray-200 rounded-lg" />
           <div className="animate-pulse h-9 w-24 bg-gray-200 rounded-lg" />
         </div>
@@ -114,7 +114,7 @@ export default function Navbar() {
             : "bg-white border-b border-gray-200"
         }`}
       >
-        <div className="max-w-[1320px] mx-auto px-4">
+        <div className="max-w-full mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo + Desktop Navigation grouped on the left */}
             <div className="flex items-center">
@@ -255,7 +255,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Liturgy Admin
+                            Liturgy admin
                           </Link>
                         )}
                         {hasHymnAdmin && (
@@ -264,7 +264,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Hymn Admin
+                            Hymn admin
                           </Link>
                         )}
                         {hasSermonAdmin && (
@@ -273,7 +273,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Sermon Admin
+                            Sermon admin
                           </Link>
                         )}
                         {hasBookAdmin && (
@@ -282,7 +282,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Book Admin
+                            Book admin
                           </Link>
                         )}
                         {hasQuizAdmin && (
@@ -291,7 +291,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Quiz Admin
+                            Quiz admin
                           </Link>
                         )}
                       </div>
@@ -429,7 +429,7 @@ export default function Navbar() {
                     className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Settings className="h-5 w-5 text-gray-400" />
-                    Liturgy Admin
+                    Liturgy admin
                   </Link>
                 )}
                 {hasHymnAdmin && (
@@ -438,7 +438,7 @@ export default function Navbar() {
                     className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Settings className="h-5 w-5 text-gray-400" />
-                    Hymn Admin
+                    Hymn admin
                   </Link>
                 )}
                 {hasSermonAdmin && (
@@ -447,7 +447,7 @@ export default function Navbar() {
                     className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Settings className="h-5 w-5 text-gray-400" />
-                    Sermon Admin
+                    Sermon admin
                   </Link>
                 )}
                 {hasBookAdmin && (
@@ -456,7 +456,7 @@ export default function Navbar() {
                     className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Settings className="h-5 w-5 text-gray-400" />
-                    Book Admin
+                    Book admin
                   </Link>
                 )}
                 {hasQuizAdmin && (
@@ -465,7 +465,7 @@ export default function Navbar() {
                     className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <Settings className="h-5 w-5 text-gray-400" />
-                    Quiz Admin
+                    Quiz admin
                   </Link>
                 )}
                 <button

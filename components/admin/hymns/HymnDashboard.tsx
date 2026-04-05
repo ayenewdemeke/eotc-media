@@ -114,10 +114,10 @@ export default function HymnDashboard({
         ))}
       </div>
 
-      {/* Trendline of Hymns */}
+      {/* Trendline of hymns */}
       <div className="bg-white rounded-lg border border-slate-200">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Trendline of Hymns</h2>
+          <h2 className="text-sm font-semibold text-slate-800">Trendline of hymns</h2>
           <select
             value={hymnsType}
             onChange={e => setHymnsType(e.target.value)}
@@ -134,10 +134,10 @@ export default function HymnDashboard({
         </div>
       </div>
 
-      {/* Trendline of Clicks */}
+      {/* Trendline of clicks */}
       <div className="bg-white rounded-lg border border-slate-200">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Trendline of Clicks</h2>
+          <h2 className="text-sm font-semibold text-slate-800">Trendline of clicks</h2>
           <select
             value={clicksType}
             onChange={e => setClicksType(e.target.value)}

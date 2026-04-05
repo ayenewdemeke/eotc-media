@@ -3,13 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Search } from "lucide-react"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { ScrollableSelect } from "@/components/ui/scrollable-select"
 import { HmCategory, HmSubCategory, HmLanguage, HmSinger } from "@/types/models/hymn"
 
 interface HymnSearchFiltersProps {
@@ -18,17 +12,16 @@ interface HymnSearchFiltersProps {
   languages: HmLanguage[]
   singers: HmSinger[]
   singersByLanguage: Record<string, number[]>
-  basePath?: string      // default "/hymns"
-  hideSingerMode?: boolean  // hides "By Singer" option (used on singer page)
+  basePath?: string
+  hideSingerMode?: boolean
 }
 
-// Only the "By Singer" option label changes per language (keyed by language id)
 const BY_SINGER_LABEL: Record<string, string> = {
-  "1": "በዘማሪው",       // አማርኛ
-  "2": "By the singer", // English
-  "3": "በዘማሪው",       // ግዕዝ
-  "4": "ብዘማሪ",        // ትግርኛ
-  "5": "Faarfataa",    // Afaan-Oromoo
+  "1": "በዘማሪው",
+  "2": "By the singer",
+  "3": "በዘማሪው",
+  "4": "ብዘማሪ",
+  "5": "Faarfataa",
 }
 
 export default function HymnSearchFilters({
@@ -44,12 +37,11 @@ export default function HymnSearchFilters({
   const searchParams = useSearchParams()
 
   const activeLanguage = searchParams.get("language") ?? ""
-  const activeCategory = searchParams.get("category") ?? ""  // "singer" is a special value
+  const activeCategory = searchParams.get("category") ?? ""
   const activeSubCategory = searchParams.get("subCategory") ?? ""
   const activeSinger = searchParams.get("singer") ?? ""
   const activeSearch = searchParams.get("search") ?? ""
 
-  // When category="singer", the 3rd dropdown shows singers instead of sub-categories
   const isSingerMode = activeCategory === "singer"
 
   const [searchValue, setSearchValue] = useState(activeSearch)
@@ -71,9 +63,7 @@ export default function HymnSearchFilters({
 
   function applyFilter(key: string, value: string) {
     const extra: Record<string, string> = { [key]: value }
-    // Changing language resets everything downstream
     if (key === "language") { extra.category = ""; extra.subCategory = ""; extra.singer = "" }
-    // Changing the category/mode dropdown resets the 3rd dropdown
     if (key === "category") { extra.subCategory = ""; extra.singer = "" }
     router.push(`${basePath}?${buildParams(extra)}`)
   }
@@ -92,95 +82,70 @@ export default function HymnSearchFilters({
 
   const bySingerLabel = BY_SINGER_LABEL[activeLanguage] ?? "ዘማሪ"
 
-  // Cascade: categories for the selected language
   const visibleCategories = activeLanguage
     ? categories.filter(c => c.languageId === parseInt(activeLanguage))
     : []
 
-  // 3rd dropdown: sub-categories when in category mode
   const visibleSubCategories = !isSingerMode && activeCategory
     ? subCategories.filter(sc => sc.categoryId === parseInt(activeCategory))
     : []
 
-  // Singers filtered to those with hymns in the selected language
   const visibleSingers = isSingerMode
     ? activeLanguage
       ? singers.filter(s => (singersByLanguage[activeLanguage] ?? []).includes(s.id))
       : singers
     : []
 
-  // Radix forbids value="" on SelectItem — use "_" as the "clear/reset" sentinel
-  const sel = (s: string) => s || "_"
-  const apply = (key: string, raw: string) => applyFilter(key, raw === "_" ? "" : raw)
+  // Build option arrays
+  const languageOptions = [
+    { value: "_", label: "ቋንቋ ይምረጡ" },
+    ...languages.map(l => ({ value: String(l.id), label: l.name })),
+  ]
 
-  const triggerCls = "h-9 text-sm bg-slate-50 border-slate-200 focus:ring-0 cursor-pointer"
+  const categoryOptions = [
+    { value: "_", label: "የምድብ አይነት ይምረጡ" },
+    ...(!hideSingerMode ? [{ value: "singer", label: bySingerLabel }] : []),
+    ...visibleCategories.map(c => ({ value: String(c.id), label: c.name })),
+  ]
+
+  const thirdOptions = isSingerMode
+    ? [{ value: "_", label: "ዘማሪ ይምረጡ" }, ...visibleSingers.map(s => ({ value: String(s.id), label: s.name }))]
+    : [{ value: "_", label: "ምድብ ይምረጡ" }, ...visibleSubCategories.map(sc => ({ value: String(sc.id), label: sc.name }))]
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-
-      {/* Search — full width on mobile, flexible on sm+ */}
+      {/* Search */}
       <div className="relative w-full sm:flex-1 sm:min-w-[150px] sm:max-w-[240px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="Search hymns…"
+          placeholder="መዝሙር ፈልግ..."
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}
           className="w-full h-9 pl-9 pr-3 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-400"
         />
       </div>
 
-      {/* Dropdowns — 3-col grid on mobile, inline flex items on sm+ */}
+      {/* Dropdowns */}
       <div className="grid grid-cols-3 gap-2 sm:contents">
-
-        {/* 1st: Language */}
-        <Select value={sel(activeLanguage)} onValueChange={raw => apply("language", raw)}>
-          <SelectTrigger className={`${triggerCls} w-full sm:w-[145px]`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_">ቋንቋ ይምረጡ</SelectItem>
-            {languages.map(lang => (
-              <SelectItem key={lang.id} value={String(lang.id)}>{lang.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* 2nd: Category type */}
-        <Select value={sel(activeCategory)} onValueChange={raw => apply("category", raw)}>
-          <SelectTrigger className={`${triggerCls} w-full sm:w-[185px]`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_">የምድብ አይነት ይምረጡ</SelectItem>
-            {!hideSingerMode && <SelectItem value="singer">{bySingerLabel}</SelectItem>}
-            {visibleCategories.map(cat => (
-              <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* 3rd: Sub-category or Singer */}
-        <Select
-          value={isSingerMode ? sel(activeSinger) : sel(activeSubCategory)}
-          onValueChange={raw => isSingerMode ? apply("singer", raw) : apply("subCategory", raw)}
-        >
-          <SelectTrigger className={`${triggerCls} w-full sm:w-[185px]`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="_">{isSingerMode ? "ዘማሪ ይምረጡ" : "ምድብ ይምረጡ"}</SelectItem>
-            {isSingerMode
-              ? visibleSingers.map(s => (
-                  <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
-                ))
-              : visibleSubCategories.map(sc => (
-                  <SelectItem key={sc.id} value={String(sc.id)}>{sc.name}</SelectItem>
-                ))
-            }
-          </SelectContent>
-        </Select>
-
+        <ScrollableSelect
+          value={activeLanguage || "_"}
+          onValueChange={raw => applyFilter("language", raw === "_" ? "" : raw)}
+          options={languageOptions}
+          className="w-full sm:w-[145px]"
+        />
+        <ScrollableSelect
+          value={activeCategory || "_"}
+          onValueChange={raw => applyFilter("category", raw === "_" ? "" : raw)}
+          options={categoryOptions}
+          className="w-full sm:w-[185px]"
+        />
+        <ScrollableSelect
+          value={(isSingerMode ? activeSinger : activeSubCategory) || "_"}
+          onValueChange={raw => isSingerMode ? applyFilter("singer", raw === "_" ? "" : raw) : applyFilter("subCategory", raw === "_" ? "" : raw)}
+          options={thirdOptions}
+          className="w-full sm:w-[185px]"
+        />
       </div>
     </div>
   )

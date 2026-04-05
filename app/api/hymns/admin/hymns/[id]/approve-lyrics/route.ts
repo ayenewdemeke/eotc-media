@@ -15,7 +15,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   await prisma.hmHymn.update({
     where: { id: hymnId },
-    data: { lyrics: hymn.lyricsSuggestion, lyricsSuggestion: null },
+    data: { lyrics: hymn.lyricsSuggestion, lyricsSuggestion: null, aiLyrics: null },
   })
 
   return NextResponse.json({ success: true })

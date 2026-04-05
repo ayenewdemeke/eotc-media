@@ -92,10 +92,10 @@ const ROLE_STYLES: Record<
     dotBg: "bg-emerald-400",
   },
   choir: {
-    bg: "bg-gradient-to-br from-purple-50 to-violet-50",
-    text: "text-purple-700",
-    border: "border-l-purple-400",
-    dotBg: "bg-purple-400",
+    bg: "bg-gradient-to-br from-blue-50 to-blue-100",
+    text: "text-blue-700",
+    border: "border-l-blue-400",
+    dotBg: "bg-blue-400",
   },
   assistant_priest: {
     bg: "bg-gradient-to-br from-orange-50 to-amber-50",
@@ -295,16 +295,16 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
 
                 {/* Audio type selector */}
                 {hasMultipleAudioTypes && (
-                  <div className="flex items-center gap-0.5 bg-purple-50 border border-purple-200/50 rounded-lg p-0.5">
-                    <Music className="h-3 w-3 text-purple-600 ml-1" />
+                  <div className="flex items-center gap-0.5 bg-blue-50 border border-blue-200/50 rounded-lg p-0.5">
+                    <Music className="h-3 w-3 text-blue-600 ml-1" />
                     {(["geez", "ezil", "araray"] as AudioType[]).map((type) => (
                       <button
                         key={type}
                         onClick={() => setGlobalAudioType(type)}
                         className={`px-2 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
                           globalAudioType === type
-                            ? "bg-purple-600 text-white shadow-sm"
-                            : "text-purple-700 hover:bg-purple-100"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-blue-700 hover:bg-blue-100"
                         }`}
                       >
                         {AUDIO_LABELS[type]}

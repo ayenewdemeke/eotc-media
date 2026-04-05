@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const vid = parseVideoId(videoUrl)
 
   const [pendingStatus, defaultChannel] = await Promise.all([
-    prisma.smApprovalStatus.findFirst({ where: { name: { contains: 'Pending', mode: 'insensitive' } } }),
+    prisma.smApprovalStatus.findFirst({ where: { name: 'Submitted' } }),
     prisma.smChannel.findFirst({ orderBy: { id: 'asc' } }),
   ])
 

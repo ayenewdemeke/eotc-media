@@ -52,7 +52,7 @@ export default async function FavoritesPage() {
                 Collections
               </div>
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-500">
-                <Heart className="h-3.5 w-3.5 text-purple-400 flex-shrink-0" />
+                <Heart className="h-3.5 w-3.5 text-blue-400 flex-shrink-0" />
                 Organize
               </div>
             </div>

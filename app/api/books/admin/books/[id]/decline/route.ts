@@ -11,7 +11,7 @@ export async function POST(
   if (!hasBookAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
 
-  const rejected = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: 'Rejected', mode: 'insensitive' } } })
+  const rejected = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Declined' } })
   if (!rejected) return NextResponse.json({ error: 'Rejected status not found' }, { status: 500 })
 
   await prisma.cbBook.update({ where: { id: parseInt(id) }, data: { approvalStatusId: rejected.id, updatedAt: new Date() } })

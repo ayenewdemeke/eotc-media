@@ -40,7 +40,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
   if (allOtherReady) {
     // All ready — pick 10 random approved questions and activate round
     const approved = await prisma.qzApprovalStatus.findFirst({
-      where: { name: { contains: 'Approved', mode: 'insensitive' } },
+      where: { name: 'Accepted' },
     })
 
     const total = await prisma.qzQuestion.count({

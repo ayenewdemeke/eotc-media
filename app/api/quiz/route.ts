@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { getQuestions } from '@/lib/api/quiz'
+import { getQuestions, getRandomQuestions } from '@/lib/api/quiz'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -12,8 +12,13 @@ export async function GET(req: NextRequest) {
   const difficultyId = searchParams.get('difficulty') ? parseInt(searchParams.get('difficulty')!) || undefined : undefined
   const search = searchParams.get('search') || undefined
   const view = searchParams.get('view') || undefined
-  // batch mode: return all matching questions (up to 100) without pagination
+  const random = searchParams.get('random') === '1'
   const batch = searchParams.get('batch') === '1'
+
+  if (random) {
+    const questions = await getRandomQuestions({ categoryId, subCategoryId, languageId, difficultyId })
+    return NextResponse.json({ questions, total: questions.length })
+  }
 
   let userId: number | undefined
   if (view === 'my-questions') {

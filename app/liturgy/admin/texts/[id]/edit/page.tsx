@@ -35,7 +35,7 @@ export default async function EditTextPage({ params }: EditTextPageProps) {
     <>
       <AdminHeader
         breadcrumbs={[
-          { label: "Liturgy Admin", href: "/liturgy/admin" },
+          { label: "Liturgy admin", href: "/liturgy/admin" },
           { label: "Texts", href: "/liturgy/admin/texts" },
           { label: `Edit text #${text.id}` },
         ]}

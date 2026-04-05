@@ -46,7 +46,7 @@ export default async function HymnsPage({ searchParams }: PageProps) {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
 
           <HymnSidebar userId={userId} />
 

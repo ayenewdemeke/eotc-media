@@ -6,7 +6,7 @@ export default function NewTextPage() {
     <>
       <AdminHeader
         breadcrumbs={[
-          { label: "Liturgy Admin", href: "/liturgy/admin" },
+          { label: "Liturgy admin", href: "/liturgy/admin" },
           { label: "Texts", href: "/liturgy/admin/texts" },
           { label: "New text" },
         ]}

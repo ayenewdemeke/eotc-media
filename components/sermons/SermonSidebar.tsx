@@ -30,32 +30,32 @@ export default function SermonSidebar({ userId }: SermonSidebarProps) {
     <>
       <Link href="/sermons" className={linkClass("/sermons")}>
         <MessageSquare className="w-4 h-4 flex-shrink-0" />
-        All Sermons
+        ሁሉም ስብከቶች
       </Link>
       <Link href="/sermons/channels" className={linkClass("/sermons/channels")}>
         <Tv className="w-4 h-4 flex-shrink-0" />
-        Channels
+        ቻናሎች
       </Link>
       {userId ? (
         <>
           <Link href="/sermons/favorites" className={linkClass("/sermons/favorites")}>
             <Heart className="w-4 h-4 flex-shrink-0" />
-            Favorites
+            የተወደዱ ስብከቶች
           </Link>
           <Link href="/sermons/my-sermons" className={linkClass("/sermons/my-sermons")}>
             <User className="w-4 h-4 flex-shrink-0" />
-            My Sermons
+            በእርስዎ የተጫኑ ስብከቶች
           </Link>
         </>
       ) : (
         <>
           <Link href="/auth/login" className={dimLink}>
             <Heart className="w-4 h-4 flex-shrink-0" />
-            Favorites
+            የተወደዱ ስብከቶች
           </Link>
           <Link href="/auth/login" className={dimLink}>
             <User className="w-4 h-4 flex-shrink-0" />
-            My Sermons
+            በእርስዎ የተጫኑ ስብከቶች
           </Link>
         </>
       )}

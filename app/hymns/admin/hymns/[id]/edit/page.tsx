@@ -119,7 +119,7 @@ export default function EditHymnPage() {
 
   return (
     <div className="p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit Hymn</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit hymn</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Thumbnail preview */}
@@ -142,14 +142,14 @@ export default function EditHymnPage() {
             <input value={singer} onChange={e => setSinger(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Published Date</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Published date</label>
             <input type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval Status</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval status</label>
             <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
               {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
@@ -201,7 +201,7 @@ export default function EditHymnPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Linked Singers</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Linked singers</label>
           <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
             {singers.map(s => (
               <button key={s.id} type="button" onClick={() => toggleId(selectedSingerIds, setSelectedSingerIds, s.id)}

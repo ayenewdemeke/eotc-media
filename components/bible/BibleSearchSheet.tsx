@@ -37,11 +37,9 @@ const SCOPE_LABELS: Array<{ value: Scope; label: string }> = [
 ]
 
 const TRANSLATIONS = [
-  { value: "amharic__1954",                           label: "Amharic 1954" },
-  { value: "english__kjv",                            label: "English KJV" },
-  { value: "oromifa__v1",                             label: "Oromifa" },
-  { value: "hebrew-greek__masoretic-textus-receptus", label: "Hebrew / Greek" },
-  { value: "greek__septuagint",                       label: "Greek LXX" },
+  { value: "amharic__1954", label: "Amharic 1954" },
+  { value: "english__kjv", label: "English KJV" },
+  { value: "oromifa__v1",  label: "Oromifa" },
 ]
 
 function highlightMatch(text: string, query: string): React.ReactNode {

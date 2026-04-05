@@ -30,32 +30,32 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
     <>
       <Link href="/hymns" className={linkClass("/hymns")}>
         <Music className="w-4 h-4 flex-shrink-0" />
-        All Hymns
+        ሁሉም መዝሙራት
       </Link>
       <Link href="/hymns/channels" className={linkClass("/hymns/channels")}>
         <Tv className="w-4 h-4 flex-shrink-0" />
-        Channels
+        ቻናሎች
       </Link>
       {userId ? (
         <>
           <Link href="/hymns/favorites" className={linkClass("/hymns/favorites")}>
             <Heart className="w-4 h-4 flex-shrink-0" />
-            Favorites
+            የተመረጡ መዝሙራት
           </Link>
           <Link href="/hymns/my-hymns" className={linkClass("/hymns/my-hymns")}>
             <User className="w-4 h-4 flex-shrink-0" />
-            My Hymns
+            በእርስዎ የተጫኑ መዝሙሮች
           </Link>
         </>
       ) : (
         <>
           <Link href="/auth/login" className={dimLink}>
             <Heart className="w-4 h-4 flex-shrink-0" />
-            Favorites
+            የተመረጡ መዝሙራት
           </Link>
           <Link href="/auth/login" className={dimLink}>
             <User className="w-4 h-4 flex-shrink-0" />
-            My Hymns
+            በእርስዎ የተጫኑ መዝሙሮች
           </Link>
         </>
       )}

@@ -9,7 +9,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params
   const approved = await prisma.qzApprovalStatus.findFirst({
-    where: { name: { contains: 'Approved', mode: 'insensitive' } },
+    where: { name: 'Accepted' },
   })
   if (!approved) return NextResponse.json({ error: 'Approved status not found' }, { status: 500 })
 

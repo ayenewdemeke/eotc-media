@@ -26,7 +26,7 @@ export default async function LiturgyAdminDashboard() {
     <>
       <AdminHeader
         breadcrumbs={[
-          { label: "Liturgy Admin", href: "/liturgy/admin" },
+          { label: "Liturgy admin", href: "/liturgy/admin" },
           { label: "Dashboard" },
         ]}
       />
@@ -34,7 +34,7 @@ export default async function LiturgyAdminDashboard() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome to the Liturgy Admin Panel. Manage sections, roles, and texts.
+            Welcome to the Liturgy admin panel. Manage sections, roles, and texts.
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default async function LiturgyAdminDashboard() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+            <h3 className="text-lg font-semibold mb-4">Quick actions</h3>
             <div className="space-y-2">
               <a
                 href="/liturgy/admin/sections/new"

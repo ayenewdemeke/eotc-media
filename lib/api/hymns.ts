@@ -10,6 +10,8 @@ function mapHymn(raw: {
   title: string
   singer: string | null
   lyrics: string | null
+  lyricsSuggestion: string | null
+  aiLyrics: string | null
   description: string | null
   thumbnailDefault: string
   thumbnailMedium: string
@@ -34,6 +36,8 @@ function mapHymn(raw: {
     title: raw.title,
     singer: raw.singer,
     lyrics: raw.lyrics,
+    lyricsSuggestion: raw.lyricsSuggestion,
+    aiLyrics: raw.aiLyrics,
     description: raw.description,
     thumbnailDefault: raw.thumbnailDefault,
     thumbnailMedium: raw.thumbnailMedium,
@@ -152,22 +156,30 @@ export async function getHymns({
     sort === 'clicks-asc' ? { clicksCount: 'asc' as const } :
                             { clicksCount: 'desc' as const }  // default: most clicked
 
-  const [raws, total] = await Promise.all([
-    prisma.hmHymn.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        categories: { include: { category: true } },
-        subCategories: { include: { subCategory: true } },
-        languages: { include: { language: true } },
-        singers: { include: { singer: true } },
-        ...(view === 'my-hymns' ? { approvalStatus: true } : {}),
-      },
-    }),
-    prisma.hmHymn.count({ where }),
-  ])
+  let raws: Awaited<ReturnType<typeof prisma.hmHymn.findMany>> = []
+  let total = 0
+
+  try {
+    ;[raws, total] = await Promise.all([
+      prisma.hmHymn.findMany({
+        where,
+        orderBy,
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          categories: { include: { category: true } },
+          subCategories: { include: { subCategory: true } },
+          languages: { include: { language: true } },
+          singers: { include: { singer: true } },
+          channel: true,
+          ...(view === 'my-hymns' ? { approvalStatus: true } : {}),
+        },
+      }),
+      prisma.hmHymn.count({ where }),
+    ])
+  } catch {
+    return { hymns: [], total: 0 }
+  }
 
   const hymns = raws.map(mapHymn)
 
@@ -263,6 +275,7 @@ export async function getRelatedHymns(
     include: {
       categories: { include: { category: true } },
       singers: { include: { singer: true } },
+      channel: true,
     },
   })
 

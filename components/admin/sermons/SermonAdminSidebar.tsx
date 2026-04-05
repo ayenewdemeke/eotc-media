@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation"
 import {
   LayoutDashboard,
   MessageSquare,
+  FileText,
   Globe,
   Tag,
   Layers,
@@ -28,12 +29,13 @@ const BASE = "/sermons/admin"
 
 const menuItems = [
   { title: "Dashboard", href: BASE, icon: LayoutDashboard },
-  { title: "New Sermons", href: `${BASE}/sermons?status=pending`, icon: MessageSquare },
-  { title: "All Sermons", href: `${BASE}/sermons`, icon: MessageSquare },
+  { title: "New sermons", href: `${BASE}/sermons?status=pending`, icon: MessageSquare },
+  { title: "Description suggestions", href: `${BASE}/description-suggestions`, icon: FileText },
+  { title: "All sermons", href: `${BASE}/sermons`, icon: MessageSquare },
   { title: "Languages", href: `${BASE}/languages`, icon: Globe },
   { title: "Categories", href: `${BASE}/categories`, icon: Tag },
-  { title: "Sub Categories", href: `${BASE}/sub-categories`, icon: Layers },
-  { title: "Approval Status", href: `${BASE}/approval-statuses`, icon: CheckSquare },
+  { title: "Sub categories", href: `${BASE}/sub-categories`, icon: Layers },
+  { title: "Approval status", href: `${BASE}/approval-statuses`, icon: CheckSquare },
 ]
 
 export function SermonAdminSidebar() {
@@ -59,7 +61,7 @@ export function SermonAdminSidebar() {
             <MessageSquare className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Sermon Admin</span>
+            <span className="text-sm font-semibold">Sermon admin</span>
             <span className="text-xs text-muted-foreground">Management panel</span>
           </div>
         </div>

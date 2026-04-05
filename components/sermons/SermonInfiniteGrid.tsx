@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { MessageSquare, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { MessageSquare, Loader2, PlayCircle } from "lucide-react"
 import { SmSermon } from "@/types/models/sermon"
 import SermonCard from "./SermonCard"
 import {
@@ -108,6 +109,20 @@ export default function SermonInfiniteGrid({
     router.push(`${basePath}?${params.toString()}`)
   }
 
+  function buildPlayAllUrl() {
+    const params = new URLSearchParams()
+    if (filters.view) params.set("view", filters.view)
+    if (filters.language) params.set("language", filters.language)
+    if (filters.category) params.set("category", filters.category)
+    if (filters.subCategory) params.set("subCategory", filters.subCategory)
+    if (filters.preacher) params.set("preacher", filters.preacher)
+    if (filters.channel) params.set("channel", filters.channel)
+    if (filters.search) params.set("search", filters.search)
+    if (filters.sort) params.set("sort", filters.sort)
+    const q = params.toString()
+    return `/sermons/play-all${q ? `?${q}` : ""}`
+  }
+
   if (sermons.length === 0 && !loading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-slate-400">
@@ -137,6 +152,18 @@ export default function SermonInfiniteGrid({
               <SelectItem value="clicks-asc">Least Clicked</SelectItem>
             </SelectContent>
           </Select>
+          {initialTotal >= 1 && initialTotal <= 200 && (
+            <>
+              <span className="text-slate-300 text-xs select-none">|</span>
+              <Link
+                href={buildPlayAllUrl()}
+                className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors font-medium"
+              >
+                <PlayCircle className="w-3.5 h-3.5" />
+                Play All
+              </Link>
+            </>
+          )}
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-7">

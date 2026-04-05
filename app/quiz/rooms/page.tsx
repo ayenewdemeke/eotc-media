@@ -128,7 +128,7 @@ export default function QuizRoomsPage() {
         <Navbar />
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="text-center">
-            <p className="text-slate-500 mb-4">Please sign in to access Group Rooms.</p>
+            <p className="text-slate-500 mb-4">Please sign in to access Group rooms.</p>
             <button onClick={() => router.push("/auth/login")}
               className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
               Sign In
@@ -197,12 +197,12 @@ export default function QuizRoomsPage() {
         </Modal>
       )}
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <QuizSidebar userId={userId} />
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-xl font-semibold text-slate-900">Group Rooms</h1>
+                <h1 className="text-xl font-semibold text-slate-900">Group rooms</h1>
                 <p className="text-sm text-slate-400 mt-0.5">Play quiz rounds with others in real time</p>
               </div>
               <div className="flex gap-2">

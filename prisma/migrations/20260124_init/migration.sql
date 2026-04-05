@@ -175,27 +175,12 @@ CREATE TABLE "bl_highlights" (
 );
 
 -- CreateTable
-CREATE TABLE "lt_anaphoras" (
-    "id" SERIAL NOT NULL,
-    "name_geez" TEXT NOT NULL,
-    "name_amharic" TEXT NOT NULL,
-    "name_english" TEXT NOT NULL,
-    "order_index" INTEGER NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "lt_anaphoras_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "lt_sections" (
     "id" SERIAL NOT NULL,
-    "anaphora_id" INTEGER,
     "name_geez" TEXT NOT NULL,
     "name_amharic" TEXT NOT NULL,
     "name_english" TEXT NOT NULL,
     "order_index" INTEGER NOT NULL,
-    "is_common" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -225,9 +210,10 @@ CREATE TABLE "lt_liturgical_texts" (
     "text_amharic" TEXT NOT NULL,
     "text_english_transliteration" TEXT NOT NULL,
     "text_english_translation" TEXT NOT NULL,
+    "remark" TEXT,
     "audio_geez_file_path" TEXT,
-    "audio_araray_file_path" TEXT,
     "audio_ezil_file_path" TEXT,
+    "audio_araray_file_path" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -384,7 +370,9 @@ CREATE TABLE "cb_copyright_reports" (
 -- CreateTable
 CREATE TABLE "hm_languages" (
     "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
     "name" TEXT NOT NULL,
+    "slug" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -394,7 +382,10 @@ CREATE TABLE "hm_languages" (
 -- CreateTable
 CREATE TABLE "hm_categories" (
     "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
+    "language_id" INTEGER,
     "name" TEXT NOT NULL,
+    "slug" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -404,8 +395,10 @@ CREATE TABLE "hm_categories" (
 -- CreateTable
 CREATE TABLE "hm_sub_categories" (
     "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
     "category_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
+    "slug" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -435,7 +428,17 @@ CREATE TABLE "hm_singers" (
 -- CreateTable
 CREATE TABLE "hm_channels" (
     "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "yt_channel_id" TEXT,
+    "handle" TEXT NOT NULL DEFAULT '',
+    "description" TEXT,
+    "thumbnail_default" TEXT,
+    "thumbnail_medium" TEXT,
+    "thumbnail_high" TEXT,
+    "cover_image" TEXT,
+    "country" TEXT,
+    "published_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -590,6 +593,16 @@ CREATE TABLE "sm_preachers" (
 CREATE TABLE "sm_channels" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "slug" TEXT,
+    "yt_channel_id" TEXT,
+    "handle" TEXT NOT NULL DEFAULT '',
+    "description" TEXT,
+    "thumbnail_default" TEXT,
+    "thumbnail_medium" TEXT,
+    "thumbnail_high" TEXT,
+    "cover_image" TEXT,
+    "country" TEXT,
+    "published_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -956,10 +969,31 @@ CREATE UNIQUE INDEX "cb_books_slug_key" ON "cb_books"("slug");
 CREATE UNIQUE INDEX "cb_likes_user_id_book_id_key" ON "cb_likes"("user_id", "book_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "hm_languages_slug_key" ON "hm_languages"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "hm_categories_slug_key" ON "hm_categories"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "hm_sub_categories_slug_key" ON "hm_sub_categories"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "hm_channels_slug_key" ON "hm_channels"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "hm_channels_yt_channel_id_key" ON "hm_channels"("yt_channel_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "hm_hymns_slug_key" ON "hm_hymns"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "hm_favorites_user_id_hymn_id_key" ON "hm_favorites"("user_id", "hymn_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sm_channels_slug_key" ON "sm_channels"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "sm_channels_yt_channel_id_key" ON "sm_channels"("yt_channel_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "sm_sermons_slug_key" ON "sm_sermons"("slug");
@@ -1014,9 +1048,6 @@ ALTER TABLE "bl_highlights" ADD CONSTRAINT "bl_highlights_user_id_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "bl_highlights" ADD CONSTRAINT "bl_highlights_verse_id_fkey" FOREIGN KEY ("verse_id") REFERENCES "bl_verses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "lt_sections" ADD CONSTRAINT "lt_sections_anaphora_id_fkey" FOREIGN KEY ("anaphora_id") REFERENCES "lt_anaphoras"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "lt_liturgical_texts" ADD CONSTRAINT "lt_liturgical_texts_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "lt_sections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1074,6 +1105,9 @@ ALTER TABLE "cb_copyright_reports" ADD CONSTRAINT "cb_copyright_reports_user_id_
 
 -- AddForeignKey
 ALTER TABLE "cb_copyright_reports" ADD CONSTRAINT "cb_copyright_reports_book_id_fkey" FOREIGN KEY ("book_id") REFERENCES "cb_books"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hm_categories" ADD CONSTRAINT "hm_categories_language_id_fkey" FOREIGN KEY ("language_id") REFERENCES "hm_languages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "hm_sub_categories" ADD CONSTRAINT "hm_sub_categories_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "hm_categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -1233,4 +1267,3 @@ ALTER TABLE "qz_round_answers" ADD CONSTRAINT "qz_round_answers_user_id_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "qz_round_results" ADD CONSTRAINT "qz_round_results_round_id_fkey" FOREIGN KEY ("round_id") REFERENCES "qz_rounds"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-

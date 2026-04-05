@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar"
 import HymnSidebar from "@/components/hymns/HymnSidebar"
 import HymnMyList from "@/components/hymns/HymnMyList"
 
-export const metadata: Metadata = { title: "My Hymns — EOTC Media" }
+export const metadata: Metadata = { title: "My hymns — EOTC Media" }
 
 const PAGE_SIZE = 24
 
@@ -23,18 +23,14 @@ export default async function MyHymnsPage({ searchParams }: PageProps) {
   const { hymns, total } = await getHymns({ page, userId, view: "my-hymns" })
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
-  function buildPageUrl(p: number) {
-    return p > 1 ? `/hymns/my-hymns?page=${p}` : "/hymns/my-hymns"
-  }
-
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <HymnSidebar userId={userId} />
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
-            <HymnMyList hymns={hymns} total={total} page={page} totalPages={totalPages} buildPageUrl={buildPageUrl} />
+            <HymnMyList hymns={hymns} total={total} page={page} totalPages={totalPages} baseUrl="/hymns/my-hymns" />
           </main>
         </div>
       </div>

@@ -5,8 +5,6 @@ const LANGUAGE_CODE_MAP: Record<string, string> = {
   'amharic': 'am',
   'english': 'en',
   'oromifa': 'om',
-  'hebrew-greek': 'he',
-  'greek': 'el',
 }
 
 function getBookNameForLanguage(book: BlBook, language: BibleLanguage): string {

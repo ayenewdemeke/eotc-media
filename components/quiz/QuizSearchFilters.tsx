@@ -53,6 +53,7 @@ export default function QuizSearchFilters({
 
   function applyFilter(key: string, value: string) {
     const extra: Record<string, string> = { [key]: value }
+    if (key === "language") { extra.category = ""; extra.subCategory = "" }
     if (key === "category") extra.subCategory = ""
     router.push(`${basePath}?${buildParams(extra)}`)
   }
@@ -68,6 +69,10 @@ export default function QuizSearchFilters({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParams]
   )
+
+  const visibleCategories = activeLanguage
+    ? categories.filter(c => c.languageId == null || c.languageId === parseInt(activeLanguage))
+    : categories
 
   const visibleSubCategories = activeCategory
     ? subCategories.filter(sc => sc.categoryId === parseInt(activeCategory))
@@ -113,7 +118,7 @@ export default function QuizSearchFilters({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_">All Categories</SelectItem>
-            {categories.map(c => (
+            {visibleCategories.map(c => (
               <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
             ))}
           </SelectContent>

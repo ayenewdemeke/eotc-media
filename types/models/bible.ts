@@ -45,6 +45,23 @@ export interface BlHighlight {
   updatedAt: Date
 }
 
+export interface BlCollection {
+  id: number
+  userId: number
+  name: string
+  description?: string | null
+  createdAt: Date
+  updatedAt: Date
+  _count?: { verses: number }
+}
+
+export interface BlCollectionVerse {
+  id: number
+  collectionId: number
+  verseId: number
+  createdAt: Date
+}
+
 export interface BibleSearchResult {
   verseId: number
   bookId: number
@@ -54,5 +71,5 @@ export interface BibleSearchResult {
   text: string
 }
 
-export type BibleLanguage = 'amharic' | 'english' | 'oromifa' | 'hebrew-greek' | 'greek'
-export type BibleVersion = '1954' | 'kjv' | 'v1' | 'masoretic-textus-receptus' | 'septuagint'
+export type BibleLanguage = 'amharic' | 'english' | 'oromifa'
+export type BibleVersion = '1954' | 'kjv' | 'v1'

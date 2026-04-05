@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get('status')
 
   const where: Record<string, unknown> = {}
-  if (status === 'pending') where.approvalStatus = { name: 'Pending' }
-  else if (status === 'approved') where.approvalStatus = { name: 'Approved' }
-  else if (status === 'rejected') where.approvalStatus = { name: 'Rejected' }
+  if (status === 'pending') where.approvalStatus = { name: 'Submitted' }
+  else if (status === 'approved') where.approvalStatus = { name: 'Accepted' }
+  else if (status === 'rejected') where.approvalStatus = { name: 'Declined' }
 
   const [hymns, total] = await Promise.all([
     prisma.hmHymn.findMany({

@@ -183,7 +183,7 @@ export default function RoundPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <QuizSidebar userId={userId} />
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
 
@@ -293,11 +293,11 @@ export default function RoundPage() {
                             <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                               {currentQ + 1}
                             </span>
-                            <p className="text-sm font-medium text-slate-900 leading-relaxed">{rq.question.questionText}</p>
+                            <div className="text-sm font-medium text-slate-900 leading-relaxed" dangerouslySetInnerHTML={{ __html: rq.question.questionText }} />
                           </div>
                         </div>
                         <div className="p-4 space-y-2">
-                          {rq.question.choices.map((choice, ci) => {
+                          {rq.question.choices.map((choice) => {
                             const isSelected = myChoiceId === choice.id
                             return (
                               <button key={choice.id} onClick={() => !isAnswered && selectChoice(rq, choice.id)}
@@ -309,14 +309,9 @@ export default function RoundPage() {
                                       : 'border-slate-200 text-slate-400 cursor-default'
                                     : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 cursor-pointer'
                                 }`}>
-                                {submitting === rq.id && !isAnswered
-                                  ? <Loader2 className="w-4 h-4 animate-spin text-slate-400 flex-shrink-0" />
-                                  : (
-                                    <span className="w-6 h-6 rounded-md bg-slate-100 text-slate-600 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                                      {String.fromCharCode(65 + ci)}
-                                    </span>
-                                  )
-                                }
+                                {submitting === rq.id && !isAnswered && (
+                                  <Loader2 className="w-4 h-4 animate-spin text-slate-400 flex-shrink-0" />
+                                )}
                                 <span className="text-sm">{choice.choiceText}</span>
                                 {isSelected && <Check className="w-4 h-4 text-blue-600 ml-auto flex-shrink-0" />}
                               </button>
@@ -376,7 +371,7 @@ export default function RoundPage() {
                 </div>
 
                 {/* Question review */}
-                <h2 className="text-sm font-semibold text-slate-500 uppercase mb-3">Question Review</h2>
+                <h2 className="text-sm font-semibold text-slate-500 uppercase mb-3">Question review</h2>
                 <div className="space-y-3">
                   {round.questions.map((rq, idx) => {
                     const myChoiceId = rq.myAnswer?.choiceId
@@ -390,7 +385,7 @@ export default function RoundPage() {
                       }`}>
                         <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-start gap-3">
                           <span className="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{idx + 1}</span>
-                          <p className="text-sm font-medium text-slate-900 flex-1">{rq.question.questionText}</p>
+                          <div className="text-sm font-medium text-slate-900 flex-1" dangerouslySetInnerHTML={{ __html: rq.question.questionText }} />
                           {wasCorrect
                             ? <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                             : myChoiceId
@@ -399,15 +394,12 @@ export default function RoundPage() {
                           }
                         </div>
                         <div className="px-4 py-3 space-y-1.5">
-                          {rq.question.choices.map((c, ci) => (
+                          {rq.question.choices.map((c) => (
                             <div key={c.id} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm ${
                               c.isCorrect ? 'bg-green-50 text-green-800' :
                               c.id === myChoiceId && !c.isCorrect ? 'bg-red-50 text-red-700' :
                               'text-slate-500'
                             }`}>
-                              <span className="w-5 h-5 rounded bg-slate-100 text-slate-500 text-xs font-bold flex items-center justify-center flex-shrink-0">
-                                {String.fromCharCode(65 + ci)}
-                              </span>
                               <span className="flex-1">{c.choiceText}</span>
                               {c.isCorrect && <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />}
                               {c.id === myChoiceId && !c.isCorrect && <XCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />}

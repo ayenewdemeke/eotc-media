@@ -30,11 +30,17 @@ export default async function LyricsSuggestionsPage({ searchParams }: PageProps)
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
+  const statusColor: Record<string, string> = {
+    Accepted: "bg-green-100 text-green-700",
+    Submitted: "bg-amber-100 text-amber-700",
+    Declined: "bg-red-100 text-red-700",
+  }
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Lyrics Suggestions</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Lyrics suggestions</h1>
           <p className="text-sm text-slate-500 mt-0.5">{total.toLocaleString()} pending</p>
         </div>
       </div>
@@ -59,11 +65,25 @@ export default async function LyricsSuggestionsPage({ searchParams }: PageProps)
               </tr>
             )}
             {hymns.map((hymn, index) => (
-              <LyricsSuggestionRow
-                key={hymn.id}
-                index={(page - 1) * PAGE_SIZE + index + 1}
-                hymn={hymn}
-              />
+              <tr key={hymn.id} className="hover:bg-slate-50 transition-colors">
+                <td className="px-4 py-3 text-slate-400 text-xs">{(page - 1) * PAGE_SIZE + index + 1}</td>
+                <td className="px-4 py-3">
+                  <p className="font-medium text-slate-900 line-clamp-1">{hymn.title}</p>
+                </td>
+                <td className="px-4 py-3 text-slate-600 hidden sm:table-cell">{hymn.singer ?? "—"}</td>
+                <td className="px-4 py-3 hidden md:table-cell">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColor[hymn.approvalStatus.name] ?? "bg-slate-100 text-slate-600"}`}>
+                    {hymn.approvalStatus.name}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <LyricsSuggestionActions
+                    hymnId={hymn.id}
+                    hymnTitle={hymn.title}
+                    lyricsSuggestion={hymn.lyricsSuggestion ?? ""}
+                  />
+                </td>
+              </tr>
             ))}
           </tbody>
         </table>
@@ -72,72 +92,18 @@ export default async function LyricsSuggestionsPage({ searchParams }: PageProps)
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-6">
           {page > 1 && (
-            <Link
-              href={`/hymns/admin/lyrics-suggestions?page=${page - 1}`}
-              className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50"
-            >
+            <Link href={`/hymns/admin/lyrics-suggestions?page=${page - 1}`} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">
               Previous
             </Link>
           )}
-          <span className="px-3 py-1.5 text-sm text-slate-500">
-            Page {page} / {totalPages}
-          </span>
+          <span className="px-3 py-1.5 text-sm text-slate-500">Page {page} / {totalPages}</span>
           {page < totalPages && (
-            <Link
-              href={`/hymns/admin/lyrics-suggestions?page=${page + 1}`}
-              className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50"
-            >
+            <Link href={`/hymns/admin/lyrics-suggestions?page=${page + 1}`} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">
               Next
             </Link>
           )}
         </div>
       )}
     </div>
-  )
-}
-
-function LyricsSuggestionRow({
-  index,
-  hymn,
-}: {
-  index: number
-  hymn: {
-    id: number
-    title: string
-    singer: string | null
-    lyricsSuggestion: string | null
-    approvalStatus: { name: string }
-  }
-}) {
-  const statusColor: Record<string, string> = {
-    Approved: "bg-green-100 text-green-700",
-    Pending: "bg-amber-100 text-amber-700",
-    Rejected: "bg-red-100 text-red-700",
-  }
-
-  return (
-    <tr className="hover:bg-slate-50 transition-colors">
-      <td className="px-4 py-3 text-slate-400 text-xs">{index}</td>
-      <td className="px-4 py-3">
-        <p className="font-medium text-slate-900 line-clamp-1">{hymn.title}</p>
-      </td>
-      <td className="px-4 py-3 text-slate-600 hidden sm:table-cell">{hymn.singer ?? "—"}</td>
-      <td className="px-4 py-3 hidden md:table-cell">
-        <span
-          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-            statusColor[hymn.approvalStatus.name] ?? "bg-slate-100 text-slate-600"
-          }`}
-        >
-          {hymn.approvalStatus.name}
-        </span>
-      </td>
-      <td className="px-4 py-3">
-        <LyricsSuggestionActions
-          hymnId={hymn.id}
-          hymnTitle={hymn.title}
-          lyricsSuggestion={hymn.lyricsSuggestion ?? ""}
-        />
-      </td>
-    </tr>
   )
 }

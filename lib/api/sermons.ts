@@ -118,11 +118,11 @@ export async function getSermons({
 
   if (view === 'favorites' && userId) {
     where.favorites = { some: { userId } }
-    where.approvalStatus = { name: 'Approved' }
+    where.approvalStatus = { name: 'Accepted' }
   } else if (view === 'my-sermons' && userId) {
     where.userId = userId
   } else {
-    where.approvalStatus = { name: 'Approved' }
+    where.approvalStatus = { name: 'Accepted' }
   }
 
   if (categoryId) where.categories = { some: { categoryId } }
@@ -218,7 +218,7 @@ export async function getRelatedSermons(
 ): Promise<SmSermon[]> {
   const where: Record<string, unknown> = {
     NOT: { id: sermonId },
-    approvalStatus: { name: 'Approved' },
+    approvalStatus: { name: 'Accepted' },
   }
   if (categoryIds.length > 0) {
     where.categories = { some: { categoryId: { in: categoryIds } } }

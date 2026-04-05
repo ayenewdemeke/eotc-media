@@ -35,7 +35,7 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
     <>
       <AdminHeader
         breadcrumbs={[
-          { label: "Liturgy Admin", href: "/liturgy/admin" },
+          { label: "Liturgy admin", href: "/liturgy/admin" },
           { label: "Roles", href: "/liturgy/admin/roles" },
           { label: `Edit: ${role.nameEnglish}` },
         ]}

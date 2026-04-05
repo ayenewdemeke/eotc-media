@@ -10,7 +10,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params
   const hymnId = parseInt(id)
 
-  const rejectedStatus = await prisma.hmApprovalStatus.findFirst({ where: { name: 'Rejected' } })
+  const rejectedStatus = await prisma.hmApprovalStatus.findFirst({ where: { name: 'Declined' } })
   if (!rejectedStatus) return NextResponse.json({ error: 'Rejection status not found' }, { status: 500 })
 
   const hymn = await prisma.hmHymn.update({

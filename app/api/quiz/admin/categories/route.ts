@@ -11,8 +11,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!hasQuizAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  const { name } = await req.json()
+  const { name, languageId } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 })
-  const category = await prisma.qzCategory.create({ data: { name: name.trim() } })
+  const category = await prisma.qzCategory.create({ data: { name: name.trim(), languageId: languageId ?? null } })
   return NextResponse.json(category, { status: 201 })
 }

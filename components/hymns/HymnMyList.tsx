@@ -1,57 +1,17 @@
 import Link from "next/link"
 import { Music, Plus } from "lucide-react"
 import { HmHymn } from "@/types/models/hymn"
+import Pager from "@/components/ui/Pager"
 
 interface HymnMyListProps {
   hymns: HmHymn[]
   total: number
   page: number
   totalPages: number
-  buildPageUrl: (p: number) => string
+  baseUrl: string
 }
 
-function Pagination({ page, totalPages, buildPageUrl }: { page: number; totalPages: number; buildPageUrl: (p: number) => string }) {
-  if (totalPages <= 1) return null
-
-  const pages: (number | "…")[] = []
-  const add = (p: number) => { if (!pages.includes(p)) pages.push(p) }
-  for (let p = 1; p <= totalPages; p++) {
-    if (p === 1 || p === totalPages || Math.abs(p - page) <= 2) add(p)
-  }
-  const withEllipsis: (number | "…")[] = []
-  let prev = 0
-  for (const p of pages as number[]) {
-    if (p - prev > 1) withEllipsis.push("…")
-    withEllipsis.push(p)
-    prev = p
-  }
-
-  return (
-    <div className="flex items-center gap-1 flex-wrap">
-      {page > 1 && (
-        <Link href={buildPageUrl(page - 1)} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">‹ Prev</Link>
-      )}
-      {withEllipsis.map((p, i) =>
-        p === "…" ? (
-          <span key={`e${i}`} className="px-2 py-1.5 text-sm text-slate-400">…</span>
-        ) : (
-          <Link
-            key={p}
-            href={buildPageUrl(p as number)}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${p === page ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 hover:bg-slate-50"}`}
-          >
-            {p}
-          </Link>
-        )
-      )}
-      {page < totalPages && (
-        <Link href={buildPageUrl(page + 1)} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">Next ›</Link>
-      )}
-    </div>
-  )
-}
-
-export default function HymnMyList({ hymns, total, page, totalPages, buildPageUrl }: HymnMyListProps) {
+export default function HymnMyList({ hymns, total, page, totalPages, baseUrl }: HymnMyListProps) {
   const PAGE_SIZE = 24
 
   return (
@@ -59,7 +19,7 @@ export default function HymnMyList({ hymns, total, page, totalPages, buildPageUr
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">My Hymns</h2>
+          <h2 className="text-lg font-semibold text-slate-900">My hymns</h2>
           <p className="text-xs text-slate-400">{total.toLocaleString()} hymn{total !== 1 ? "s" : ""}</p>
         </div>
         <Link
@@ -67,13 +27,13 @@ export default function HymnMyList({ hymns, total, page, totalPages, buildPageUr
           className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          Add Hymn
+          Add hymn
         </Link>
       </div>
 
       {/* Top pagination */}
       <div className="mb-4">
-        <Pagination page={page} totalPages={totalPages} buildPageUrl={buildPageUrl} />
+        <Pager page={page} totalPages={totalPages} baseUrl={baseUrl} />
       </div>
 
       {hymns.length === 0 ? (
@@ -107,7 +67,7 @@ export default function HymnMyList({ hymns, total, page, totalPages, buildPageUr
                   </td>
                   <td className="px-4 py-2.5">
                     <Link
-                      href={`/hymns/${hymn.slug}`}
+                      href={`/hymns/my-hymns/${hymn.id}`}
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
                       view
@@ -122,7 +82,7 @@ export default function HymnMyList({ hymns, total, page, totalPages, buildPageUr
 
       {/* Bottom pagination */}
       <div className="mt-4">
-        <Pagination page={page} totalPages={totalPages} buildPageUrl={buildPageUrl} />
+        <Pager page={page} totalPages={totalPages} baseUrl={baseUrl} />
       </div>
     </div>
   )

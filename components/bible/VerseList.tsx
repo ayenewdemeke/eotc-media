@@ -10,6 +10,8 @@ interface VerseListProps {
   user: unknown
   localHighlights: Map<number, string>
   fontSize: number
+  selectMode: boolean
+  selectedVerseIds: Set<number>
   onVerseClick: (verseNum: number, verseId: number, el: HTMLElement) => void
 }
 
@@ -20,6 +22,8 @@ export default function VerseList({
   user,
   localHighlights,
   fontSize,
+  selectMode,
+  selectedVerseIds,
   onVerseClick,
 }: VerseListProps) {
   if (verses.length === 0) {
@@ -34,7 +38,6 @@ export default function VerseList({
 
   return (
     <div dir={dir}>
-      {/* Flowing inline prose — verses run together like a book */}
       <p
         className="font-serif leading-[1.95] text-slate-800 tracking-[0.005em]"
         style={{ fontSize: `${fontSize}px`, fontVariantNumeric: "oldstyle-nums" }}
@@ -42,51 +45,58 @@ export default function VerseList({
         {verses.map(verse => {
           const highlightColor = localHighlights.get(verse.id)
           const isActive = activeVerse === verse.verse
+          const isSelected = selectMode && selectedVerseIds.has(verse.id)
+
+          let spanStyle: React.CSSProperties | undefined
+          if (isSelected) {
+            spanStyle = { backgroundColor: "#dbeafe", borderRadius: "3px", padding: "1px 3px", margin: "0 -3px", outline: "2px solid #3b82f6", outlineOffset: "1px" }
+          } else if (highlightColor) {
+            spanStyle = { backgroundColor: `${highlightColor}60`, borderRadius: "3px", padding: "1px 3px", margin: "0 -3px" }
+          } else if (isActive && !selectMode) {
+            spanStyle = { backgroundColor: "#dbeafe", borderRadius: "3px", padding: "1px 3px", margin: "0 -3px" }
+          }
 
           return (
             <span
               key={verse.id}
               id={`verse-${verse.verse}`}
-              className="relative transition-colors duration-150"
-              style={
-                highlightColor
-                  ? { backgroundColor: `${highlightColor}60`, borderRadius: "3px", padding: "1px 3px", margin: "0 -3px" }
-                  : isActive
-                  ? { backgroundColor: "#dbeafe", borderRadius: "3px", padding: "1px 3px", margin: "0 -3px" }
-                  : undefined
-              }
+              onClick={selectMode ? e => onVerseClick(verse.verse, verse.id, e.currentTarget as HTMLElement) : undefined}
+              className={`relative transition-colors duration-150 ${selectMode ? "cursor-pointer" : ""}`}
+              style={spanStyle}
             >
-              {/* Verse number — clickable superscript */}
               <button
                 type="button"
-                onClick={e => onVerseClick(verse.verse, verse.id, e.currentTarget)}
-                title={user ? "Click to highlight" : "Sign in to highlight"}
+                onClick={selectMode ? undefined : e => onVerseClick(verse.verse, verse.id, e.currentTarget)}
+                title={selectMode ? "Click to select" : user ? "Click to highlight" : "Sign in to highlight"}
                 className={`inline leading-none transition-colors duration-100 select-none not-italic ${
-                  user
+                  selectMode
+                    ? "cursor-pointer"
+                    : user
                     ? "cursor-pointer hover:text-blue-600"
                     : "cursor-default"
                 } ${
-                  isActive ? "text-blue-500 font-black" : "text-blue-300 font-bold"
+                  isSelected
+                    ? "text-blue-600 font-black"
+                    : isActive && !selectMode
+                    ? "text-blue-500 font-black"
+                    : "text-blue-300 font-bold"
                 }`}
                 style={{ fontSize: "0.6em", marginRight: "0.25em", verticalAlign: "super", lineHeight: 1 }}
               >
                 {verse.verse}
               </button>
-              {/* Verse text */}
               {verse.text || (
                 <span className="text-slate-400 italic not-italic" style={{ fontSize: "0.875em" }}>
                   [no text]
                 </span>
               )}
-              {/* Space between verses */}
               {" "}
             </span>
           )
         })}
       </p>
 
-      {/* Sign-in nudge */}
-      {!user && (
+      {!user && !selectMode && (
         <p className="mt-10 text-xs text-slate-400 text-center">
           <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600 transition-colors">
             Sign in

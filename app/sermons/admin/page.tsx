@@ -25,7 +25,7 @@ export default async function SermonAdminDashboard() {
     clicksResult,
   ] = await Promise.all([
     prisma.smSermon.count(),
-    prisma.smSermon.count({ where: { approvalStatus: { name: "Approved" } } }),
+    prisma.smSermon.count({ where: { approvalStatus: { name: "Accepted" } } }),
     prisma.user.count(),
     prisma.smSermon.aggregate({ _sum: { clicksCount: true } }),
   ])
@@ -45,7 +45,7 @@ export default async function SermonAdminDashboard() {
       WITH daily AS (
         SELECT DATE_TRUNC('day', created_at) AS date, COUNT(*) AS cnt
         FROM sm_sermons
-        WHERE approval_status_id IN (SELECT id FROM sm_approval_statuses WHERE name = 'Approved')
+        WHERE approval_status_id IN (SELECT id FROM sm_approval_statuses WHERE name = 'Accepted')
         GROUP BY date
       )
       SELECT date, SUM(cnt) OVER (ORDER BY date) AS value
@@ -55,7 +55,7 @@ export default async function SermonAdminDashboard() {
       WITH daily AS (
         SELECT DATE_TRUNC('day', created_at) AS date, COUNT(*) AS cnt
         FROM sm_sermons
-        WHERE approval_status_id IN (SELECT id FROM sm_approval_statuses WHERE name = 'Rejected')
+        WHERE approval_status_id IN (SELECT id FROM sm_approval_statuses WHERE name = 'Declined')
         GROUP BY date
       )
       SELECT date, SUM(cnt) OVER (ORDER BY date) AS value
@@ -74,19 +74,19 @@ export default async function SermonAdminDashboard() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-semibold text-slate-900 mb-6">Sermon Dashboard</h1>
+      <h1 className="text-xl font-semibold text-slate-900 mb-6">Sermon dashboard</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Uploaded" value={totalUploaded} />
-        <StatCard label="Total Accepted" value={totalAccepted} />
-        <StatCard label="Pending Review" value={pendingCount} />
-        <StatCard label="Total Clicks" value={totalClicks} />
-        <StatCard label="Total Users" value={totalUsers} />
+        <StatCard label="Total uploaded" value={totalUploaded} />
+        <StatCard label="Total accepted" value={totalAccepted} />
+        <StatCard label="Pending review" value={pendingCount} />
+        <StatCard label="Total clicks" value={totalClicks} />
+        <StatCard label="Total users" value={totalUsers} />
       </div>
 
       {uploadedPts.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-xl p-5 mb-4">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">Cumulative Sermons</h2>
+          <h2 className="text-sm font-semibold text-slate-700 mb-3">Cumulative sermons</h2>
           <div className="overflow-x-auto">
             <table className="text-xs text-slate-600 w-full">
               <thead>

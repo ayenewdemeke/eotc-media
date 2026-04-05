@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   let approvalStatusId: number | undefined
   if (status === 'pending') {
-    const s = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: 'Pending', mode: 'insensitive' } } })
+    const s = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Submitted' } })
     approvalStatusId = s?.id
   }
 

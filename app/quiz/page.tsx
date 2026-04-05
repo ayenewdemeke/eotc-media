@@ -20,13 +20,9 @@ export default async function QuizPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <QuizSidebar userId={userId} />
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
-            <div className="mb-5">
-              <h1 className="text-xl font-semibold text-slate-900">Quiz</h1>
-              <p className="text-sm text-slate-400 mt-0.5">Filter questions and test your knowledge</p>
-            </div>
             <QuizBatchClient
               categories={categories}
               subCategories={subCategories}

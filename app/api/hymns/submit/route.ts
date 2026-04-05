@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const vid = videoId.trim()
 
   const [pendingStatus, defaultChannel] = await Promise.all([
-    prisma.hmApprovalStatus.findFirst({ where: { name: { contains: 'Pending', mode: 'insensitive' } } }),
+    prisma.hmApprovalStatus.findFirst({ where: { name: 'Submitted' } }),
     prisma.hmChannel.findFirst({ orderBy: { id: 'asc' } }),
   ])
 

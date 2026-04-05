@@ -69,7 +69,7 @@ export default async function ChannelHymnsPage({ params, searchParams }: PagePro
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
 
           <HymnSidebar userId={userId} />
 
@@ -88,7 +88,7 @@ export default async function ChannelHymnsPage({ params, searchParams }: PagePro
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="flex items-end gap-4 -mt-8 sm:-mt-10 mb-4">
                 {/* Avatar */}
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-4 border-white bg-gradient-to-br from-blue-100 to-violet-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-4 border-white bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center flex-shrink-0 shadow-sm">
                   <span className="text-2xl font-bold text-blue-600">
                     {channel.title.charAt(0).toUpperCase()}
                   </span>

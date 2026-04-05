@@ -110,6 +110,7 @@ export default function HymnInfiniteGrid({
 
   function buildPlayAllUrl() {
     const params = new URLSearchParams()
+    if (filters.view) params.set("view", filters.view)
     if (filters.language) params.set("language", filters.language)
     if (filters.category) params.set("category", filters.category)
     if (filters.subCategory) params.set("subCategory", filters.subCategory)

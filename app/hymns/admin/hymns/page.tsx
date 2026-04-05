@@ -60,11 +60,11 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
 
   const where: Record<string, unknown> = {}
   if (status === "pending") {
-    where.approvalStatus = { name: "Pending" }
+    where.approvalStatus = { name: "Submitted" }
   } else if (status === "approved") {
-    where.approvalStatus = { name: "Approved" }
+    where.approvalStatus = { name: "Accepted" }
   } else if (status === "rejected") {
-    where.approvalStatus = { name: "Rejected" }
+    where.approvalStatus = { name: "Declined" }
   }
 
   const [hymns, total] = await Promise.all([
@@ -85,12 +85,12 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
   const isPending = status === "pending"
-  const pageTitle = isPending ? "New Hymns" : "All Hymns"
+  const pageTitle = isPending ? "New hymns" : "All hymns"
 
   const statusBadge: Record<string, string> = {
-    Approved: "bg-green-100 text-green-700",
-    Pending: "bg-amber-100 text-amber-700",
-    Rejected: "bg-red-100 text-red-700",
+    Accepted: "bg-green-100 text-green-700",
+    Submitted: "bg-amber-100 text-amber-700",
+    Declined: "bg-red-100 text-red-700",
   }
 
   return (

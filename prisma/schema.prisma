@@ -42,6 +42,7 @@ model User {
   qzRoomMemberships  QzRoomMember[]
   qzRoundAnswers     QzRoundAnswer[]
   blHighlights       BlHighlight[]
+  blCollections      BlCollection[]
   accounts           Account[]
   sessions           Session[]
 
@@ -202,9 +203,10 @@ model BlVerse {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  book       BlBook        @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  texts      BlVerseText[]
-  highlights BlHighlight[]
+  book             BlBook              @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  texts            BlVerseText[]
+  highlights       BlHighlight[]
+  collectionVerses BlCollectionVerse[]
 
   @@unique([bookId, chapter, verse])
   @@map("bl_verses")
@@ -239,6 +241,34 @@ model BlHighlight {
   verse BlVerse @relation(fields: [verseId], references: [id], onDelete: Cascade)
 
   @@map("bl_highlights")
+}
+
+// Verse Collections (user custom categories)
+model BlCollection {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verses BlCollectionVerse[]
+
+  @@map("bl_collections")
+}
+
+model BlCollectionVerse {
+  id           Int      @id @default(autoincrement())
+  collectionId Int      @map("collection_id")
+  verseId      Int      @map("verse_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  collection BlCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  verse      BlVerse      @relation(fields: [verseId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, verseId])
+  @@map("bl_collection_verses")
 }
 
 // =====================================================
@@ -582,6 +612,7 @@ model HmHymn {
   title             String
   lyrics            String?   @db.Text
   lyricsSuggestion  String?   @map("lyrics_suggestion") @db.Text
+  aiLyrics          String?   @map("ai_lyrics") @db.Text
   description       String?   @db.Text
   thumbnailDefault  String    @map("thumbnail_default")
   thumbnailMedium   String    @map("thumbnail_medium")
@@ -779,15 +810,16 @@ model SmSermon {
   publishedAt       DateTime? @map("published_at") @db.Date
   preacher          String?
   title             String
-  description       String?   @db.Text
-  thumbnailDefault  String    @map("thumbnail_default")
-  thumbnailMedium   String    @map("thumbnail_medium")
-  thumbnailHigh     String    @map("thumbnail_high")
-  thumbnailStandard String?   @map("thumbnail_standard")
-  thumbnailMaxres   String?   @map("thumbnail_maxres")
-  clicksCount       Int       @default(0) @map("clicks_count")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  description           String?   @db.Text
+  descriptionSuggestion String?   @map("description_suggestion") @db.Text
+  thumbnailDefault      String    @map("thumbnail_default")
+  thumbnailMedium       String    @map("thumbnail_medium")
+  thumbnailHigh         String    @map("thumbnail_high")
+  thumbnailStandard     String?   @map("thumbnail_standard")
+  thumbnailMaxres       String?   @map("thumbnail_maxres")
+  clicksCount           Int       @default(0) @map("clicks_count")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
 
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   approvalStatus SmApprovalStatus @relation(fields: [approvalStatusId], references: [id])
@@ -878,17 +910,20 @@ model QzLanguage {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  questions QzLanguageQuestion[]
+  questions   QzLanguageQuestion[]
+  categories  QzCategory[]
 
   @@map("qz_languages")
 }
 
 model QzCategory {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  languageId Int?     @map("language_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
+  language      QzLanguage?          @relation(fields: [languageId], references: [id])
   subCategories QzSubCategory[]
   questions     QzCategoryQuestion[]
 

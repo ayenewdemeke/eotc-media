@@ -9,6 +9,7 @@ export const metadata: Metadata = { title: "Play All — Hymns | EOTC Media" }
 
 interface PageProps {
   searchParams: Promise<{
+    view?: string
     language?: string
     category?: string
     subCategory?: string
@@ -20,7 +21,7 @@ interface PageProps {
 }
 
 export default async function PlayAllPage({ searchParams }: PageProps) {
-  const { language, category, subCategory, singer, channel, search, sort } = await searchParams
+  const { view, language, category, subCategory, singer, channel, search, sort } = await searchParams
 
   const session = await auth()
   const userId = session?.user?.id ? parseInt(session.user.id) : undefined
@@ -34,6 +35,7 @@ export default async function PlayAllPage({ searchParams }: PageProps) {
   const { hymns } = await getHymns({
     page: 1,
     limit: 200,
+    view,
     languageId,
     categoryId,
     subCategoryId,

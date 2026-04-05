@@ -118,7 +118,7 @@ export default function RoomPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-[1320px] mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <QuizSidebar userId={userId} />
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
 
@@ -166,7 +166,7 @@ export default function RoomPage() {
                     <tr>
                       <th className="text-left px-5 py-2.5 text-xs font-semibold text-slate-400">Player</th>
                       <th className="text-right px-5 py-2.5 text-xs font-semibold text-slate-400">Score</th>
-                      <th className="text-right px-5 py-2.5 text-xs font-semibold text-slate-400">Rounds Won</th>
+                      <th className="text-right px-5 py-2.5 text-xs font-semibold text-slate-400">Rounds won</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">

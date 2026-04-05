@@ -137,7 +137,7 @@ export default function NewHymnPage() {
 
   return (
     <div className="p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Add Hymn</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Add hymn</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* YouTube URL */}
@@ -191,14 +191,14 @@ export default function NewHymnPage() {
             <input value={singer} onChange={e => setSinger(e.target.value)} placeholder="Singer name…" className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Published Date</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Published date</label>
             <input type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white" />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval Status *</label>
+            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval status *</label>
             <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
               <option value="">Select…</option>
               {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -268,7 +268,7 @@ export default function NewHymnPage() {
 
         {/* Singers (linked) */}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Linked Singers</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Linked singers</label>
           <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
             {singers.map(s => (
               <button
@@ -304,7 +304,7 @@ export default function NewHymnPage() {
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save Hymn
+            Save hymn
           </button>
           <button type="button" onClick={() => router.back()} className="px-6 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
             Cancel
