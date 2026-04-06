@@ -190,7 +190,7 @@ export default function SermonPlayAllPlayer({ sermons: initialSermons, userId }:
                 {(currentSermon.channel.thumbnailDefault || currentSermon.channel.thumbnailMedium || currentSermon.channel.thumbnailHigh) ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={currentSermon.channel.thumbnailDefault || currentSermon.channel.thumbnailMedium || currentSermon.channel.thumbnailHigh}
+                    src={currentSermon.channel.thumbnailDefault || currentSermon.channel.thumbnailMedium || currentSermon.channel.thumbnailHigh || undefined}
                     alt={currentSermon.channel.name}
                     className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                   />

@@ -192,7 +192,7 @@ export default function PlayAllPlayer({ hymns: initialHymns, userId }: Props) {
                 {(currentHymn.channel.thumbnailDefault || currentHymn.channel.thumbnailMedium || currentHymn.channel.thumbnailHigh) ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
-                    src={currentHymn.channel.thumbnailDefault || currentHymn.channel.thumbnailMedium || currentHymn.channel.thumbnailHigh}
+                    src={currentHymn.channel.thumbnailDefault || currentHymn.channel.thumbnailMedium || currentHymn.channel.thumbnailHigh || undefined}
                     alt={currentHymn.channel.title}
                     className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                   />
