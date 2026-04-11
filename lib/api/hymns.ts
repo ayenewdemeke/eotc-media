@@ -107,6 +107,7 @@ export async function getHymns({
   search,
   view,
   sort,
+  itemIds,
 }: {
   page?: number
   limit?: number
@@ -119,8 +120,13 @@ export async function getHymns({
   search?: string
   view?: string
   sort?: string
+  itemIds?: number[]
 } = {}): Promise<{ hymns: HmHymn[]; total: number }> {
   const where: Record<string, unknown> = {}
+
+  if (itemIds && itemIds.length > 0) {
+    where.id = { in: itemIds }
+  }
 
   if (view === 'favorites' && userId) {
     where.favorites = { some: { userId } }

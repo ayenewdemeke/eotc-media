@@ -76,6 +76,7 @@ export default function Navbar() {
     pathname?.startsWith(link.activePrefix ?? link.href)
 
   const roles = (user as { roles?: string[] })?.roles ?? []
+  const hasMainAdmin = roles.some(r => ["super-admin", "admin"].includes(r))
   const hasLiturgyAdmin = roles.some(r => ["super-admin", "admin", "liturgy-admin"].includes(r))
   const hasHymnAdmin = roles.some(r => ["super-admin", "admin", "hymn-admin"].includes(r))
   const hasSermonAdmin = roles.some(r => ["super-admin", "admin", "sermon-admin"].includes(r))
@@ -249,6 +250,15 @@ export default function Navbar() {
                           <User className="h-4 w-4 text-gray-400" />
                           Profile
                         </Link>
+                        {hasMainAdmin && (
+                          <Link
+                            href="/admin"
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <Settings className="h-4 w-4 text-gray-400" />
+                            Main admin
+                          </Link>
+                        )}
                         {hasLiturgyAdmin && (
                           <Link
                             href="/liturgy/admin"
@@ -423,6 +433,15 @@ export default function Navbar() {
                   <User className="h-5 w-5 text-gray-400" />
                   Profile
                 </Link>
+                {hasMainAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-3.5 px-5 py-3.5 text-[15px] font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="h-5 w-5 text-gray-400" />
+                    Main admin
+                  </Link>
+                )}
                 {hasLiturgyAdmin && (
                   <Link
                     href="/liturgy/admin"

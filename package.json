@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "node .next/standalone/server.js",
-    "postbuild": "cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static && cp -rL node_modules/.prisma .next/standalone/node_modules/.prisma && cp -rL node_modules/@prisma/. .next/standalone/node_modules/@prisma/",
+    "postbuild": "cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static && cp -r generated .next/standalone/generated",
     "lint": "next lint",
     "db:refresh:liturgy": "tsx scripts/reset-and-seed-liturgy.ts",
     "db:refresh:bible": "tsx scripts/reset-and-seed-bible.ts",

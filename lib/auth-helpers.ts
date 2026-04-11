@@ -1,5 +1,17 @@
 import { Session } from "next-auth"
 
+const MAIN_ADMIN_ROLES = ["super-admin", "admin"]
+
+export function hasMainAdminAccess(session: Session | null): boolean {
+  if (!session?.user?.roles || !Array.isArray(session.user.roles)) return false
+  return session.user.roles.some(role => role && MAIN_ADMIN_ROLES.includes(role))
+}
+
+export function checkMainAdminAccess(session: Session | null): void {
+  if (!session?.user) throw new Error("Unauthorized")
+  if (!hasMainAdminAccess(session)) throw new Error("Forbidden: Admin access required")
+}
+
 const LITURGY_ADMIN_ROLES = ["super-admin", "admin", "liturgy-admin"]
 const HYMN_ADMIN_ROLES = ["super-admin", "admin", "hymn-admin"]
 

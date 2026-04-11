@@ -95,10 +95,10 @@ export default async function Home() {
         {/* Centered text */}
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-10 sm:pb-14 px-4 text-center">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-snug drop-shadow mb-2">
-            የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን
+            የኢትዮጵያ ኦርቶዶክስ ተዋህዶ ቤተክርስቲያን የሚዲያ ውጤቶች
           </h1>
           <p className="text-sm sm:text-base text-white/75 font-medium tracking-wide">
-            Ethiopian Orthodox Tewahedo Church · Media Resources
+            Ethiopian Orthodox Tewahedo Church Media Resources
           </p>
         </div>
       </div>

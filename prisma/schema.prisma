@@ -2,8 +2,8 @@
 // Migrated from Laravel to Next.js + Prisma + PostgreSQL
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl", "rhel-openssl-1.0.x", "debian-openssl-1.1.x"]
+  provider = "prisma-client"
+  output   = "../generated/prisma/client"
 }
 
 datasource db {
