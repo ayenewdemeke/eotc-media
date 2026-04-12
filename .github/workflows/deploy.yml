@@ -38,3 +38,7 @@ jobs:
           local-dir: .next/standalone/
           protocol: ftp
           port: 21
+          dangerous-clean-slate: true
+          exclude: |
+            **/.git*
+            **/.git*/**
