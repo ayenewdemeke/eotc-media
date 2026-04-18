@@ -1267,3 +1267,8 @@ ALTER TABLE "qz_round_answers" ADD CONSTRAINT "qz_round_answers_user_id_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "qz_round_results" ADD CONSTRAINT "qz_round_results_round_id_fkey" FOREIGN KEY ("round_id") REFERENCES "qz_rounds"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- AlterTable: add language_id to qz_categories
+ALTER TABLE "qz_categories" ADD COLUMN "language_id" INTEGER;
+
+-- AddForeignKey
+ALTER TABLE "qz_categories" ADD CONSTRAINT "qz_categories_language_id_fkey" FOREIGN KEY ("language_id") REFERENCES "qz_languages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
