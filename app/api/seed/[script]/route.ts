@@ -433,20 +433,23 @@ async function seedBook() {
   return log;
 }
 
-async function seedBible() {
+// Bible is split into 5 endpoints to avoid server timeout:
+// bible-setup → bible-amharic → bible-kjv → bible-oromifa → bible-highlights
+
+const BOOK_OSIS_CODES = [
+  "Gen","Exod","Lev","Num","Deut","Josh","Judg","Ruth","1Sam","2Sam",
+  "1Kgs","2Kgs","1Chr","2Chr","Ezra","Neh","Esth","Job","Ps","Prov",
+  "Eccl","Song","Isa","Jer","Lam","Ezek","Dan","Hos","Joel","Amos",
+  "Obad","Jonah","Mic","Nah","Hab","Zeph","Hag","Zech","Mal",
+  "Matt","Mark","Luke","John","Acts","Rom","1Cor","2Cor","Gal","Eph",
+  "Phil","Col","1Thess","2Thess","1Tim","2Tim","Titus","Phlm","Heb",
+  "Jas","1Pet","2Pet","1John","2John","3John","Jude","Rev",
+];
+
+async function seedBibleSetup() {
   const log: string[] = [];
 
-  const BOOK_OSIS_CODES = [
-    "Gen","Exod","Lev","Num","Deut","Josh","Judg","Ruth","1Sam","2Sam",
-    "1Kgs","2Kgs","1Chr","2Chr","Ezra","Neh","Esth","Job","Ps","Prov",
-    "Eccl","Song","Isa","Jer","Lam","Ezek","Dan","Hos","Joel","Amos",
-    "Obad","Jonah","Mic","Nah","Hab","Zeph","Hag","Zech","Mal",
-    "Matt","Mark","Luke","John","Acts","Rom","1Cor","2Cor","Gal","Eph",
-    "Phil","Col","1Thess","2Thess","1Tim","2Tim","Titus","Phlm","Heb",
-    "Jas","1Pet","2Pet","1John","2John","3John","Jude","Rev",
-  ];
-
-  // Clear
+  // Clear all bible tables
   await prisma.blHighlight.deleteMany({});   log.push("✓ Highlights cleared");
   await prisma.blVerseText.deleteMany({});   log.push("✓ Verse texts cleared");
   await prisma.blVerse.deleteMany({});       log.push("✓ Verses cleared");
@@ -469,62 +472,65 @@ async function seedBible() {
   log.push("✓ Created canon");
 
   // Translations
-  const translations: Record<string, any> = {};
-  translations["am-1954"]     = await prisma.blTranslation.create({ data: { canonId: canon66.id, code: "am-1954",     name: "Amharic 1954",      language: "am" } });
-  translations["en-kjv"]      = await prisma.blTranslation.create({ data: { canonId: canon66.id, code: "en-kjv",      name: "King James Version", language: "en" } });
-  translations["om-ethiopic"] = await prisma.blTranslation.create({ data: { canonId: canon66.id, code: "om-ethiopic", name: "Oromifa",             language: "om" } });
+  await prisma.blTranslation.create({ data: { canonId: canon66.id, code: "am-1954",     name: "Amharic 1954",      language: "am" } });
+  await prisma.blTranslation.create({ data: { canonId: canon66.id, code: "en-kjv",      name: "King James Version", language: "en" } });
+  await prisma.blTranslation.create({ data: { canonId: canon66.id, code: "om-ethiopic", name: "Oromifa",            language: "om" } });
   log.push("✓ Created 3 translations");
 
-  // Books
+  // Books (sequences reset to 1, so new IDs match old IDs 1-66)
   const oldBooks = readJson("bl_books.json");
-  const bookIdMap: Record<number, number> = {};
   for (let i = 0; i < oldBooks.length && i < 66; i++) {
     const oldBook = oldBooks[i];
     const newBook = await prisma.blBook.create({
       data: { osisCode: BOOK_OSIS_CODES[i], englishName: oldBook.english_name, geezName: oldBook.geez_name, amharicName: oldBook.amharic_name, oromifaName: oldBook.oromifa_name, tigrignaName: oldBook.tigrigna_name, slug: oldBook.slug },
     });
-    bookIdMap[oldBook.id] = newBook.id;
     await prisma.blCanonBook.create({ data: { canonId: canon66.id, bookId: newBook.id, order: i + 1 } });
   }
   log.push("✓ Imported 66 books");
 
-  // Verses and Texts
-  const translationsToMigrate = [
-    { file: "bl_amharic_1954_bible.json",  translationCode: "am-1954" },
-    { file: "bl_english_kjv_bible.json",   translationCode: "en-kjv" },
-    { file: "bl_oromifa_bible.json",       translationCode: "om-ethiopic" },
-  ];
+  return log;
+}
 
-  const verseMap: Record<string, number> = {};
-  for (const trans of translationsToMigrate) {
-    const verses = readJson(trans.file);
-    for (const verse of verses) {
-      const newBookId = bookIdMap[verse.book_id];
-      if (!newBookId) continue;
-      const verseKey = `${newBookId}-${verse.chapter}-${verse.verse}`;
-      if (!verseMap[verseKey]) {
-        const newVerse = await prisma.blVerse.create({ data: { bookId: newBookId, chapter: verse.chapter, verse: verse.verse } });
-        verseMap[verseKey] = newVerse.id;
-      }
-      await prisma.blVerseText.create({ data: { verseId: verseMap[verseKey], translationId: translations[trans.translationCode].id, text: verse.text } });
+async function seedBibleTranslation(file: string, translationCode: string) {
+  const log: string[] = [];
+
+  const translation = await prisma.blTranslation.findFirstOrThrow({ where: { code: translationCode } });
+  const verses = readJson(file);
+  let count = 0;
+
+  for (const verse of verses) {
+    // IDs are identity after sequence reset (old book_id === new book_id)
+    const bookId = verse.book_id;
+
+    // Find or create the verse row
+    let verseRow = await prisma.blVerse.findFirst({ where: { bookId, chapter: verse.chapter, verse: verse.verse } });
+    if (!verseRow) {
+      verseRow = await prisma.blVerse.create({ data: { bookId, chapter: verse.chapter, verse: verse.verse } });
     }
-    log.push(`✓ Imported ${trans.translationCode} verses`);
+
+    await prisma.blVerseText.create({ data: { verseId: verseRow.id, translationId: translation.id, text: verse.text } });
+    count++;
   }
 
-  // Highlights
+  log.push(`✓ Imported ${count} verse texts for ${translationCode}`);
+  return log;
+}
+
+async function seedBibleHighlights() {
+  const log: string[] = [];
+
+  await prisma.blHighlight.deleteMany({});
   const highlightsData = readJson("bl_highlights.json");
-  let highlightCount = 0;
-  for (const h of highlightsData) {
-    const newBookId = bookIdMap[h.book_id];
-    if (!newBookId) continue;
-    const verseKey = `${newBookId}-${h.chapter}-${h.verse}`;
-    const verseId = verseMap[verseKey];
-    if (!verseId) continue;
-    await prisma.blHighlight.create({ data: { userId: h.user_id, verseId, color: h.color || null } });
-    highlightCount++;
-  }
-  log.push(`✓ Imported ${highlightCount} highlights`);
+  let count = 0;
 
+  for (const h of highlightsData) {
+    const verseRow = await prisma.blVerse.findFirst({ where: { bookId: h.book_id, chapter: h.chapter, verse: h.verse } });
+    if (!verseRow) continue;
+    await prisma.blHighlight.create({ data: { userId: h.user_id, verseId: verseRow.id, color: h.color || null } });
+    count++;
+  }
+
+  log.push(`✓ Imported ${count} highlights`);
   return log;
 }
 
@@ -623,13 +629,17 @@ async function seedQuiz() {
 // ─── ROUTE HANDLER ──────────────────────────────────────────────────────────
 
 const SEEDERS: Record<string, () => Promise<string[]>> = {
-  base:    seedBase,
-  liturgy: seedLiturgy,
-  sermon:  seedSermon,
-  hymn:    seedHymn,
-  book:    seedBook,
-  bible:   seedBible,
-  quiz:    seedQuiz,
+  base:             seedBase,
+  liturgy:          seedLiturgy,
+  sermon:           seedSermon,
+  hymn:             seedHymn,
+  book:             seedBook,
+  quiz:             seedQuiz,
+  "bible-setup":    seedBibleSetup,
+  "bible-amharic":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954"),
+  "bible-kjv":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv"),
+  "bible-oromifa":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic"),
+  "bible-highlights": seedBibleHighlights,
 };
 
 export async function GET(
