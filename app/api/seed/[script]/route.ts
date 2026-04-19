@@ -234,10 +234,13 @@ async function seedSermon() {
   return log;
 }
 
-async function seedHymn() {
+// Hymn is split into 2 endpoints to avoid server timeout:
+// hymn-setup → hymn-data
+
+async function seedHymnSetup() {
   const log: string[] = [];
 
-  // Clear
+  // Clear all hymn tables
   await prisma.hmComment.deleteMany({});           log.push("✓ Comments cleared");
   await prisma.hmFavorite.deleteMany({});           log.push("✓ Favorites cleared");
   await prisma.hmHymnSinger.deleteMany({});         log.push("✓ Hymn-Singer links cleared");
@@ -287,6 +290,12 @@ async function seedHymn() {
     await prisma.hmChannel.create({ data: { id: c.id, title: c.title ?? "Unknown", slug: c.slug ?? String(c.id), ytChannelId: c.channel_id ?? null, handle: c.handle ?? "", description: c.description || null, thumbnailDefault: c.thumbnail_default ?? null, thumbnailMedium: c.thumbnail_medium ?? null, thumbnailHigh: c.thumbnail_high ?? null, coverImage: c.cover_image ?? null, country: c.country ?? null, publishedAt: c.published_at ? new Date(c.published_at) : null, createdAt: c.created_at ? new Date(c.created_at) : new Date(), updatedAt: c.updated_at ? new Date(c.updated_at) : new Date() } });
   }
   log.push(`✓ Imported ${channels.length} channels`);
+
+  return log;
+}
+
+async function seedHymnData() {
+  const log: string[] = [];
 
   const hymns = readJson("hm_hymns.json");
   for (const h of hymns) {
@@ -632,7 +641,8 @@ const SEEDERS: Record<string, () => Promise<string[]>> = {
   base:             seedBase,
   liturgy:          seedLiturgy,
   sermon:           seedSermon,
-  hymn:             seedHymn,
+  "hymn-setup":     seedHymnSetup,
+  "hymn-data":      seedHymnData,
   book:             seedBook,
   quiz:             seedQuiz,
   "bible-setup":    seedBibleSetup,
