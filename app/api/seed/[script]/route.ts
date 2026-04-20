@@ -315,6 +315,12 @@ async function seedHymnLinks() {
   }
   log.push(`✓ ${categoryHymns.length} hymn-category links`);
 
+  return log;
+}
+
+async function seedHymnExtras() {
+  const log: string[] = [];
+
   const hymnLanguages = readJson("hm_hymn_language.json");
   for (const r of hymnLanguages) {
     await prisma.hmHymnLanguage.create({ data: { id: r.id, hymnId: r.hymn_id, languageId: r.language_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
@@ -650,6 +656,7 @@ const SEEDERS: Record<string, () => Promise<string[]>> = {
   "hymn-setup":     seedHymnSetup,
   "hymn-data":      seedHymnData,
   "hymn-links":     seedHymnLinks,
+  "hymn-extras":    seedHymnExtras,
   book:             seedBook,
   quiz:             seedQuiz,
   "bible-setup":    seedBibleSetup,
