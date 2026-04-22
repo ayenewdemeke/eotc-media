@@ -306,14 +306,17 @@ async function seedHymnData() {
   return log;
 }
 
-async function seedHymnLinks() {
+async function seedHymnLinks(half: 1 | 2) {
   const log: string[] = [];
 
-  const categoryHymns = readJson("hm_category_hymn.json");
-  for (const r of categoryHymns) {
+  const all = readJson("hm_category_hymn.json");
+  const mid = Math.ceil(all.length / 2);
+  const rows = half === 1 ? all.slice(0, mid) : all.slice(mid);
+
+  for (const r of rows) {
     await prisma.hmCategoryHymn.create({ data: { id: r.id, categoryId: r.category_id, hymnId: r.hymn_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
   }
-  log.push(`✓ ${categoryHymns.length} hymn-category links`);
+  log.push(`✓ ${rows.length} hymn-category links (part ${half} of 2)`);
 
   return log;
 }
@@ -512,28 +515,28 @@ async function seedBibleSetup() {
   return log;
 }
 
-async function seedBibleTranslation(file: string, translationCode: string) {
+// OT = book_id 1–39, NT = book_id 40–66
+async function seedBibleTranslation(file: string, translationCode: string, testament: "OT" | "NT") {
   const log: string[] = [];
 
   const translation = await prisma.blTranslation.findFirstOrThrow({ where: { code: translationCode } });
-  const verses = readJson(file);
+  const allVerses = readJson(file);
+  const verses = testament === "OT"
+    ? allVerses.filter((v: any) => v.book_id <= 39)
+    : allVerses.filter((v: any) => v.book_id >= 40);
   let count = 0;
 
   for (const verse of verses) {
-    // IDs are identity after sequence reset (old book_id === new book_id)
     const bookId = verse.book_id;
-
-    // Find or create the verse row
     let verseRow = await prisma.blVerse.findFirst({ where: { bookId, chapter: verse.chapter, verse: verse.verse } });
     if (!verseRow) {
       verseRow = await prisma.blVerse.create({ data: { bookId, chapter: verse.chapter, verse: verse.verse } });
     }
-
     await prisma.blVerseText.create({ data: { verseId: verseRow.id, translationId: translation.id, text: verse.text } });
     count++;
   }
 
-  log.push(`✓ Imported ${count} verse texts for ${translationCode}`);
+  log.push(`✓ Imported ${count} ${testament} verse texts for ${translationCode}`);
   return log;
 }
 
@@ -655,15 +658,19 @@ const SEEDERS: Record<string, () => Promise<string[]>> = {
   sermon:           seedSermon,
   "hymn-setup":     seedHymnSetup,
   "hymn-data":      seedHymnData,
-  "hymn-links":     seedHymnLinks,
+  "hymn-links-1":   () => seedHymnLinks(1),
+  "hymn-links-2":   () => seedHymnLinks(2),
   "hymn-extras":    seedHymnExtras,
   book:             seedBook,
   quiz:             seedQuiz,
-  "bible-setup":    seedBibleSetup,
-  "bible-amharic":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954"),
-  "bible-kjv":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv"),
-  "bible-oromifa":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic"),
-  "bible-highlights": seedBibleHighlights,
+  "bible-setup":       seedBibleSetup,
+  "bible-amharic-ot":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     "OT"),
+  "bible-amharic-nt":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     "NT"),
+  "bible-kjv-ot":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      "OT"),
+  "bible-kjv-nt":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      "NT"),
+  "bible-oromifa-ot":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", "OT"),
+  "bible-oromifa-nt":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", "NT"),
+  "bible-highlights":  seedBibleHighlights,
 };
 
 export async function GET(
