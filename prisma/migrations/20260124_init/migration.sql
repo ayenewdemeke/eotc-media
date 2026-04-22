@@ -175,6 +175,28 @@ CREATE TABLE "bl_highlights" (
 );
 
 -- CreateTable
+CREATE TABLE "bl_collections" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "bl_collections_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "bl_collection_verses" (
+    "id" SERIAL NOT NULL,
+    "collection_id" INTEGER NOT NULL,
+    "verse_id" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "bl_collection_verses_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "lt_sections" (
     "id" SERIAL NOT NULL,
     "name_geez" TEXT NOT NULL,
@@ -962,6 +984,9 @@ CREATE UNIQUE INDEX "bl_verses_book_id_chapter_verse_key" ON "bl_verses"("book_i
 CREATE UNIQUE INDEX "bl_verse_texts_verse_id_translation_id_key" ON "bl_verse_texts"("verse_id", "translation_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "bl_collection_verses_collection_id_verse_id_key" ON "bl_collection_verses"("collection_id", "verse_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "lt_roles_role_key_key" ON "lt_roles"("role_key");
 
 -- CreateIndex
@@ -1050,6 +1075,15 @@ ALTER TABLE "bl_highlights" ADD CONSTRAINT "bl_highlights_user_id_fkey" FOREIGN 
 
 -- AddForeignKey
 ALTER TABLE "bl_highlights" ADD CONSTRAINT "bl_highlights_verse_id_fkey" FOREIGN KEY ("verse_id") REFERENCES "bl_verses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bl_collections" ADD CONSTRAINT "bl_collections_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bl_collection_verses" ADD CONSTRAINT "bl_collection_verses_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "bl_collections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bl_collection_verses" ADD CONSTRAINT "bl_collection_verses_verse_id_fkey" FOREIGN KEY ("verse_id") REFERENCES "bl_verses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "lt_liturgical_texts" ADD CONSTRAINT "lt_liturgical_texts_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "lt_sections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
