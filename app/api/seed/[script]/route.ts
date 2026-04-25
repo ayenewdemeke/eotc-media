@@ -336,17 +336,17 @@ async function seedHymnExtras1() {
   }
   log.push(`✓ ${hymnSingers.length} hymn-singer links`);
 
-  const hymnSubCategories = readJson("hm_hymn_sub_category.json");
-  for (const r of hymnSubCategories) {
-    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${hymnSubCategories.length} hymn-sub-category links`);
-
   return log;
 }
 
 async function seedHymnExtras2() {
   const log: string[] = [];
+
+  const hymnSubCategories = readJson("hm_hymn_sub_category.json");
+  for (const r of hymnSubCategories) {
+    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  }
+  log.push(`✓ ${hymnSubCategories.length} hymn-sub-category links`);
 
   const favorites = readJson("hm_favorites.json");
   for (const f of favorites) {
@@ -668,14 +668,14 @@ const SEEDERS: Record<string, () => Promise<string[]>> = {
   book:             seedBook,
   quiz:             seedQuiz,
   "bible-setup":        seedBibleSetup,
-  "bible-amharic-ot1":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      1,  20),
-  "bible-amharic-ot2":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     21,  39),
+  "bible-amharic-ot1":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      1,  15),
+  "bible-amharic-ot2":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     16,  39),
   "bible-amharic-nt":   () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     40,  66),
-  "bible-kjv-ot1":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       1,  20),
-  "bible-kjv-ot2":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      21,  39),
+  "bible-kjv-ot1":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       1,  15),
+  "bible-kjv-ot2":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      16,  39),
   "bible-kjv-nt":       () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      40,  66),
-  "bible-oromifa-ot1":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  1,  20),
-  "bible-oromifa-ot2":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 21,  39),
+  "bible-oromifa-ot1":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  1,  15),
+  "bible-oromifa-ot2":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 16,  39),
   "bible-oromifa-nt":   () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 40,  66),
   "bible-highlights":   seedBibleHighlights,
 };
