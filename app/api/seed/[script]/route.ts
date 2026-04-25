@@ -294,14 +294,17 @@ async function seedHymnSetup() {
   return log;
 }
 
-async function seedHymnData() {
+async function seedHymnData(half: 1 | 2) {
   const log: string[] = [];
 
-  const hymns = readJson("hm_hymns.json");
+  const all = readJson("hm_hymns.json");
+  const mid = Math.ceil(all.length / 2);
+  const hymns = half === 1 ? all.slice(0, mid) : all.slice(mid);
+
   for (const h of hymns) {
     await prisma.hmHymn.create({ data: { id: h.id, userId: h.user_id, approvalStatusId: h.approval_status_id, channelId: h.channel_id, slug: h.slug ?? String(h.id), videoId: h.video_id, publishedAt: h.published_at ? new Date(h.published_at) : null, singer: h.singer ?? null, title: h.title, lyrics: h.lyrics ?? null, lyricsSuggestion: h.lyrics_suggestion ?? null, description: h.description ?? null, thumbnailDefault: h.thumbnail_default, thumbnailMedium: h.thumbnail_medium, thumbnailHigh: h.thumbnail_high, thumbnailStandard: h.thumbnail_standard ?? null, thumbnailMaxres: h.thumbnail_maxres ?? null, clicksCount: h.clicks_count ?? 0, createdAt: h.created_at ? new Date(h.created_at) : new Date(), updatedAt: h.updated_at ? new Date(h.updated_at) : new Date() } });
   }
-  log.push(`✓ Imported ${hymns.length} hymns`);
+  log.push(`✓ Imported ${hymns.length} hymns (part ${half} of 2)`);
 
   return log;
 }
@@ -342,11 +345,27 @@ async function seedHymnExtras1() {
 async function seedHymnExtras2() {
   const log: string[] = [];
 
-  const hymnSubCategories = readJson("hm_hymn_sub_category.json");
-  for (const r of hymnSubCategories) {
+  const all = readJson("hm_hymn_sub_category.json");
+  const mid = Math.ceil(all.length / 2);
+  const rows = all.slice(0, mid);
+  for (const r of rows) {
     await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
   }
-  log.push(`✓ ${hymnSubCategories.length} hymn-sub-category links`);
+  log.push(`✓ ${rows.length} hymn-sub-category links (part 1 of 2)`);
+
+  return log;
+}
+
+async function seedHymnExtras3() {
+  const log: string[] = [];
+
+  const all = readJson("hm_hymn_sub_category.json");
+  const mid = Math.ceil(all.length / 2);
+  const rows = all.slice(mid);
+  for (const r of rows) {
+    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  }
+  log.push(`✓ ${rows.length} hymn-sub-category links (part 2 of 2)`);
 
   const favorites = readJson("hm_favorites.json");
   for (const f of favorites) {
@@ -660,22 +679,30 @@ const SEEDERS: Record<string, () => Promise<string[]>> = {
   liturgy:          seedLiturgy,
   sermon:           seedSermon,
   "hymn-setup":     seedHymnSetup,
-  "hymn-data":      seedHymnData,
+  "hymn-data-1":    () => seedHymnData(1),
+  "hymn-data-2":    () => seedHymnData(2),
   "hymn-links-1":   () => seedHymnLinks(1),
   "hymn-links-2":   () => seedHymnLinks(2),
   "hymn-extras-1":  seedHymnExtras1,
   "hymn-extras-2":  seedHymnExtras2,
+  "hymn-extras-3":  seedHymnExtras3,
   book:             seedBook,
   quiz:             seedQuiz,
   "bible-setup":        seedBibleSetup,
-  "bible-amharic-ot1":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      1,  15),
-  "bible-amharic-ot2":  () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     16,  39),
+  "bible-amharic-ot1a": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      1,   5),
+  "bible-amharic-ot1b": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      6,  15),
+  "bible-amharic-ot2a": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     16,  22),
+  "bible-amharic-ot2b": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     23,  39),
   "bible-amharic-nt":   () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     40,  66),
-  "bible-kjv-ot1":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       1,  15),
-  "bible-kjv-ot2":      () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      16,  39),
+  "bible-kjv-ot1a":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       1,   5),
+  "bible-kjv-ot1b":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       6,  15),
+  "bible-kjv-ot2a":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      16,  22),
+  "bible-kjv-ot2b":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      23,  39),
   "bible-kjv-nt":       () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      40,  66),
-  "bible-oromifa-ot1":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  1,  15),
-  "bible-oromifa-ot2":  () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 16,  39),
+  "bible-oromifa-ot1a": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  1,   5),
+  "bible-oromifa-ot1b": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  6,  15),
+  "bible-oromifa-ot2a": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 16,  22),
+  "bible-oromifa-ot2b": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 23,  39),
   "bible-oromifa-nt":   () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 40,  66),
   "bible-highlights":   seedBibleHighlights,
 };
