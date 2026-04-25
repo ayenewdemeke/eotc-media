@@ -321,7 +321,7 @@ async function seedHymnLinks(half: 1 | 2) {
   return log;
 }
 
-async function seedHymnExtras() {
+async function seedHymnExtras1() {
   const log: string[] = [];
 
   const hymnLanguages = readJson("hm_hymn_language.json");
@@ -341,6 +341,12 @@ async function seedHymnExtras() {
     await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
   }
   log.push(`✓ ${hymnSubCategories.length} hymn-sub-category links`);
+
+  return log;
+}
+
+async function seedHymnExtras2() {
+  const log: string[] = [];
 
   const favorites = readJson("hm_favorites.json");
   for (const f of favorites) {
@@ -657,7 +663,8 @@ const SEEDERS: Record<string, () => Promise<string[]>> = {
   "hymn-data":      seedHymnData,
   "hymn-links-1":   () => seedHymnLinks(1),
   "hymn-links-2":   () => seedHymnLinks(2),
-  "hymn-extras":    seedHymnExtras,
+  "hymn-extras-1":  seedHymnExtras1,
+  "hymn-extras-2":  seedHymnExtras2,
   book:             seedBook,
   quiz:             seedQuiz,
   "bible-setup":        seedBibleSetup,
