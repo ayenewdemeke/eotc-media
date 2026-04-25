@@ -336,17 +336,17 @@ async function seedHymnExtras1() {
   }
   log.push(`✓ ${hymnSingers.length} hymn-singer links`);
 
-  const hymnSubCategories = readJson("hm_hymn_sub_category.json");
-  for (const r of hymnSubCategories) {
-    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${hymnSubCategories.length} hymn-sub-category links`);
-
   return log;
 }
 
 async function seedHymnExtras2() {
   const log: string[] = [];
+
+  const hymnSubCategories = readJson("hm_hymn_sub_category.json");
+  for (const r of hymnSubCategories) {
+    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  }
+  log.push(`✓ ${hymnSubCategories.length} hymn-sub-category links`);
 
   const favorites = readJson("hm_favorites.json");
   for (const f of favorites) {
