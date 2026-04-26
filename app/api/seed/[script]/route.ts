@@ -32,7 +32,7 @@ async function seedBase() {
       data: {
         id: r.id,
         name: r.name,
-        code: r.code ?? r.name.toLowerCase().replace(/\s+/g, "-"),
+        code: r.code,
         createdAt: r.created_at ? new Date(r.created_at) : new Date(),
         updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
       },
@@ -83,7 +83,7 @@ async function seedBase() {
         name: c.name || null,
         email: c.email || null,
         phone: c.phone || null,
-        message: c.body || null,
+        message: c.message || null,
         createdAt: c.created_at ? new Date(c.created_at) : new Date(),
         updatedAt: c.updated_at ? new Date(c.updated_at) : new Date(),
       },
