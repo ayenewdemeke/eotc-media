@@ -195,41 +195,53 @@ async function seedSermon() {
 
   // Sermons
   const sermons = readJson("sm_sermons.json");
-  for (const s of sermons) {
-    await prisma.smSermon.create({ data: { id: s.id, userId: s.user_id, approvalStatusId: s.approval_status_id, channelId: s.channel_id, slug: s.slug ?? String(s.id), videoId: s.video_id, publishedAt: s.published_at ? new Date(s.published_at) : null, preacher: s.preacher ?? null, title: s.title, description: s.description ?? null, thumbnailDefault: s.thumbnail_default, thumbnailMedium: s.thumbnail_medium, thumbnailHigh: s.thumbnail_high, thumbnailStandard: s.thumbnail_standard ?? null, thumbnailMaxres: s.thumbnail_maxres ?? null, clicksCount: s.clicks_count ?? 0, createdAt: s.created_at ? new Date(s.created_at) : new Date(), updatedAt: s.updated_at ? new Date(s.updated_at) : new Date() } });
+  const SCHUNK = 500;
+  let sInserted = 0;
+  for (let i = 0; i < sermons.length; i += SCHUNK) {
+    const chunk = sermons.slice(i, i + SCHUNK);
+    const { count } = await prisma.smSermon.createMany({
+      data: chunk.map((s: any) => ({ id: s.id, userId: s.user_id, approvalStatusId: s.approval_status_id, channelId: s.channel_id, slug: s.slug ?? String(s.id), videoId: s.video_id, publishedAt: s.published_at ? new Date(s.published_at) : null, preacher: s.preacher ?? null, title: s.title, description: s.description ?? null, thumbnailDefault: s.thumbnail_default, thumbnailMedium: s.thumbnail_medium, thumbnailHigh: s.thumbnail_high, thumbnailStandard: s.thumbnail_standard ?? null, thumbnailMaxres: s.thumbnail_maxres ?? null, clicksCount: s.clicks_count ?? 0, createdAt: s.created_at ? new Date(s.created_at) : new Date(), updatedAt: s.updated_at ? new Date(s.updated_at) : new Date() })),
+      skipDuplicates: true,
+    });
+    sInserted += count;
   }
-  log.push(`✓ Imported ${sermons.length} sermons`);
+  log.push(`✓ Imported ${sInserted} sermons`);
 
   // Junctions
   const categorySermons = readJson("sm_category_sermon.json");
-  for (const r of categorySermons) {
-    await prisma.smCategorySermon.create({ data: { id: r.id, categoryId: r.category_id, sermonId: r.sermon_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${categorySermons.length} sermon-category links`);
+  const { count: csCount } = await prisma.smCategorySermon.createMany({
+    data: categorySermons.map((r: any) => ({ id: r.id, categoryId: r.category_id, sermonId: r.sermon_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${csCount} sermon-category links`);
 
   const languageSermons = readJson("sm_language_sermon.json");
-  for (const r of languageSermons) {
-    await prisma.smLanguageSermon.create({ data: { id: r.id, languageId: r.language_id, sermonId: r.sermon_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${languageSermons.length} sermon-language links`);
+  const { count: lsCount } = await prisma.smLanguageSermon.createMany({
+    data: languageSermons.map((r: any) => ({ id: r.id, languageId: r.language_id, sermonId: r.sermon_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${lsCount} sermon-language links`);
 
   const preacherSermons = readJson("sm_preacher_sermon.json");
-  for (const r of preacherSermons) {
-    await prisma.smPreacherSermon.create({ data: { id: r.id, preacherId: r.preacher_id, sermonId: r.sermon_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${preacherSermons.length} sermon-preacher links`);
+  const { count: psCount } = await prisma.smPreacherSermon.createMany({
+    data: preacherSermons.map((r: any) => ({ id: r.id, preacherId: r.preacher_id, sermonId: r.sermon_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${psCount} sermon-preacher links`);
 
   const sermonSubCategories = readJson("sm_sermon_sub_category.json");
-  for (const r of sermonSubCategories) {
-    await prisma.smSermonSubCategory.create({ data: { id: r.id, sermonId: r.sermon_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${sermonSubCategories.length} sermon-sub-category links`);
+  const { count: sscCount } = await prisma.smSermonSubCategory.createMany({
+    data: sermonSubCategories.map((r: any) => ({ id: r.id, sermonId: r.sermon_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${sscCount} sermon-sub-category links`);
 
   const favorites = readJson("sm_favorites.json");
-  for (const f of favorites) {
-    await prisma.smFavorite.create({ data: { id: f.id, userId: f.user_id, sermonId: f.sermon_id, createdAt: f.created_at ? new Date(f.created_at) : new Date(), updatedAt: f.updated_at ? new Date(f.updated_at) : new Date() } });
-  }
-  log.push(`✓ Imported ${favorites.length} favorites`);
+  const { count: sfCount } = await prisma.smFavorite.createMany({
+    data: favorites.map((f: any) => ({ id: f.id, userId: f.user_id, sermonId: f.sermon_id, createdAt: f.created_at ? new Date(f.created_at) : new Date(), updatedAt: f.updated_at ? new Date(f.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ Imported ${sfCount} favorites`);
 
   return log;
 }
@@ -301,10 +313,38 @@ async function seedHymnData(half: 1 | 2) {
   const mid = Math.ceil(all.length / 2);
   const hymns = half === 1 ? all.slice(0, mid) : all.slice(mid);
 
-  for (const h of hymns) {
-    await prisma.hmHymn.create({ data: { id: h.id, userId: h.user_id, approvalStatusId: h.approval_status_id, channelId: h.channel_id, slug: h.slug ?? String(h.id), videoId: h.video_id, publishedAt: h.published_at ? new Date(h.published_at) : null, singer: h.singer ?? null, title: h.title, lyrics: h.lyrics ?? null, lyricsSuggestion: h.lyrics_suggestion ?? null, description: h.description ?? null, thumbnailDefault: h.thumbnail_default, thumbnailMedium: h.thumbnail_medium, thumbnailHigh: h.thumbnail_high, thumbnailStandard: h.thumbnail_standard ?? null, thumbnailMaxres: h.thumbnail_maxres ?? null, clicksCount: h.clicks_count ?? 0, createdAt: h.created_at ? new Date(h.created_at) : new Date(), updatedAt: h.updated_at ? new Date(h.updated_at) : new Date() } });
+  const CHUNK = 500;
+  let inserted = 0;
+  for (let i = 0; i < hymns.length; i += CHUNK) {
+    const chunk = hymns.slice(i, i + CHUNK);
+    const { count } = await prisma.hmHymn.createMany({
+      data: chunk.map((h: any) => ({
+        id: h.id,
+        userId: h.user_id,
+        approvalStatusId: h.approval_status_id,
+        channelId: h.channel_id,
+        slug: h.slug ?? String(h.id),
+        videoId: h.video_id,
+        publishedAt: h.published_at ? new Date(h.published_at) : null,
+        singer: h.singer ?? null,
+        title: h.title,
+        lyrics: h.lyrics ?? null,
+        lyricsSuggestion: h.lyrics_suggestion ?? null,
+        description: h.description ?? null,
+        thumbnailDefault: h.thumbnail_default,
+        thumbnailMedium: h.thumbnail_medium,
+        thumbnailHigh: h.thumbnail_high,
+        thumbnailStandard: h.thumbnail_standard ?? null,
+        thumbnailMaxres: h.thumbnail_maxres ?? null,
+        clicksCount: h.clicks_count ?? 0,
+        createdAt: h.created_at ? new Date(h.created_at) : new Date(),
+        updatedAt: h.updated_at ? new Date(h.updated_at) : new Date(),
+      })),
+      skipDuplicates: true,
+    });
+    inserted += count;
   }
-  log.push(`✓ Imported ${hymns.length} hymns (part ${half} of 2)`);
+  log.push(`✓ Imported ${inserted} hymns (part ${half} of 2)`);
 
   return log;
 }
@@ -316,10 +356,23 @@ async function seedHymnLinks(half: 1 | 2) {
   const mid = Math.ceil(all.length / 2);
   const rows = half === 1 ? all.slice(0, mid) : all.slice(mid);
 
-  for (const r of rows) {
-    await prisma.hmCategoryHymn.create({ data: { id: r.id, categoryId: r.category_id, hymnId: r.hymn_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  const CHUNK = 500;
+  let inserted = 0;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const chunk = rows.slice(i, i + CHUNK);
+    const { count } = await prisma.hmCategoryHymn.createMany({
+      data: chunk.map((r: any) => ({
+        id: r.id,
+        categoryId: r.category_id,
+        hymnId: r.hymn_id,
+        createdAt: r.created_at ? new Date(r.created_at) : new Date(),
+        updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+      })),
+      skipDuplicates: true,
+    });
+    inserted += count;
   }
-  log.push(`✓ ${rows.length} hymn-category links (part ${half} of 2)`);
+  log.push(`✓ ${inserted} hymn-category links (part ${half} of 2)`);
 
   return log;
 }
@@ -327,17 +380,39 @@ async function seedHymnLinks(half: 1 | 2) {
 async function seedHymnExtras1() {
   const log: string[] = [];
 
+  const CHUNK = 500;
+
   const hymnLanguages = readJson("hm_hymn_language.json");
-  for (const r of hymnLanguages) {
-    await prisma.hmHymnLanguage.create({ data: { id: r.id, hymnId: r.hymn_id, languageId: r.language_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  let langInserted = 0;
+  for (let i = 0; i < hymnLanguages.length; i += CHUNK) {
+    const chunk = hymnLanguages.slice(i, i + CHUNK);
+    const { count } = await prisma.hmHymnLanguage.createMany({
+      data: chunk.map((r: any) => ({
+        id: r.id, hymnId: r.hymn_id, languageId: r.language_id,
+        createdAt: r.created_at ? new Date(r.created_at) : new Date(),
+        updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+      })),
+      skipDuplicates: true,
+    });
+    langInserted += count;
   }
-  log.push(`✓ ${hymnLanguages.length} hymn-language links`);
+  log.push(`✓ ${langInserted} hymn-language links`);
 
   const hymnSingers = readJson("hm_hymn_singer.json");
-  for (const r of hymnSingers) {
-    await prisma.hmHymnSinger.create({ data: { id: r.id, hymnId: r.hymn_id, singerId: r.singer_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  let singerInserted = 0;
+  for (let i = 0; i < hymnSingers.length; i += CHUNK) {
+    const chunk = hymnSingers.slice(i, i + CHUNK);
+    const { count } = await prisma.hmHymnSinger.createMany({
+      data: chunk.map((r: any) => ({
+        id: r.id, hymnId: r.hymn_id, singerId: r.singer_id,
+        createdAt: r.created_at ? new Date(r.created_at) : new Date(),
+        updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+      })),
+      skipDuplicates: true,
+    });
+    singerInserted += count;
   }
-  log.push(`✓ ${hymnSingers.length} hymn-singer links`);
+  log.push(`✓ ${singerInserted} hymn-singer links`);
 
   return log;
 }
@@ -345,13 +420,24 @@ async function seedHymnExtras1() {
 async function seedHymnExtras2() {
   const log: string[] = [];
 
+  const CHUNK = 500;
   const all = readJson("hm_hymn_sub_category.json");
   const mid = Math.ceil(all.length / 2);
   const rows = all.slice(0, mid);
-  for (const r of rows) {
-    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  let inserted = 0;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const chunk = rows.slice(i, i + CHUNK);
+    const { count } = await prisma.hmHymnSubCategory.createMany({
+      data: chunk.map((r: any) => ({
+        id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id,
+        createdAt: r.created_at ? new Date(r.created_at) : new Date(),
+        updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+      })),
+      skipDuplicates: true,
+    });
+    inserted += count;
   }
-  log.push(`✓ ${rows.length} hymn-sub-category links (part 1 of 2)`);
+  log.push(`✓ ${inserted} hymn-sub-category links (part 1 of 2)`);
 
   return log;
 }
@@ -359,25 +445,47 @@ async function seedHymnExtras2() {
 async function seedHymnExtras3() {
   const log: string[] = [];
 
+  const CHUNK = 500;
+
   const all = readJson("hm_hymn_sub_category.json");
   const mid = Math.ceil(all.length / 2);
   const rows = all.slice(mid);
-  for (const r of rows) {
-    await prisma.hmHymnSubCategory.create({ data: { id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
+  let subCatInserted = 0;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const chunk = rows.slice(i, i + CHUNK);
+    const { count } = await prisma.hmHymnSubCategory.createMany({
+      data: chunk.map((r: any) => ({
+        id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id,
+        createdAt: r.created_at ? new Date(r.created_at) : new Date(),
+        updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
+      })),
+      skipDuplicates: true,
+    });
+    subCatInserted += count;
   }
-  log.push(`✓ ${rows.length} hymn-sub-category links (part 2 of 2)`);
+  log.push(`✓ ${subCatInserted} hymn-sub-category links (part 2 of 2)`);
 
   const favorites = readJson("hm_favorites.json");
-  for (const f of favorites) {
-    await prisma.hmFavorite.create({ data: { id: f.id, userId: f.user_id, hymnId: f.hymn_id, createdAt: f.created_at ? new Date(f.created_at) : new Date(), updatedAt: f.updated_at ? new Date(f.updated_at) : new Date() } });
-  }
-  log.push(`✓ Imported ${favorites.length} favorites`);
+  const { count: favCount } = await prisma.hmFavorite.createMany({
+    data: favorites.map((f: any) => ({
+      id: f.id, userId: f.user_id, hymnId: f.hymn_id,
+      createdAt: f.created_at ? new Date(f.created_at) : new Date(),
+      updatedAt: f.updated_at ? new Date(f.updated_at) : new Date(),
+    })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ Imported ${favCount} favorites`);
 
   const comments = readJson("hm_comments.json");
-  for (const c of comments) {
-    await prisma.hmComment.create({ data: { id: c.id, userId: c.user_id, hymnId: c.hymn_id, comment: c.body, createdAt: c.created_at ? new Date(c.created_at) : new Date(), updatedAt: c.updated_at ? new Date(c.updated_at) : new Date() } });
-  }
-  log.push(`✓ Imported ${comments.length} comments`);
+  const { count: commCount } = await prisma.hmComment.createMany({
+    data: comments.map((c: any) => ({
+      id: c.id, userId: c.user_id, hymnId: c.hymn_id, comment: c.body,
+      createdAt: c.created_at ? new Date(c.created_at) : new Date(),
+      updatedAt: c.updated_at ? new Date(c.updated_at) : new Date(),
+    })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ Imported ${commCount} comments`);
 
   return log;
 }
@@ -639,35 +747,52 @@ async function seedQuiz() {
   }
   log.push(`✓ Imported ${subCategories.length} sub-categories`);
 
+  const CHUNK = 500;
+
   const questions = readJson("qz_questions.json");
-  for (const q of questions) {
-    await prisma.qzQuestion.create({ data: { id: q.id, userId: q.user_id, approvalStatusId: q.approval_status_id, typeId: q.type_id, difficultyId: q.qz_difficulty_id ?? null, questionText: q.question_text, createdAt: q.created_at ? new Date(q.created_at) : new Date(), updatedAt: q.updated_at ? new Date(q.updated_at) : new Date() } });
+  let qInserted = 0;
+  for (let i = 0; i < questions.length; i += CHUNK) {
+    const chunk = questions.slice(i, i + CHUNK);
+    const { count } = await prisma.qzQuestion.createMany({
+      data: chunk.map((q: any) => ({ id: q.id, userId: q.user_id, approvalStatusId: q.approval_status_id, typeId: q.type_id, difficultyId: q.qz_difficulty_id ?? null, questionText: q.question_text, createdAt: q.created_at ? new Date(q.created_at) : new Date(), updatedAt: q.updated_at ? new Date(q.updated_at) : new Date() })),
+      skipDuplicates: true,
+    });
+    qInserted += count;
   }
-  log.push(`✓ Imported ${questions.length} questions`);
+  log.push(`✓ Imported ${qInserted} questions`);
 
   const choices = readJson("qz_choices.json");
-  for (const c of choices) {
-    await prisma.qzChoice.create({ data: { id: c.id, questionId: c.question_id, choiceText: c.choice_text, isCorrect: Boolean(c.is_correct), createdAt: c.created_at ? new Date(c.created_at) : new Date(), updatedAt: c.updated_at ? new Date(c.updated_at) : new Date() } });
+  let cInserted = 0;
+  for (let i = 0; i < choices.length; i += CHUNK) {
+    const chunk = choices.slice(i, i + CHUNK);
+    const { count } = await prisma.qzChoice.createMany({
+      data: chunk.map((c: any) => ({ id: c.id, questionId: c.question_id, choiceText: c.choice_text, isCorrect: Boolean(c.is_correct), createdAt: c.created_at ? new Date(c.created_at) : new Date(), updatedAt: c.updated_at ? new Date(c.updated_at) : new Date() })),
+      skipDuplicates: true,
+    });
+    cInserted += count;
   }
-  log.push(`✓ Imported ${choices.length} choices`);
+  log.push(`✓ Imported ${cInserted} choices`);
 
   const languageQuestions = readJson("qz_language_question.json");
-  for (const r of languageQuestions) {
-    await prisma.qzLanguageQuestion.create({ data: { id: r.id, languageId: r.language_id, questionId: r.question_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${languageQuestions.length} question-language links`);
+  const { count: lqCount } = await prisma.qzLanguageQuestion.createMany({
+    data: languageQuestions.map((r: any) => ({ id: r.id, languageId: r.language_id, questionId: r.question_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${lqCount} question-language links`);
 
   const categoryQuestions = readJson("qz_category_question.json");
-  for (const r of categoryQuestions) {
-    await prisma.qzCategoryQuestion.create({ data: { id: r.id, categoryId: r.category_id, questionId: r.question_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${categoryQuestions.length} question-category links`);
+  const { count: cqCount } = await prisma.qzCategoryQuestion.createMany({
+    data: categoryQuestions.map((r: any) => ({ id: r.id, categoryId: r.category_id, questionId: r.question_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${cqCount} question-category links`);
 
   const questionSubCategories = readJson("qz_question_sub_category.json");
-  for (const r of questionSubCategories) {
-    await prisma.qzQuestionSubCategory.create({ data: { id: r.id, questionId: r.question_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${questionSubCategories.length} question-sub-category links`);
+  const { count: qscCount } = await prisma.qzQuestionSubCategory.createMany({
+    data: questionSubCategories.map((r: any) => ({ id: r.id, questionId: r.question_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${qscCount} question-sub-category links`);
 
   return log;
 }
