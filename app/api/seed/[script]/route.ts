@@ -538,35 +538,46 @@ async function seedBook() {
   }
   log.push(`✓ Imported ${authors.length} authors`);
 
+  const BCHUNK = 500;
+
   const books = readJson("cb_books.json");
-  for (const b of books) {
-    await prisma.cbBook.create({ data: { id: b.id, userId: b.user_id, approvalStatusId: b.approval_status_id, name: b.name, slug: b.slug ?? String(b.id), author: b.author, description: b.description ?? null, image: b.image ?? null, file: b.file, createdAt: b.created_at ? new Date(b.created_at) : new Date(), updatedAt: b.updated_at ? new Date(b.updated_at) : new Date() } });
+  let bInserted = 0;
+  for (let i = 0; i < books.length; i += BCHUNK) {
+    const { count } = await prisma.cbBook.createMany({
+      data: books.slice(i, i + BCHUNK).map((b: any) => ({ id: b.id, userId: b.user_id, approvalStatusId: b.approval_status_id, name: b.name, slug: b.slug ?? String(b.id), author: b.author, description: b.description ?? null, image: b.image ?? null, file: b.file, createdAt: b.created_at ? new Date(b.created_at) : new Date(), updatedAt: b.updated_at ? new Date(b.updated_at) : new Date() })),
+      skipDuplicates: true,
+    });
+    bInserted += count;
   }
-  log.push(`✓ Imported ${books.length} books`);
+  log.push(`✓ Imported ${bInserted} books`);
 
   const bookLanguages = readJson("cb_book_language.json");
-  for (const r of bookLanguages) {
-    await prisma.cbBookLanguage.create({ data: { id: r.id, bookId: r.book_id, languageId: r.language_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${bookLanguages.length} book-language links`);
+  const { count: blCount } = await prisma.cbBookLanguage.createMany({
+    data: bookLanguages.map((r: any) => ({ id: r.id, bookId: r.book_id, languageId: r.language_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${blCount} book-language links`);
 
   const bookCategories = readJson("cb_book_category.json");
-  for (const r of bookCategories) {
-    await prisma.cbBookCategory.create({ data: { id: r.id, bookId: r.book_id, categoryId: r.category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${bookCategories.length} book-category links`);
+  const { count: bcCount } = await prisma.cbBookCategory.createMany({
+    data: bookCategories.map((r: any) => ({ id: r.id, bookId: r.book_id, categoryId: r.category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${bcCount} book-category links`);
 
   const bookSubCategories = readJson("cb_book_sub_category.json");
-  for (const r of bookSubCategories) {
-    await prisma.cbBookSubCategory.create({ data: { id: r.id, bookId: r.book_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${bookSubCategories.length} book-sub-category links`);
+  const { count: bscCount } = await prisma.cbBookSubCategory.createMany({
+    data: bookSubCategories.map((r: any) => ({ id: r.id, bookId: r.book_id, subCategoryId: r.sub_category_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${bscCount} book-sub-category links`);
 
   const authorBooks = readJson("cb_author_book.json");
-  for (const r of authorBooks) {
-    await prisma.cbAuthorBook.create({ data: { id: r.id, authorId: r.author_id, bookId: r.book_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ ${authorBooks.length} book-author links`);
+  const { count: abCount } = await prisma.cbAuthorBook.createMany({
+    data: authorBooks.map((r: any) => ({ id: r.id, authorId: r.author_id, bookId: r.book_id, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ ${abCount} book-author links`);
 
   const likes = readJson("cb_likes.json");
   const { count: likesCount } = await prisma.cbLike.createMany({
@@ -576,16 +587,18 @@ async function seedBook() {
   log.push(`✓ Imported ${likesCount} likes`);
 
   const comments = readJson("cb_book_comments.json");
-  for (const c of comments) {
-    await prisma.cbBookComment.create({ data: { id: c.id, userId: c.user_id, bookId: c.book_id, comment: c.comment ?? c.body, createdAt: c.created_at ? new Date(c.created_at) : new Date(), updatedAt: c.updated_at ? new Date(c.updated_at) : new Date() } });
-  }
-  log.push(`✓ Imported ${comments.length} comments`);
+  const { count: cbcCount } = await prisma.cbBookComment.createMany({
+    data: comments.map((c: any) => ({ id: c.id, userId: c.user_id, bookId: c.book_id, comment: c.comment ?? c.body, createdAt: c.created_at ? new Date(c.created_at) : new Date(), updatedAt: c.updated_at ? new Date(c.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ Imported ${cbcCount} comments`);
 
   const copyrightReports = readJson("cb_copyright_reports.json");
-  for (const r of copyrightReports) {
-    await prisma.cbCopyrightReport.create({ data: { id: r.id, userId: r.user_id, bookId: r.book_id, reason: r.reason, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() } });
-  }
-  log.push(`✓ Imported ${copyrightReports.length} copyright reports`);
+  const { count: crCount } = await prisma.cbCopyrightReport.createMany({
+    data: copyrightReports.map((r: any) => ({ id: r.id, userId: r.user_id, bookId: r.book_id, reason: r.reason, createdAt: r.created_at ? new Date(r.created_at) : new Date(), updatedAt: r.updated_at ? new Date(r.updated_at) : new Date() })),
+    skipDuplicates: true,
+  });
+  log.push(`✓ Imported ${crCount} copyright reports`);
 
   return log;
 }
@@ -650,20 +663,49 @@ async function seedBibleSetup() {
 
 async function seedBibleTranslation(file: string, translationCode: string, fromBook: number, toBook: number) {
   const log: string[] = [];
+  const CHUNK = 500;
 
   const translation = await prisma.blTranslation.findFirstOrThrow({ where: { code: translationCode } });
   const allVerses = readJson(file);
   const verses = allVerses.filter((v: any) => v.book_id >= fromBook && v.book_id <= toBook);
-  let count = 0;
 
-  for (const verse of verses) {
-    const bookId = verse.book_id;
-    let verseRow = await prisma.blVerse.findFirst({ where: { bookId, chapter: verse.chapter, verse: verse.verse } });
-    if (!verseRow) {
-      verseRow = await prisma.blVerse.create({ data: { bookId, chapter: verse.chapter, verse: verse.verse } });
+  // Step 1: Ensure all verse coordinates exist (shared across translations)
+  // Deduplicate by book+chapter+verse key
+  const coordMap = new Map<string, { bookId: number; chapter: number; verse: number }>();
+  for (const v of verses) {
+    const key = `${v.book_id}:${v.chapter}:${v.verse}`;
+    if (!coordMap.has(key)) coordMap.set(key, { bookId: v.book_id, chapter: v.chapter, verse: v.verse });
+  }
+  const uniqueCoords = Array.from(coordMap.values());
+  for (let i = 0; i < uniqueCoords.length; i += CHUNK) {
+    await prisma.blVerse.createMany({ data: uniqueCoords.slice(i, i + CHUNK), skipDuplicates: true });
+  }
+
+  // Step 2: Load all verse IDs for this book range into a Map
+  const existingVerses = await prisma.blVerse.findMany({
+    where: { bookId: { gte: fromBook, lte: toBook } },
+    select: { id: true, bookId: true, chapter: true, verse: true },
+  });
+  const verseIdMap = new Map<string, number>();
+  for (const v of existingVerses) {
+    verseIdMap.set(`${v.bookId}:${v.chapter}:${v.verse}`, v.id);
+  }
+
+  // Step 3: Batch-insert all verse texts
+  let count = 0;
+  for (let i = 0; i < verses.length; i += CHUNK) {
+    const chunk = verses.slice(i, i + CHUNK);
+    const data = chunk
+      .map((v: any) => {
+        const verseId = verseIdMap.get(`${v.book_id}:${v.chapter}:${v.verse}`);
+        if (!verseId) return null;
+        return { verseId, translationId: translation.id, text: v.text };
+      })
+      .filter(Boolean) as any[];
+    if (data.length > 0) {
+      const { count: c } = await prisma.blVerseText.createMany({ data, skipDuplicates: true });
+      count += c;
     }
-    await prisma.blVerseText.create({ data: { verseId: verseRow.id, translationId: translation.id, text: verse.text } });
-    count++;
   }
 
   log.push(`✓ Imported ${count} verse texts for ${translationCode} (books ${fromBook}–${toBook})`);
