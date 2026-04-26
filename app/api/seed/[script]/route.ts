@@ -306,19 +306,15 @@ async function seedHymnSetup() {
   return log;
 }
 
-async function seedHymnData(half: 1 | 2) {
+async function seedHymnData() {
   const log: string[] = [];
-
-  const all = readJson("hm_hymns.json");
-  const mid = Math.ceil(all.length / 2);
-  const hymns = half === 1 ? all.slice(0, mid) : all.slice(mid);
-
   const CHUNK = 500;
+
+  const hymns = readJson("hm_hymns.json");
   let inserted = 0;
   for (let i = 0; i < hymns.length; i += CHUNK) {
-    const chunk = hymns.slice(i, i + CHUNK);
     const { count } = await prisma.hmHymn.createMany({
-      data: chunk.map((h: any) => ({
+      data: hymns.slice(i, i + CHUNK).map((h: any) => ({
         id: h.id,
         userId: h.user_id,
         approvalStatusId: h.approval_status_id,
@@ -344,50 +340,37 @@ async function seedHymnData(half: 1 | 2) {
     });
     inserted += count;
   }
-  log.push(`✓ Imported ${inserted} hymns (part ${half} of 2)`);
+  log.push(`✓ Imported ${inserted} hymns`);
 
   return log;
 }
 
-async function seedHymnLinks(half: 1 | 2) {
+async function seedHymnLinks() {
   const log: string[] = [];
-
-  const all = readJson("hm_category_hymn.json");
-  const mid = Math.ceil(all.length / 2);
-  const rows = half === 1 ? all.slice(0, mid) : all.slice(mid);
-
   const CHUNK = 500;
-  let inserted = 0;
-  for (let i = 0; i < rows.length; i += CHUNK) {
-    const chunk = rows.slice(i, i + CHUNK);
+
+  // hm_category_hymn
+  const categoryHymns = readJson("hm_category_hymn.json");
+  let chInserted = 0;
+  for (let i = 0; i < categoryHymns.length; i += CHUNK) {
     const { count } = await prisma.hmCategoryHymn.createMany({
-      data: chunk.map((r: any) => ({
-        id: r.id,
-        categoryId: r.category_id,
-        hymnId: r.hymn_id,
+      data: categoryHymns.slice(i, i + CHUNK).map((r: any) => ({
+        id: r.id, categoryId: r.category_id, hymnId: r.hymn_id,
         createdAt: r.created_at ? new Date(r.created_at) : new Date(),
         updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
       })),
       skipDuplicates: true,
     });
-    inserted += count;
+    chInserted += count;
   }
-  log.push(`✓ ${inserted} hymn-category links (part ${half} of 2)`);
+  log.push(`✓ ${chInserted} hymn-category links`);
 
-  return log;
-}
-
-async function seedHymnExtras1() {
-  const log: string[] = [];
-
-  const CHUNK = 500;
-
+  // hm_hymn_language
   const hymnLanguages = readJson("hm_hymn_language.json");
   let langInserted = 0;
   for (let i = 0; i < hymnLanguages.length; i += CHUNK) {
-    const chunk = hymnLanguages.slice(i, i + CHUNK);
     const { count } = await prisma.hmHymnLanguage.createMany({
-      data: chunk.map((r: any) => ({
+      data: hymnLanguages.slice(i, i + CHUNK).map((r: any) => ({
         id: r.id, hymnId: r.hymn_id, languageId: r.language_id,
         createdAt: r.created_at ? new Date(r.created_at) : new Date(),
         updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
@@ -398,12 +381,12 @@ async function seedHymnExtras1() {
   }
   log.push(`✓ ${langInserted} hymn-language links`);
 
+  // hm_hymn_singer
   const hymnSingers = readJson("hm_hymn_singer.json");
   let singerInserted = 0;
   for (let i = 0; i < hymnSingers.length; i += CHUNK) {
-    const chunk = hymnSingers.slice(i, i + CHUNK);
     const { count } = await prisma.hmHymnSinger.createMany({
-      data: chunk.map((r: any) => ({
+      data: hymnSingers.slice(i, i + CHUNK).map((r: any) => ({
         id: r.id, hymnId: r.hymn_id, singerId: r.singer_id,
         createdAt: r.created_at ? new Date(r.created_at) : new Date(),
         updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
@@ -414,47 +397,12 @@ async function seedHymnExtras1() {
   }
   log.push(`✓ ${singerInserted} hymn-singer links`);
 
-  return log;
-}
-
-async function seedHymnExtras2() {
-  const log: string[] = [];
-
-  const CHUNK = 500;
-  const all = readJson("hm_hymn_sub_category.json");
-  const mid = Math.ceil(all.length / 2);
-  const rows = all.slice(0, mid);
-  let inserted = 0;
-  for (let i = 0; i < rows.length; i += CHUNK) {
-    const chunk = rows.slice(i, i + CHUNK);
-    const { count } = await prisma.hmHymnSubCategory.createMany({
-      data: chunk.map((r: any) => ({
-        id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id,
-        createdAt: r.created_at ? new Date(r.created_at) : new Date(),
-        updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
-      })),
-      skipDuplicates: true,
-    });
-    inserted += count;
-  }
-  log.push(`✓ ${inserted} hymn-sub-category links (part 1 of 2)`);
-
-  return log;
-}
-
-async function seedHymnExtras3() {
-  const log: string[] = [];
-
-  const CHUNK = 500;
-
-  const all = readJson("hm_hymn_sub_category.json");
-  const mid = Math.ceil(all.length / 2);
-  const rows = all.slice(mid);
+  // hm_hymn_sub_category
+  const hymnSubCats = readJson("hm_hymn_sub_category.json");
   let subCatInserted = 0;
-  for (let i = 0; i < rows.length; i += CHUNK) {
-    const chunk = rows.slice(i, i + CHUNK);
+  for (let i = 0; i < hymnSubCats.length; i += CHUNK) {
     const { count } = await prisma.hmHymnSubCategory.createMany({
-      data: chunk.map((r: any) => ({
+      data: hymnSubCats.slice(i, i + CHUNK).map((r: any) => ({
         id: r.id, hymnId: r.hymn_id, subCategoryId: r.sub_category_id,
         createdAt: r.created_at ? new Date(r.created_at) : new Date(),
         updatedAt: r.updated_at ? new Date(r.updated_at) : new Date(),
@@ -463,8 +411,9 @@ async function seedHymnExtras3() {
     });
     subCatInserted += count;
   }
-  log.push(`✓ ${subCatInserted} hymn-sub-category links (part 2 of 2)`);
+  log.push(`✓ ${subCatInserted} hymn-sub-category links`);
 
+  // favorites & comments
   const favorites = readJson("hm_favorites.json");
   const { count: favCount } = await prisma.hmFavorite.createMany({
     data: favorites.map((f: any) => ({
@@ -842,36 +791,19 @@ async function seedQuiz() {
 // ─── ROUTE HANDLER ──────────────────────────────────────────────────────────
 
 const SEEDERS: Record<string, () => Promise<string[]>> = {
-  base:             seedBase,
-  liturgy:          seedLiturgy,
-  sermon:           seedSermon,
-  "hymn-setup":     seedHymnSetup,
-  "hymn-data-1":    () => seedHymnData(1),
-  "hymn-data-2":    () => seedHymnData(2),
-  "hymn-links-1":   () => seedHymnLinks(1),
-  "hymn-links-2":   () => seedHymnLinks(2),
-  "hymn-extras-1":  seedHymnExtras1,
-  "hymn-extras-2":  seedHymnExtras2,
-  "hymn-extras-3":  seedHymnExtras3,
-  book:             seedBook,
-  quiz:             seedQuiz,
-  "bible-setup":        seedBibleSetup,
-  "bible-amharic-ot1a": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      1,   5),
-  "bible-amharic-ot1b": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",      6,  15),
-  "bible-amharic-ot2a": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     16,  22),
-  "bible-amharic-ot2b": () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     23,  39),
-  "bible-amharic-nt":   () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     40,  66),
-  "bible-kjv-ot1a":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       1,   5),
-  "bible-kjv-ot1b":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",       6,  15),
-  "bible-kjv-ot2a":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      16,  22),
-  "bible-kjv-ot2b":     () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      23,  39),
-  "bible-kjv-nt":       () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      40,  66),
-  "bible-oromifa-ot1a": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  1,   5),
-  "bible-oromifa-ot1b": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic",  6,  15),
-  "bible-oromifa-ot2a": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 16,  22),
-  "bible-oromifa-ot2b": () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 23,  39),
-  "bible-oromifa-nt":   () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 40,  66),
-  "bible-highlights":   seedBibleHighlights,
+  base:               seedBase,
+  liturgy:            seedLiturgy,
+  sermon:             seedSermon,
+  "hymn-setup":       seedHymnSetup,
+  "hymn-data":        seedHymnData,
+  "hymn-links":       seedHymnLinks,
+  book:               seedBook,
+  quiz:               seedQuiz,
+  "bible-setup":      seedBibleSetup,
+  "bible-amharic":    () => seedBibleTranslation("bl_amharic_1954_bible.json", "am-1954",     1, 66),
+  "bible-kjv":        () => seedBibleTranslation("bl_english_kjv_bible.json",  "en-kjv",      1, 66),
+  "bible-oromifa":    () => seedBibleTranslation("bl_oromifa_bible.json",      "om-ethiopic", 1, 66),
+  "bible-highlights": seedBibleHighlights,
 };
 
 export async function GET(
