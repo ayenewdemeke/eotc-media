@@ -76,12 +76,12 @@ export default function Navbar() {
     pathname?.startsWith(link.activePrefix ?? link.href)
 
   const roles = (user as { roles?: string[] })?.roles ?? []
-  const hasMainAdmin = roles.some(r => ["super-admin", "admin"].includes(r))
-  const hasLiturgyAdmin = roles.some(r => ["super-admin", "admin", "liturgy-admin"].includes(r))
-  const hasHymnAdmin = roles.some(r => ["super-admin", "admin", "hymn-admin"].includes(r))
-  const hasSermonAdmin = roles.some(r => ["super-admin", "admin", "sermon-admin"].includes(r))
-  const hasBookAdmin = roles.some(r => ["super-admin", "admin", "book-admin"].includes(r))
-  const hasQuizAdmin = roles.some(r => ["super-admin", "admin", "quiz-admin"].includes(r))
+  const hasMainAdmin = roles.some(r => ["super_admin", "admin"].includes(r))
+  const hasLiturgyAdmin = roles.some(r => ["super_admin", "admin", "liturgy_admin"].includes(r))
+  const hasHymnAdmin = roles.some(r => ["super_admin", "admin", "hymn_admin"].includes(r))
+  const hasSermonAdmin = roles.some(r => ["super_admin", "admin", "sermon_admin"].includes(r))
+  const hasBookAdmin = roles.some(r => ["super_admin", "admin", "book_admin"].includes(r))
+  const hasQuizAdmin = roles.some(r => ["super_admin", "admin", "quiz_admin"].includes(r))
 
   const navLinks = [
     { href: "/bible/amharic/1954/1/1", activePrefix: "/bible", label: "መጽሃፍ ቅዱስ", labelEn: "Bible", icon: BookOpen },
