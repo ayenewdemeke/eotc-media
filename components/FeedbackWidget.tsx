@@ -1,11 +1,10 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { MessageCircle, X, ChevronDown, ChevronUp, Send, Check } from "lucide-react"
+import { MessageCircle, X, Send, Check } from "lucide-react"
 
 export default function FeedbackWidget() {
   const [open, setOpen] = useState(false)
-  const [showOptional, setShowOptional] = useState(false)
   const [message, setMessage] = useState("")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -40,7 +39,6 @@ export default function FeedbackWidget() {
         setName("")
         setEmail("")
         setPhone("")
-        setShowOptional(false)
       }, 2000)
     } finally {
       setSubmitting(false)
@@ -53,7 +51,7 @@ export default function FeedbackWidget() {
         <div className="w-80 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-100">
-            <span className="text-sm font-semibold text-slate-800">Share feedback</span>
+            <span className="text-sm font-semibold text-slate-800">ሃሳብዎን ያካፍሉን</span>
             <button
               onClick={() => setOpen(false)}
               className="text-slate-400 hover:text-slate-600 transition-colors"
@@ -84,41 +82,31 @@ export default function FeedbackWidget() {
                 />
               </div>
 
-              {/* Optional fields toggle */}
-              <button
-                type="button"
-                onClick={() => setShowOptional(!showOptional)}
-                className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors self-start"
-              >
-                {showOptional ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                {showOptional ? "Hide" : "Add"} your details (optional)
-              </button>
-
-              {showOptional && (
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="Name"
-                    className="w-full text-sm text-slate-700 placeholder-slate-400 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    placeholder="Email"
-                    className="w-full text-sm text-slate-700 placeholder-slate-400 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    placeholder="Phone"
-                    className="w-full text-sm text-slate-700 placeholder-slate-400 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              )}
+              {/* Optional fields — always visible */}
+              <p className="text-xs text-slate-400">እንድናገኝዎ ከፈለጉ መረጃዎን ይጻፉልን</p>
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="ስም"
+                  className="w-full text-sm text-slate-700 placeholder-slate-400 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="ኢሜል"
+                  className="w-full text-sm text-slate-700 placeholder-slate-400 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  placeholder="ስልክ"
+                  className="w-full text-sm text-slate-700 placeholder-slate-400 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
               <button
                 type="submit"
@@ -126,7 +114,7 @@ export default function FeedbackWidget() {
                 className="flex items-center justify-center gap-2 w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 <Send className="w-3.5 h-3.5" />
-                {submitting ? "Sending…" : "Send feedback"}
+                {submitting ? "በመላክ ላይ..." : "አስተያየትዎን ይላኩ"}
               </button>
             </form>
           )}
@@ -139,7 +127,7 @@ export default function FeedbackWidget() {
         className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-full shadow-lg transition-all hover:shadow-xl"
       >
         <MessageCircle className="w-4 h-4" />
-        Feedback
+        አስተያየት
       </button>
     </div>
   )
