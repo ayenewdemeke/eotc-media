@@ -18,6 +18,7 @@ export default function EditHymnPage() {
   const [title, setTitle] = useState("")
   const [singer, setSinger] = useState("")
   const [lyrics, setLyrics] = useState("")
+  const [lyricsSuggestion, setLyricsSuggestion] = useState("")
   const [description, setDescription] = useState("")
   const [publishedAt, setPublishedAt] = useState("")
   const [approvalStatusId, setApprovalStatusId] = useState("")
@@ -52,6 +53,7 @@ export default function EditHymnPage() {
       setTitle(hymn.title)
       setSinger(hymn.singer ?? "")
       setLyrics(hymn.lyrics ?? "")
+      setLyricsSuggestion(hymn.lyricsSuggestion ?? "")
       setDescription(hymn.description ?? "")
       setPublishedAt(hymn.publishedAt ? hymn.publishedAt.slice(0, 10) : "")
       setApprovalStatusId(String(hymn.approvalStatusId))
@@ -87,6 +89,7 @@ export default function EditHymnPage() {
           title: title.trim(),
           singer: singer.trim() || null,
           lyrics: lyrics.trim() || null,
+          lyricsSuggestion: lyricsSuggestion.trim() || null,
           description: description.trim() || null,
           publishedAt: publishedAt || null,
           approvalStatusId,
@@ -220,6 +223,12 @@ export default function EditHymnPage() {
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">Lyrics</label>
           <textarea value={lyrics} onChange={e => setLyrics(e.target.value)} rows={10} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 resize-y font-mono" />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">Lyrics suggestion</label>
+          <p className="text-xs text-slate-400 mb-1.5">User-proposed lyrics edit. Approve or decline it from the Lyrics suggestions page.</p>
+          <textarea value={lyricsSuggestion} onChange={e => setLyricsSuggestion(e.target.value)} rows={10} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-amber-400 resize-y font-mono" />
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}

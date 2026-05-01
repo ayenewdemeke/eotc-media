@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json()
   const hymnId = parseInt(id)
 
-  const { title, videoId, slug, approvalStatusId, channelId, singer, lyrics, description, publishedAt,
+  const { title, videoId, slug, approvalStatusId, channelId, singer, lyrics, lyricsSuggestion, description, publishedAt,
           categoryIds, subCategoryIds, languageIds, singerIds,
           thumbnailDefault, thumbnailMedium, thumbnailHigh, thumbnailStandard, thumbnailMaxres } = body
 
@@ -43,6 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ...(channelId && { channelId: parseInt(channelId) }),
       singer: singer ?? null,
       lyrics: lyrics ?? null,
+      lyricsSuggestion: lyricsSuggestion ?? null,
       description: description ?? null,
       publishedAt: publishedAt ? new Date(publishedAt) : null,
       ...(thumbnailDefault && { thumbnailDefault }),

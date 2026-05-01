@@ -33,6 +33,7 @@ model User {
   cbComments         CbBookComment[]
   cbCopyrightReports CbCopyrightReport[]
   hmHymns            HmHymn[]
+  hmChannels         HmChannel[]
   hmFavorites        HmFavorite[]
   hmComments         HmComment[]
   smSermons          SmSermon[]
@@ -563,7 +564,8 @@ model HmApprovalStatus {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  hymns HmHymn[]
+  hymns    HmHymn[]
+  channels HmChannel[]
 
   @@map("hm_approval_statuses")
 }
@@ -581,11 +583,14 @@ model HmSinger {
 
 model HmChannel {
   id               Int       @id @default(autoincrement())
+  userId           Int?      @map("user_id")
+  approvalStatusId Int?      @map("approval_status_id")
   title            String
   slug             String    @unique
   ytChannelId      String?   @unique @map("yt_channel_id")
   handle           String    @default("")
   description      String?
+  keywords         String?   @db.Text
   thumbnailDefault String?   @map("thumbnail_default")
   thumbnailMedium  String?   @map("thumbnail_medium")
   thumbnailHigh    String?   @map("thumbnail_high")
@@ -595,7 +600,9 @@ model HmChannel {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  hymns HmHymn[]
+  user           User?             @relation(fields: [userId], references: [id])
+  approvalStatus HmApprovalStatus? @relation(fields: [approvalStatusId], references: [id])
+  hymns          HmHymn[]
 
   @@map("hm_channels")
 }
