@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
-import { Check, X, Loader2 } from "lucide-react"
+import { Check, X, Loader2, Search } from "lucide-react"
 
 interface Singer { id: number; name: string }
 
@@ -21,14 +21,18 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
   const [selectedSingerIds, setSelectedSingerIds] = useState<number[]>([])
   const [singersLoading, setSingersLoading] = useState(false)
   const [singersError, setSingersError] = useState("")
+  const [singerSearch, setSingerSearch] = useState("")
   const [error, setError] = useState("")
+  const searchRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!showAcceptModal) {
       setSelectedSingerIds([])
+      setSingerSearch("")
       setError("")
       return
     }
+    setTimeout(() => searchRef.current?.focus(), 50)
     if (singers.length > 0) return
     setSingersLoading(true)
     setSingersError("")
@@ -117,22 +121,61 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
               <p className="text-sm text-red-500 py-2">{singersError}</p>
             )}
             {!singersLoading && !singersError && (
-              <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto mb-1 pr-1">
-                {singers.map(s => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => toggleSinger(s.id)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all cursor-pointer ${
-                      selectedSingerIds.includes(s.id)
-                        ? "bg-green-600 text-white border-green-600"
-                        : "text-slate-600 border-slate-200 hover:border-slate-400"
-                    }`}
-                  >
-                    {s.name}
-                  </button>
-                ))}
-              </div>
+              <>
+                {/* Selected chips */}
+                {selectedSingerIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {selectedSingerIds.map(id => {
+                      const s = singers.find(x => x.id === id)
+                      if (!s) return null
+                      return (
+                        <span key={id} className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-600 text-white rounded-full">
+                          {s.name}
+                          <button type="button" onClick={() => toggleSinger(id)} className="hover:opacity-70 cursor-pointer">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Search input */}
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                  <input
+                    ref={searchRef}
+                    type="text"
+                    value={singerSearch}
+                    onChange={e => setSingerSearch(e.target.value)}
+                    placeholder="Search singers…"
+                    className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400"
+                  />
+                </div>
+
+                {/* Filtered list */}
+                <div className="max-h-44 overflow-y-auto space-y-0.5 pr-1">
+                  {singers
+                    .filter(s => s.name.toLowerCase().includes(singerSearch.toLowerCase()))
+                    .map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => toggleSinger(s.id)}
+                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
+                          selectedSingerIds.includes(s.id)
+                            ? "bg-green-50 text-green-700 font-medium"
+                            : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {s.name}
+                      </button>
+                    ))}
+                  {singers.filter(s => s.name.toLowerCase().includes(singerSearch.toLowerCase())).length === 0 && (
+                    <p className="text-sm text-slate-400 py-2 px-3">No results</p>
+                  )}
+                </div>
+              </>
             )}
 
             {error && <p className="text-xs text-red-600 mt-3">{error}</p>}
