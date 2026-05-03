@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { CbLanguage, CbCategory, CbSubCategory } from "@/types/models/book"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface BookSearchFiltersProps {
   categories: CbCategory[]
@@ -28,6 +29,7 @@ export default function BookSearchFilters({
   basePath = "/books",
 }: BookSearchFiltersProps) {
   const router = useRouter()
+  const { t } = useLocale()
   const searchParams = useSearchParams()
 
   const activeLanguage = searchParams.get("language") ?? ""
@@ -87,7 +89,7 @@ export default function BookSearchFilters({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="Search books…"
+          placeholder={t("book_search_placeholder")}
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}
           className="w-full h-9 pl-9 pr-3 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-400"
@@ -100,7 +102,7 @@ export default function BookSearchFilters({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="_">ቋንቋ ይምረጡ</SelectItem>
+            <SelectItem value="_">{t("book_select_language")}</SelectItem>
             {languages.map(lang => (
               <SelectItem key={lang.id} value={String(lang.id)}>{lang.name}</SelectItem>
             ))}
@@ -112,7 +114,7 @@ export default function BookSearchFilters({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="_">የምድብ አይነት ይምረጡ</SelectItem>
+            <SelectItem value="_">{t("book_select_category")}</SelectItem>
             {visibleCategories.map(cat => (
               <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
             ))}
@@ -124,7 +126,7 @@ export default function BookSearchFilters({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="_">ምድብ ይምረጡ</SelectItem>
+            <SelectItem value="_">{t("book_select_subcategory")}</SelectItem>
             {visibleSubCategories.map(sc => (
               <SelectItem key={sc.id} value={String(sc.id)}>{sc.name}</SelectItem>
             ))}

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BookMarked, User } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface BookSidebarProps {
   userId?: number
@@ -10,6 +11,7 @@ interface BookSidebarProps {
 
 export default function BookSidebar({ userId }: BookSidebarProps) {
   const pathname = usePathname()
+  const { t } = useLocale()
 
   const isActive = (path: string) => {
     if (path === "/books/my-books") return pathname === "/books/my-books" || pathname === "/books/submit"
@@ -25,26 +27,6 @@ export default function BookSidebar({ userId }: BookSidebarProps) {
 
   const dimLink = "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer flex-shrink-0"
 
-  const links = (
-    <>
-      <Link href="/books" className={linkClass("/books")}>
-        <BookMarked className="w-4 h-4 flex-shrink-0" />
-        All books
-      </Link>
-      {userId ? (
-        <Link href="/books/my-books" className={linkClass("/books/my-books")}>
-          <User className="w-4 h-4 flex-shrink-0" />
-          My books
-        </Link>
-      ) : (
-        <Link href="/auth/login" className={dimLink}>
-          <User className="w-4 h-4 flex-shrink-0" />
-          My books
-        </Link>
-      )}
-    </>
-  )
-
   return (
     <aside className="
       flex flex-row items-center gap-1 px-4 py-2 border-b border-slate-100
@@ -52,7 +34,21 @@ export default function BookSidebar({ userId }: BookSidebarProps) {
       lg:flex-col lg:items-stretch lg:overflow-x-visible lg:border-b-0 lg:border-r lg:sticky lg:top-16 lg:self-start lg:h-[calc(100vh-4rem)] lg:px-3 lg:py-4
     ">
       <div className="flex flex-row items-center gap-1 flex-nowrap lg:flex-col lg:items-stretch">
-        {links}
+        <Link href="/books" className={linkClass("/books")}>
+          <BookMarked className="w-4 h-4 flex-shrink-0" />
+          {t("book_all")}
+        </Link>
+        {userId ? (
+          <Link href="/books/my-books" className={linkClass("/books/my-books")}>
+            <User className="w-4 h-4 flex-shrink-0" />
+            {t("book_my")}
+          </Link>
+        ) : (
+          <Link href="/auth/login" className={dimLink}>
+            <User className="w-4 h-4 flex-shrink-0" />
+            {t("book_my")}
+          </Link>
+        )}
       </div>
     </aside>
   )

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Copy, Bookmark, Type, CheckCheck } from "lucide-react"
 import { toast } from "sonner"
 import { BibleLanguage, BibleVersion, BlBook } from "@/types/models/bible"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface RightSidebarProps {
   activeVerse: number | null
@@ -43,6 +44,7 @@ export default function RightSidebar({
 }: RightSidebarProps) {
   const [tab, setTab] = useState<Tab>("verse")
   const bookName = getBookName(currentBook, language)
+  const { t } = useLocale()
 
   const reference = activeVerse
     ? `${bookName} ${currentChapter}:${activeVerse}`
@@ -69,9 +71,9 @@ export default function RightSidebar({
     .filter(Boolean) as Array<{ verseNum: number; color: string }>
 
   const tabs: Array<{ id: Tab; label: string; icon: React.ReactNode }> = [
-    { id: "verse",      label: "Verse",      icon: <CheckCheck className="w-3.5 h-3.5" /> },
-    { id: "highlights", label: "Highlights", icon: <Bookmark className="w-3.5 h-3.5" /> },
-    { id: "reading",    label: "Reading",    icon: <Type className="w-3.5 h-3.5" /> },
+    { id: "verse",      label: t("bible_tab_verse"),      icon: <CheckCheck className="w-3.5 h-3.5" /> },
+    { id: "highlights", label: t("bible_tab_highlights"), icon: <Bookmark className="w-3.5 h-3.5" /> },
+    { id: "reading",    label: t("bible_tab_reading"),    icon: <Type className="w-3.5 h-3.5" /> },
   ]
 
   return (
@@ -102,7 +104,7 @@ export default function RightSidebar({
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4">
                 <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">{reference}</p>
                 <p className="text-sm text-slate-700 leading-relaxed">
-                  {activeVerseText || <span className="text-slate-400 italic">No text available</span>}
+                  {activeVerseText || <span className="text-slate-400 italic">{t("bible_no_text")}</span>}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -111,22 +113,22 @@ export default function RightSidebar({
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  Copy verse
+                  {t("bible_copy_verse")}
                 </button>
                 <button
                   onClick={copyReference}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  Copy ref
+                  {t("bible_copy_ref")}
                 </button>
               </div>
             </>
           ) : (
             <div className="text-center py-8 text-slate-400">
               <CheckCheck className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p className="text-sm font-medium">No verse selected</p>
-              <p className="text-xs mt-1 opacity-70">Click a verse number to select it</p>
+              <p className="text-sm font-medium">{t("bible_no_verse")}</p>
+              <p className="text-xs mt-1 opacity-70">{t("bible_click_to_select")}</p>
             </div>
           )}
         </div>
@@ -138,19 +140,19 @@ export default function RightSidebar({
           {!user ? (
             <div className="text-center py-8 text-slate-400">
               <Bookmark className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p className="text-sm font-medium">Sign in to save highlights</p>
-              <p className="text-xs mt-1 opacity-70">Your highlights are saved to your account</p>
+              <p className="text-sm font-medium">{t("bible_signin_highlights")}</p>
+              <p className="text-xs mt-1 opacity-70">{t("bible_highlights_saved")}</p>
             </div>
           ) : chapterHighlights.length === 0 ? (
             <div className="text-center py-8 text-slate-400">
               <Bookmark className="w-8 h-8 mx-auto mb-2 opacity-30" />
-              <p className="text-sm font-medium">No highlights yet</p>
-              <p className="text-xs mt-1 opacity-70">Click a verse number to highlight it</p>
+              <p className="text-sm font-medium">{t("bible_no_highlights")}</p>
+              <p className="text-xs mt-1 opacity-70">{t("bible_click_to_highlight")}</p>
             </div>
           ) : (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                {chapterHighlights.length} highlighted
+                {chapterHighlights.length} {t("bible_highlighted")}
               </p>
               {chapterHighlights.map(h => (
                 <button
@@ -176,7 +178,7 @@ export default function RightSidebar({
       {tab === "reading" && (
         <div className="space-y-4">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Font size</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{t("bible_font_size")}</p>
             <div className="flex gap-2">
               {(["base", "lg", "xl"] as const).map((size, i) => (
                 <button
@@ -196,7 +198,7 @@ export default function RightSidebar({
           </div>
           <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl">
             <p className="text-xs text-amber-700 font-medium">
-              Tip: Click any verse number to highlight it.{user ? "" : " Sign in to save highlights."}
+              {t("bible_tip")}{user ? "" : t("bible_signin_save")}
             </p>
           </div>
         </div>

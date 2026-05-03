@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HelpCircle, User, Users } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface QuizSidebarProps {
   userId?: number
@@ -10,6 +11,7 @@ interface QuizSidebarProps {
 
 export default function QuizSidebar({ userId }: QuizSidebarProps) {
   const pathname = usePathname()
+  const { t } = useLocale()
 
   const isActive = (path: string) => {
     if (path === "/quiz/my-questions") return pathname === "/quiz/my-questions" || pathname === "/quiz/submit"
@@ -35,28 +37,28 @@ export default function QuizSidebar({ userId }: QuizSidebarProps) {
       <div className="flex flex-row items-center gap-1 flex-nowrap lg:flex-col lg:items-stretch">
         <Link href="/quiz" className={linkClass("/quiz")}>
           <HelpCircle className="w-4 h-4 flex-shrink-0" />
-          All questions
+          {t("quiz_all")}
         </Link>
         {userId ? (
           <>
             <Link href="/quiz/rooms" className={linkClass("/quiz/rooms")}>
               <Users className="w-4 h-4 flex-shrink-0" />
-              Group rooms
+              {t("quiz_rooms")}
             </Link>
             <Link href="/quiz/my-questions" className={linkClass("/quiz/my-questions")}>
               <User className="w-4 h-4 flex-shrink-0" />
-              My questions
+              {t("quiz_my")}
             </Link>
           </>
         ) : (
           <>
             <Link href="/auth/login" className={dimLink}>
               <Users className="w-4 h-4 flex-shrink-0" />
-              Group rooms
+              {t("quiz_rooms")}
             </Link>
             <Link href="/auth/login" className={dimLink}>
               <User className="w-4 h-4 flex-shrink-0" />
-              My questions
+              {t("quiz_my")}
             </Link>
           </>
         )}

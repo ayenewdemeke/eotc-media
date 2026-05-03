@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { BibleLanguage, BibleVersion, BibleSearchResult } from "@/types/models/bible"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface BibleSearchSheetProps {
   isOpen: boolean
@@ -28,13 +29,6 @@ interface BibleSearchSheetProps {
 }
 
 type Scope = "whole_bible" | "old_testament" | "new_testament" | "current_book"
-
-const SCOPE_LABELS: Array<{ value: Scope; label: string }> = [
-  { value: "whole_bible",   label: "Whole Bible" },
-  { value: "old_testament", label: "Old Testament" },
-  { value: "new_testament", label: "New Testament" },
-  { value: "current_book",  label: "This Book" },
-]
 
 const TRANSLATIONS = [
   { value: "amharic__1954", label: "Amharic 1954" },
@@ -63,8 +57,16 @@ export default function BibleSearchSheet({
   version,
   currentBookId,
 }: BibleSearchSheetProps) {
+  const { t } = useLocale()
   const [query, setQuery] = useState("")
   const [scope, setScope] = useState<Scope>("whole_bible")
+
+  const SCOPE_LABELS: Array<{ value: Scope; label: string }> = [
+    { value: "whole_bible",   label: t("bible_scope_whole") },
+    { value: "old_testament", label: t("bible_scope_ot") },
+    { value: "new_testament", label: t("bible_scope_nt") },
+    { value: "current_book",  label: t("bible_scope_book") },
+  ]
   const [searchTranslationKey, setSearchTranslationKey] = useState(`${language}__${version}`)
   const [results, setResults] = useState<BibleSearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -133,7 +135,7 @@ export default function BibleSearchSheet({
         <SheetHeader className="px-5 pt-5 pb-4 border-b border-slate-100 flex-shrink-0">
           {/* Title row */}
           <div className="flex items-center justify-between gap-3">
-            <SheetTitle className="text-lg font-bold text-slate-900">Search</SheetTitle>
+            <SheetTitle className="text-lg font-bold text-slate-900">{t("bible_search")}</SheetTitle>
             <button
               onClick={onClose}
               className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors flex-shrink-0"
@@ -164,7 +166,7 @@ export default function BibleSearchSheet({
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search verses…"
+              placeholder={t("bible_search_placeholder")}
               className="w-full pl-10 pr-10 py-2.5 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             {query && (
