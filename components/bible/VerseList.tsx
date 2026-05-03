@@ -8,24 +8,20 @@ export type VerseViewMode = "paragraph" | "line"
 interface VerseListProps {
   verses: BlVerse[]
   dir: "ltr" | "rtl"
-  activeVerse: number | null
   user: unknown
   localHighlights: Map<number, string>
   fontSize: number
-  selectMode: boolean
   selectedVerseIds: Set<number>
   viewMode: VerseViewMode
-  onVerseClick: (verseNum: number, verseId: number, el: HTMLElement) => void
+  onVerseClick: (verseNum: number, verseId: number) => void
 }
 
 export default function VerseList({
   verses,
   dir,
-  activeVerse,
   user,
   localHighlights,
   fontSize,
-  selectMode,
   selectedVerseIds,
   viewMode,
   onVerseClick,
@@ -40,17 +36,7 @@ export default function VerseList({
     )
   }
 
-  // ── Shared helpers ──────────────────────────────────────
-  const numBtnClass = (isSelected: boolean, isActive: boolean) =>
-    `transition-colors duration-100 select-none not-italic font-bold ${
-      selectMode ? "cursor-pointer" : user ? "cursor-pointer hover:text-blue-600" : "cursor-default"
-    } ${
-      isSelected ? "text-blue-600 font-black"
-      : isActive && !selectMode ? "text-blue-500 font-black"
-      : "text-blue-300"
-    }`
-
-  // ── Paragraph mode (original) ───────────────────────────
+  // ── Paragraph mode ──────────────────────────────────────
   if (viewMode === "paragraph") {
     return (
       <div dir={dir}>
@@ -60,31 +46,36 @@ export default function VerseList({
         >
           {verses.map(verse => {
             const highlightColor = localHighlights.get(verse.id)
-            const isActive = activeVerse === verse.verse
-            const isSelected = selectMode && selectedVerseIds.has(verse.id)
+            const isSelected = selectedVerseIds.has(verse.id)
 
-            let spanStyle: React.CSSProperties | undefined
-            if (isSelected) {
-              spanStyle = { backgroundColor: "#dbeafe", borderRadius: "3px", padding: "1px 3px", margin: "0 -3px", outline: "2px solid #3b82f6", outlineOffset: "1px" }
-            } else if (highlightColor) {
-              spanStyle = { backgroundColor: `${highlightColor}60`, borderRadius: "3px", padding: "1px 3px", margin: "0 -3px" }
-            } else if (isActive && !selectMode) {
-              spanStyle = { backgroundColor: "#dbeafe", borderRadius: "3px", padding: "1px 3px", margin: "0 -3px" }
-            }
+            // Build background: selected shows ring + fill; highlighted shows color fill
+            const bgColor = isSelected ? (highlightColor ?? "#eff6ff") : highlightColor
+            const spanStyle: React.CSSProperties | undefined = (bgColor || isSelected)
+              ? {
+                  backgroundColor: bgColor,
+                  outline: isSelected ? "2px solid #3b82f6" : undefined,
+                  outlineOffset: isSelected ? "1px" : undefined,
+                  borderRadius: "3px",
+                  padding: "1px 3px",
+                  margin: "0 -3px",
+                }
+              : undefined
 
             return (
               <span
                 key={verse.id}
                 id={`verse-${verse.verse}`}
-                onClick={selectMode ? e => onVerseClick(verse.verse, verse.id, e.currentTarget as HTMLElement) : undefined}
-                className={`relative transition-colors duration-150 ${selectMode ? "cursor-pointer" : ""}`}
                 style={spanStyle}
+                className="relative transition-colors duration-150"
               >
+                {/* Verse number — the click target */}
                 <button
                   type="button"
-                  onClick={selectMode ? undefined : e => onVerseClick(verse.verse, verse.id, e.currentTarget)}
-                  title={selectMode ? "Click to select" : user ? "Click to highlight" : "Sign in to highlight"}
-                  className={`inline leading-none ${numBtnClass(isSelected, isActive)}`}
+                  onClick={() => onVerseClick(verse.verse, verse.id)}
+                  title={user ? "Tap to select" : "Tap to select • sign in to highlight"}
+                  className={`inline leading-none select-none not-italic cursor-pointer transition-colors duration-100 ${
+                    isSelected ? "text-blue-700 font-black hover:text-blue-800" : "text-blue-300 font-bold hover:text-blue-500"
+                  }`}
                   style={{ fontSize: "0.6em", marginRight: "0.25em", verticalAlign: "super", lineHeight: 1 }}
                 >
                   {verse.verse}
@@ -100,7 +91,7 @@ export default function VerseList({
           })}
         </p>
 
-        {!user && !selectMode && (
+        {!user && selectedVerseIds.size === 0 && (
           <p className="mt-10 text-xs text-slate-400 text-center">
             <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600 transition-colors">
               Sign in
@@ -117,34 +108,35 @@ export default function VerseList({
     <div dir={dir} className="space-y-0.5">
       {verses.map(verse => {
         const highlightColor = localHighlights.get(verse.id)
-        const isActive = activeVerse === verse.verse
-        const isSelected = selectMode && selectedVerseIds.has(verse.id)
+        const isSelected = selectedVerseIds.has(verse.id)
 
-        let rowStyle: React.CSSProperties | undefined
-        if (isSelected) {
-          rowStyle = { backgroundColor: "#dbeafe", outline: "2px solid #3b82f6", outlineOffset: "1px", borderRadius: "8px" }
-        } else if (highlightColor) {
-          rowStyle = { backgroundColor: `${highlightColor}40`, borderRadius: "8px" }
-        } else if (isActive && !selectMode) {
-          rowStyle = { backgroundColor: "#dbeafe", borderRadius: "8px" }
-        }
+        const bgColor = isSelected ? (highlightColor ?? "#eff6ff") : highlightColor
+        const rowStyle: React.CSSProperties | undefined = bgColor
+          ? {
+              backgroundColor: bgColor,
+              outline: isSelected ? "2px solid #3b82f6" : undefined,
+              outlineOffset: isSelected ? "1px" : undefined,
+              borderRadius: "8px",
+            }
+          : isSelected
+          ? { outline: "2px solid #3b82f6", outlineOffset: "1px", borderRadius: "8px", backgroundColor: "#eff6ff" }
+          : undefined
 
         return (
           <div
             key={verse.id}
             id={`verse-${verse.verse}`}
-            onClick={selectMode ? e => onVerseClick(verse.verse, verse.id, e.currentTarget as HTMLElement) : undefined}
-            className={`flex items-start gap-2.5 px-2 py-1.5 transition-colors duration-150 ${selectMode ? "cursor-pointer" : ""}`}
+            onClick={() => onVerseClick(verse.verse, verse.id)}
+            className="flex items-start gap-2.5 px-2 py-1.5 cursor-pointer rounded-lg transition-colors duration-150 hover:bg-slate-50"
             style={rowStyle}
           >
-            <button
-              type="button"
-              onClick={selectMode ? undefined : e => onVerseClick(verse.verse, verse.id, e.currentTarget)}
-              title={selectMode ? "Click to select" : user ? "Click to highlight" : "Sign in to highlight"}
-              className={`flex-shrink-0 w-7 text-right text-xs leading-none mt-[0.35em] ${numBtnClass(isSelected, isActive)}`}
+            <span
+              className={`flex-shrink-0 w-7 text-right text-xs font-bold leading-none mt-[0.35em] transition-colors select-none ${
+                isSelected ? "text-blue-700" : "text-blue-300"
+              }`}
             >
               {verse.verse}
-            </button>
+            </span>
             <span
               className="flex-1 font-serif leading-relaxed text-slate-800 tracking-[0.005em]"
               style={{ fontSize: `${fontSize}px` }}
@@ -155,7 +147,7 @@ export default function VerseList({
         )
       })}
 
-      {!user && !selectMode && (
+      {!user && selectedVerseIds.size === 0 && (
         <p className="mt-10 text-xs text-slate-400 text-center">
           <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600 transition-colors">
             Sign in
