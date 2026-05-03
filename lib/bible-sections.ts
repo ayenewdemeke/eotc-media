@@ -38,11 +38,11 @@ export const BIBLE_SECTIONS: BibleSection[] = [
   },
   {
     name: 'Pauline Epistles',
-    osis: ['Rom', '1Cor', '2Cor', 'Gal', 'Eph', 'Phil', 'Col', '1Thess', '2Thess', '1Tim', '2Tim', 'Titus', 'Phlm'],
+    osis: ['Rom', '1Cor', '2Cor', 'Gal', 'Eph', 'Phil', 'Col', '1Thess', '2Thess', '1Tim', '2Tim', 'Titus', 'Phlm', 'Heb'],
   },
   {
     name: 'General Epistles',
-    osis: ['Heb', 'Jas', '1Pet', '2Pet', '1John', '2John', '3John', 'Jude'],
+    osis: ['Jas', '1Pet', '2Pet', '1John', '2John', '3John', 'Jude'],
   },
   {
     name: 'Revelation',
