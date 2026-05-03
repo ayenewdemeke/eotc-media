@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Music, Heart, User, Tv } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface HymnSidebarProps {
   userId?: number
@@ -10,6 +11,7 @@ interface HymnSidebarProps {
 
 export default function HymnSidebar({ userId }: HymnSidebarProps) {
   const pathname = usePathname()
+  const { t } = useLocale()
 
   const isActive = (path: string) => {
     if (path === "/hymns/channels") return pathname.startsWith("/hymns/channels")
@@ -30,32 +32,32 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
     <>
       <Link href="/hymns" className={linkClass("/hymns")}>
         <Music className="w-4 h-4 flex-shrink-0" />
-        ሁሉም መዝሙራት
+        {t("hymn_all")}
       </Link>
       <Link href="/hymns/channels" className={linkClass("/hymns/channels")}>
         <Tv className="w-4 h-4 flex-shrink-0" />
-        ቻናሎች
+        {t("hymn_channels")}
       </Link>
       {userId ? (
         <>
           <Link href="/hymns/favorites" className={linkClass("/hymns/favorites")}>
             <Heart className="w-4 h-4 flex-shrink-0" />
-            የተመረጡ መዝሙራት
+            {t("hymn_favorites")}
           </Link>
           <Link href="/hymns/my-hymns" className={linkClass("/hymns/my-hymns")}>
             <User className="w-4 h-4 flex-shrink-0" />
-            በእርስዎ የተጫኑ መዝሙሮች
+            {t("hymn_my_uploads")}
           </Link>
         </>
       ) : (
         <>
           <Link href="/auth/login" className={dimLink}>
             <Heart className="w-4 h-4 flex-shrink-0" />
-            የተመረጡ መዝሙራት
+            {t("hymn_favorites")}
           </Link>
           <Link href="/auth/login" className={dimLink}>
             <User className="w-4 h-4 flex-shrink-0" />
-            በእርስዎ የተጫኑ መዝሙሮች
+            {t("hymn_my_uploads")}
           </Link>
         </>
       )}

@@ -20,8 +20,10 @@ import {
   BookMarked,
   MessageSquare,
 } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 export default function Navbar() {
+  const { t } = useLocale()
   const pathname = usePathname()
   const router = useRouter()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -84,15 +86,15 @@ export default function Navbar() {
   const hasQuizAdmin = roles.some(r => ["super_admin", "admin", "quiz_admin"].includes(r))
 
   const navLinks = [
-    { href: "/bible/amharic/1954/1/1", activePrefix: "/bible", label: "መጽሃፍ ቅዱስ", labelEn: "Bible", icon: BookOpen },
-    { href: "/liturgy", activePrefix: "/liturgy", label: "ቅዳሴ", labelEn: "Liturgy", icon: Mic },
-    { href: "/hymns", activePrefix: "/hymns", label: "መዝሙራት", labelEn: "Hymns", icon: Music },
+    { href: "/bible/amharic/1954/1/1", activePrefix: "/bible", label: t("nav_bible"), icon: BookOpen },
+    { href: "/liturgy", activePrefix: "/liturgy", label: t("nav_liturgy"), icon: Mic },
+    { href: "/hymns", activePrefix: "/hymns", label: t("nav_hymns"), icon: Music },
   ]
 
   const moreLinks = [
-    { href: "/quiz", label: "ጥያቄዎች", labelEn: "Quiz", icon: HelpCircle },
-    { href: "/books", label: "መጻህፍት", labelEn: "Books", icon: BookMarked },
-    { href: "/sermons", label: "ስብከቶች", labelEn: "Sermons", icon: MessageSquare },
+    { href: "/quiz", label: t("nav_quiz"), icon: HelpCircle },
+    { href: "/books", label: t("nav_books"), icon: BookMarked },
+    { href: "/sermons", label: t("nav_sermons"), icon: MessageSquare },
   ]
 
   if (status === "loading") {
@@ -174,7 +176,7 @@ export default function Navbar() {
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
                 >
-                  ሌሎች
+                  {t("nav_more")}
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform duration-300 ${
                       isOthersDropdownOpen ? "rotate-180" : ""
@@ -194,10 +196,7 @@ export default function Navbar() {
                         }`}
                       >
                         <link.icon className="h-4 w-4 text-gray-400" />
-                        <span className="flex-1">{link.label}</span>
-                        <span className="text-[11px] text-gray-400 font-normal">
-                          {link.labelEn}
-                        </span>
+                        <span>{link.label}</span>
                       </Link>
                     ))}
                   </div>
@@ -248,7 +247,7 @@ export default function Navbar() {
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         >
                           <User className="h-4 w-4 text-gray-400" />
-                          Profile
+                          {t("nav_profile")}
                         </Link>
                         {hasMainAdmin && (
                           <Link
@@ -256,7 +255,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Main admin
+                            {t("nav_main_admin")}
                           </Link>
                         )}
                         {hasLiturgyAdmin && (
@@ -265,7 +264,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Liturgy admin
+                            {t("nav_liturgy_admin")}
                           </Link>
                         )}
                         {hasHymnAdmin && (
@@ -274,7 +273,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Hymn admin
+                            {t("nav_hymn_admin")}
                           </Link>
                         )}
                         {hasSermonAdmin && (
@@ -283,7 +282,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Sermon admin
+                            {t("nav_sermon_admin")}
                           </Link>
                         )}
                         {hasBookAdmin && (
@@ -292,7 +291,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Book admin
+                            {t("nav_book_admin")}
                           </Link>
                         )}
                         {hasQuizAdmin && (
@@ -301,7 +300,7 @@ export default function Navbar() {
                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                           >
                             <Settings className="h-4 w-4 text-gray-400" />
-                            Quiz admin
+                            {t("nav_quiz_admin")}
                           </Link>
                         )}
                       </div>
@@ -311,7 +310,7 @@ export default function Navbar() {
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full cursor-pointer transition-colors"
                         >
                           <LogOut className="h-4 w-4" />
-                          Log out
+                          {t("nav_signout")}
                         </button>
                       </div>
                     </div>
@@ -322,7 +321,7 @@ export default function Navbar() {
                   href="/auth/login"
                   className="hidden md:inline-flex items-center px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all shadow-sm"
                 >
-                  Sign in
+                  {t("nav_signin")}
                 </Link>
               )}
 
@@ -390,10 +389,7 @@ export default function Navbar() {
                   }`}
                 >
                   <link.icon className={`h-5 w-5 ${isActive(link) ? "text-blue-500" : "text-gray-400"}`} />
-                  <span className="flex-1">{link.label}</span>
-                  <span className={`text-xs ${isActive(link) ? "text-blue-400" : "text-gray-400"}`}>
-                    {link.labelEn}
-                  </span>
+                  <span>{link.label}</span>
                 </Link>
               ))}
             </div>
@@ -413,10 +409,7 @@ export default function Navbar() {
                   }`}
                 >
                   <link.icon className={`h-5 w-5 ${isActive(link) ? "text-blue-500" : "text-gray-400"}`} />
-                  <span className="flex-1">{link.label}</span>
-                  <span className={`text-xs ${isActive(link) ? "text-blue-400" : "text-gray-400"}`}>
-                    {link.labelEn}
-                  </span>
+                  <span>{link.label}</span>
                 </Link>
               ))}
             </div>
@@ -501,7 +494,7 @@ export default function Navbar() {
                   href="/auth/login"
                   className="flex items-center justify-center w-full px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all shadow-sm"
                 >
-                  Sign in
+                  {t("nav_signin")}
                 </Link>
               </div>
             )}
