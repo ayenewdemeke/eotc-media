@@ -23,7 +23,7 @@ import {
 import { useLocale } from "@/lib/i18n/LocaleContext"
 
 export default function Navbar() {
-  const { t } = useLocale()
+  const { t, locale, setLocale } = useLocale()
   const pathname = usePathname()
   const router = useRouter()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -207,6 +207,17 @@ export default function Navbar() {
 
             {/* Right Side */}
             <div className="flex items-center gap-3">
+              {/* Language switcher */}
+              <button
+                onClick={() => setLocale(locale === "en" ? "am" : "en")}
+                title="Switch language"
+                className="hidden md:flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-md border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer select-none"
+              >
+                <span className={locale === "en" ? "text-blue-600" : "text-gray-400"}>EN</span>
+                <span className="text-gray-300">|</span>
+                <span className={locale === "am" ? "text-blue-600" : "text-gray-400"}>አማ</span>
+              </button>
+
               {user ? (
                 <div className="relative hidden md:block" ref={dropdownRef}>
                   <button
@@ -498,6 +509,19 @@ export default function Navbar() {
                 </Link>
               </div>
             )}
+
+            {/* Mobile language switcher */}
+            <div className="px-5 pb-5 pt-1">
+              <button
+                onClick={() => setLocale(locale === "en" ? "am" : "en")}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer select-none"
+              >
+                <span className={locale === "en" ? "text-blue-600" : "text-gray-400"}>EN</span>
+                <span className="text-gray-300">|</span>
+                <span className={locale === "am" ? "text-blue-600" : "text-gray-400"}>አማ</span>
+                <span className="text-xs text-gray-400 ml-1">{locale === "en" ? "English" : "አማርኛ"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
