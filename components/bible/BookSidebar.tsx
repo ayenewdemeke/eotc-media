@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Search } from "lucide-react"
 import { BlBook, BibleLanguage, BibleVersion } from "@/types/models/bible"
 import { BIBLE_SECTIONS, OSIS_TO_SECTION } from "@/lib/bible-sections"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface BookSidebarProps {
   books: BlBook[]
@@ -24,6 +25,7 @@ const SCROLL_KEY = "bibleBookListScroll"
 export default function BookSidebar({ books, currentBook, language, version }: BookSidebarProps) {
   const [query, setQuery] = useState("")
   const listRef = useRef<HTMLDivElement>(null)
+  const { t } = useLocale()
 
   // Restore scroll position from the previous navigation
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function BookSidebar({ books, currentBook, language, version }: B
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="Find a book…"
+          placeholder={t("bible_find_book")}
           value={query}
           onChange={e => setQuery(e.target.value)}
           className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-400/60 focus:border-blue-400/60 transition-all"
@@ -84,7 +86,7 @@ export default function BookSidebar({ books, currentBook, language, version }: B
         style={{ scrollbarWidth: "none" }}
       >
         {orderedSections.length === 0 ? (
-          <p className="text-xs text-slate-400 text-center mt-8">No books found</p>
+          <p className="text-xs text-slate-400 text-center mt-8">{t("bible_no_books")}</p>
         ) : (
           orderedSections.map(section => (
             <div key={section.name} className="mb-1">

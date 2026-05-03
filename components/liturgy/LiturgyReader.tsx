@@ -8,6 +8,7 @@ import {
   BookOpenText,
   Check,
 } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 // ── Types ──────────────────────────────────────────────
 
@@ -136,6 +137,7 @@ function getAvailableAudio(
 // ── Main Component ─────────────────────────────────────
 
 export function LiturgyReader({ sections }: LiturgyReaderProps) {
+  const { locale, t } = useLocale()
   const [activeSectionId, setActiveSectionId] = useState<number | null>(
     sections.length > 0 ? sections[0].id : null
   )
@@ -145,7 +147,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
     transliteration: true,
     translation: true,
   })
-  const [roleLanguage, setRoleLanguage] = useState<RoleLanguage>("english")
+  const roleLanguage: RoleLanguage = locale === "am" ? "amharic" : "english"
   const [globalAudioType, setGlobalAudioType] = useState<AudioType>("geez")
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
   const [showLanguageOptions, setShowLanguageOptions] = useState(false)
@@ -247,11 +249,10 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
           <BookOpenText className="h-10 w-10 text-blue-500" />
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          No liturgy content yet
+          {t("liturgy_no_content")}
         </h2>
         <p className="text-sm text-gray-500 text-center max-w-md">
-          Liturgical texts will appear here once they are added by an
-          administrator.
+          {t("liturgy_no_content_msg")}
         </p>
       </div>
     )
@@ -270,10 +271,10 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
           <div className="pt-3 pb-2 border-b border-gray-100">
             <div className="flex items-start justify-between gap-3 mb-1">
               <div className="flex-shrink min-w-0">
-                <h1 className="text-lg font-bold text-gray-900">Liturgy</h1>
+                <h1 className="text-lg font-bold text-gray-900">{t("liturgy_title")}</h1>
                 {activeSection && (
                   <p className="text-xs text-gray-500 mt-0.5 truncate">
-                    {activeSection.nameEnglish} • {activeSection.nameAmharic}
+                    {locale === "am" ? activeSection.nameAmharic : activeSection.nameEnglish}
                   </p>
                 )}
               </div>
@@ -287,7 +288,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
                   className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 cursor-pointer transition-all shadow-sm"
                 >
                   <BookOpenText className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Language</span>
+                  <span className="hidden sm:inline">{t("liturgy_language_btn")}</span>
                   <svg className={`w-3 h-3 transition-transform ${showLanguageOptions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -313,29 +314,6 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
                   </div>
                 )}
 
-                {/* Role language toggle */}
-                <div className="flex items-center gap-0.5 bg-gray-100 border border-gray-200 rounded-lg p-0.5">
-                  <button
-                    onClick={() => setRoleLanguage("english")}
-                    className={`px-2 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
-                      roleLanguage === "english"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    EN
-                  </button>
-                  <button
-                    onClick={() => setRoleLanguage("amharic")}
-                    className={`px-2 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
-                      roleLanguage === "amharic"
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    አማ
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -345,7 +323,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
             <div ref={languageDropdownRef} className="absolute right-4 top-[calc(100%-3rem)] w-60 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-[100]">
               <div className="px-3 py-1.5 border-b border-gray-100">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Select languages
+                  {t("liturgy_select_langs")}
                 </p>
               </div>
               {[
@@ -390,7 +368,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
                         : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
-                    {section.nameEnglish}
+                    {locale === "am" ? section.nameAmharic : section.nameEnglish}
                     {isActive && (
                       <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full" />
                     )}
@@ -487,7 +465,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
                       {text.remark && (
                         <div className="mt-4 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-l-3 border-amber-400 rounded-xl">
                           <p className="text-sm text-amber-900 leading-relaxed">
-                            <span className="font-bold">Note:</span> {text.remark}
+                            <span className="font-bold">{t("liturgy_note")}</span> {text.remark}
                           </p>
                         </div>
                       )}
@@ -503,7 +481,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
               <BookOpenText className="h-10 w-10 text-gray-400" />
             </div>
             <p className="text-base text-gray-500 font-medium">
-              No texts in this section yet
+              {t("liturgy_no_section")}
             </p>
           </div>
         ) : (

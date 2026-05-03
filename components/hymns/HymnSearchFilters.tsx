@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Search } from "lucide-react"
 import { ScrollableSelect } from "@/components/ui/scrollable-select"
 import { HmCategory, HmSubCategory, HmLanguage, HmSinger } from "@/types/models/hymn"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface HymnSearchFiltersProps {
   categories: HmCategory[]
@@ -14,14 +15,6 @@ interface HymnSearchFiltersProps {
   singersByLanguage: Record<string, number[]>
   basePath?: string
   hideSingerMode?: boolean
-}
-
-const BY_SINGER_LABEL: Record<string, string> = {
-  "1": "በዘማሪው",
-  "2": "By the singer",
-  "3": "በዘማሪው",
-  "4": "ብዘማሪ",
-  "5": "Faarfataa",
 }
 
 export default function HymnSearchFilters({
@@ -34,6 +27,7 @@ export default function HymnSearchFilters({
   hideSingerMode = false,
 }: HymnSearchFiltersProps) {
   const router = useRouter()
+  const { t } = useLocale()
   const searchParams = useSearchParams()
 
   const activeLanguage = searchParams.get("language") ?? ""
@@ -80,8 +74,6 @@ export default function HymnSearchFilters({
     [searchParams]
   )
 
-  const bySingerLabel = BY_SINGER_LABEL[activeLanguage] ?? "ዘማሪ"
-
   const visibleCategories = activeLanguage
     ? categories.filter(c => c.languageId === parseInt(activeLanguage))
     : []
@@ -98,19 +90,19 @@ export default function HymnSearchFilters({
 
   // Build option arrays
   const languageOptions = [
-    { value: "_", label: "ቋንቋ ይምረጡ" },
+    { value: "_", label: t("hymn_select_language") },
     ...languages.map(l => ({ value: String(l.id), label: l.name })),
   ]
 
   const categoryOptions = [
-    { value: "_", label: "የምድብ አይነት ይምረጡ" },
-    ...(!hideSingerMode ? [{ value: "singer", label: bySingerLabel }] : []),
+    { value: "_", label: t("hymn_select_category") },
+    ...(!hideSingerMode ? [{ value: "singer", label: t("hymn_by_singer") }] : []),
     ...visibleCategories.map(c => ({ value: String(c.id), label: c.name })),
   ]
 
   const thirdOptions = isSingerMode
-    ? [{ value: "_", label: "ዘማሪ ይምረጡ" }, ...visibleSingers.map(s => ({ value: String(s.id), label: s.name }))]
-    : [{ value: "_", label: "ምድብ ይምረጡ" }, ...visibleSubCategories.map(sc => ({ value: String(sc.id), label: sc.name }))]
+    ? [{ value: "_", label: t("hymn_select_singer") }, ...visibleSingers.map(s => ({ value: String(s.id), label: s.name }))]
+    : [{ value: "_", label: t("hymn_select_subcategory") }, ...visibleSubCategories.map(sc => ({ value: String(sc.id), label: sc.name }))]
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
@@ -119,7 +111,7 @@ export default function HymnSearchFilters({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="መዝሙር ፈልግ..."
+          placeholder={t("hymn_search_placeholder")}
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}
           className="w-full h-9 pl-9 pr-3 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-400"

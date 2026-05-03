@@ -33,18 +33,39 @@ export const translations = {
     hymn_submit:        "Submit a Hymn",
     hymn_all_channels:  "All Channels",
 
+    // ── Hymns search filters ─────────────────────
+    hymn_search_placeholder: "Search hymns…",
+    hymn_select_language:    "Select language",
+    hymn_select_category:    "Select category",
+    hymn_select_singer:      "Select singer",
+    hymn_select_subcategory: "Select sub-category",
+    hymn_by_singer:          "By the singer",
+
     // ── Sermons sidebar ─────────────────────────
     sermon_all:         "All Sermons",
     sermon_channels:    "Channels",
     sermon_favorites:   "Favorites",
     sermon_my_uploads:  "My Uploads",
 
-    // ── Search & filters ────────────────────────
+    // ── Search & filters (generic) ───────────────
     search_placeholder: "Search…",
     filter_all:         "All",
     filter_language:    "Language",
     filter_category:    "Category",
     filter_sort:        "Sort",
+
+    // ── Books sidebar + filters ──────────────────
+    book_all:                "All books",
+    book_my:                 "My books",
+    book_search_placeholder: "Search books…",
+    book_select_language:    "Select language",
+    book_select_category:    "Select category",
+    book_select_subcategory: "Select sub-category",
+
+    // ── Quiz sidebar ─────────────────────────────
+    quiz_all:   "All questions",
+    quiz_rooms: "Group rooms",
+    quiz_my:    "My questions",
 
     // ── Common actions ──────────────────────────
     action_save:        "Save Changes",
@@ -59,20 +80,63 @@ export const translations = {
     action_no_results:  "No results",
 
     // ── Auth pages ──────────────────────────────
-    auth_login_title:   "Sign in to your account",
-    auth_login_btn:     "Sign in",
-    auth_register_title:"Create an account",
-    auth_register_btn:  "Register",
-    auth_email:         "Email",
-    auth_password:      "Password",
-    auth_name:          "Full name",
+    auth_login_title:    "Sign in to your account",
+    auth_login_btn:      "Sign in",
+    auth_register_title: "Create an account",
+    auth_register_btn:   "Register",
+    auth_email:          "Email",
+    auth_password:       "Password",
+    auth_name:           "Full name",
 
     // ── Feedback widget ─────────────────────────
-    feedback_btn:       "Feedback",
-    feedback_title:     "Send Feedback",
-    feedback_placeholder:"Your message…",
-    feedback_send:      "Send",
-    feedback_thanks:    "Thank you!",
+    feedback_btn:              "Feedback",
+    feedback_title:            "Send Feedback",
+    feedback_placeholder:      "Your message…",
+    feedback_send:             "Send",
+    feedback_thanks:           "Thank you!",
+    feedback_header:           "Share your feedback",
+    feedback_description:      "If there's something you want fixed or added, please share your feedback…",
+    feedback_contact:          "Write your info if you want us to reach you",
+    feedback_name_placeholder: "Name",
+    feedback_phone_placeholder: "Phone",
+    feedback_sending:          "Sending…",
+    feedback_submit_btn:       "Send your feedback",
+    feedback_success_msg:      "Thank you for your feedback!",
+
+    // ── Bible ────────────────────────────────────
+    bible_find_book:        "Find a book…",
+    bible_no_books:         "No books found",
+    bible_tab_verse:        "Verse",
+    bible_tab_highlights:   "Highlights",
+    bible_tab_reading:      "Reading",
+    bible_copy_verse:       "Copy verse",
+    bible_copy_ref:         "Copy ref",
+    bible_no_verse:         "No verse selected",
+    bible_click_to_select:  "Click a verse number to select it",
+    bible_signin_highlights:"Sign in to save highlights",
+    bible_highlights_saved: "Your highlights are saved to your account",
+    bible_no_highlights:    "No highlights yet",
+    bible_click_to_highlight: "Click a verse number to highlight it",
+    bible_font_size:        "Font size",
+    bible_tip:              "Tip: Click any verse number to highlight it.",
+    bible_signin_save:      " Sign in to save highlights.",
+    bible_search:           "Search",
+    bible_search_placeholder: "Search verses…",
+    bible_scope_whole:      "Whole Bible",
+    bible_scope_ot:         "Old Testament",
+    bible_scope_nt:         "New Testament",
+    bible_scope_book:       "This Book",
+    bible_no_text:          "No text available",
+    bible_highlighted:      "highlighted",
+
+    // ── Liturgy ──────────────────────────────────
+    liturgy_title:          "Liturgy",
+    liturgy_language_btn:   "Language",
+    liturgy_select_langs:   "Select languages",
+    liturgy_no_content:     "No liturgy content yet",
+    liturgy_no_content_msg: "Liturgical texts will appear here once they are added by an administrator.",
+    liturgy_note:           "Note:",
+    liturgy_no_section:     "No texts in this section yet",
 
     // ── Misc ────────────────────────────────────
     media_resources:    "Media Resources",
@@ -110,18 +174,39 @@ export const translations = {
     hymn_submit:        "መዝሙር ያስገቡ",
     hymn_all_channels:  "ሁሉም ቻናሎች",
 
+    // ── Hymns search filters ─────────────────────
+    hymn_search_placeholder: "መዝሙር ፈልግ...",
+    hymn_select_language:    "ቋንቋ ይምረጡ",
+    hymn_select_category:    "የምድብ አይነት ይምረጡ",
+    hymn_select_singer:      "ዘማሪ ይምረጡ",
+    hymn_select_subcategory: "ምድብ ይምረጡ",
+    hymn_by_singer:          "በዘማሪው",
+
     // ── Sermons sidebar ─────────────────────────
     sermon_all:         "ሁሉም ስብከቶች",
     sermon_channels:    "ቻናሎች",
     sermon_favorites:   "የተመረጡ ስብከቶች",
     sermon_my_uploads:  "በእርስዎ የተጫኑ ስብከቶች",
 
-    // ── Search & filters ────────────────────────
+    // ── Search & filters (generic) ───────────────
     search_placeholder: "ፈልግ…",
     filter_all:         "ሁሉም",
     filter_language:    "ቋንቋ",
     filter_category:    "ምድብ",
     filter_sort:        "ደርድር",
+
+    // ── Books sidebar + filters ──────────────────
+    book_all:                "ሁሉም መጻሕፍት",
+    book_my:                 "የእርስዎ መጻሕፍት",
+    book_search_placeholder: "መጽሐፍ ፈልግ...",
+    book_select_language:    "ቋንቋ ይምረጡ",
+    book_select_category:    "የምድብ አይነት ይምረጡ",
+    book_select_subcategory: "ምድብ ይምረጡ",
+
+    // ── Quiz sidebar ─────────────────────────────
+    quiz_all:   "ሁሉም ጥያቄዎች",
+    quiz_rooms: "የቡድን ክፍሎች",
+    quiz_my:    "የእርስዎ ጥያቄዎች",
 
     // ── Common actions ──────────────────────────
     action_save:        "ለውጦችን አስቀምጥ",
@@ -136,20 +221,63 @@ export const translations = {
     action_no_results:  "ምንም ውጤት አልተገኘም",
 
     // ── Auth pages ──────────────────────────────
-    auth_login_title:   "ወደ መለያዎ ይግቡ",
-    auth_login_btn:     "ይግቡ",
-    auth_register_title:"መለያ ይፍጠሩ",
-    auth_register_btn:  "ይመዝገቡ",
-    auth_email:         "ኢሜይል",
-    auth_password:      "የይለፍ ቃል",
-    auth_name:          "ሙሉ ስም",
+    auth_login_title:    "ወደ መለያዎ ይግቡ",
+    auth_login_btn:      "ይግቡ",
+    auth_register_title: "መለያ ይፍጠሩ",
+    auth_register_btn:   "ይመዝገቡ",
+    auth_email:          "ኢሜይል",
+    auth_password:       "የይለፍ ቃል",
+    auth_name:           "ሙሉ ስም",
 
     // ── Feedback widget ─────────────────────────
-    feedback_btn:       "አስተያየት",
-    feedback_title:     "አስተያየት ይላኩ",
-    feedback_placeholder:"የእርስዎ መልእክት…",
-    feedback_send:      "ላክ",
-    feedback_thanks:    "አመሰግናለን!",
+    feedback_btn:              "አስተያየት",
+    feedback_title:            "አስተያየት ይላኩ",
+    feedback_placeholder:      "የእርስዎ መልእክት…",
+    feedback_send:             "ላክ",
+    feedback_thanks:           "አመሰግናለን!",
+    feedback_header:           "ሃሳብዎን ያካፍሉን",
+    feedback_description:      "እንዲስተካከል ወይም እንዲጨመር የሚፈልጉት ነገር ካለ ሃሳብዎን ያካፍሉን...",
+    feedback_contact:          "እንድናገኝዎ ከፈለጉ መረጃዎን ይጻፉልን",
+    feedback_name_placeholder: "ስም",
+    feedback_phone_placeholder: "ስልክ",
+    feedback_sending:          "በመላክ ላይ...",
+    feedback_submit_btn:       "አስተያየትዎን ይላኩ",
+    feedback_success_msg:      "ስለአስተያየትዎ እናመሰግናለን!",
+
+    // ── Bible ────────────────────────────────────
+    bible_find_book:        "መጽሐፍ ፈልግ...",
+    bible_no_books:         "ምንም መጽሐፍ አልተገኘም",
+    bible_tab_verse:        "ጥቅስ",
+    bible_tab_highlights:   "ምልክቶች",
+    bible_tab_reading:      "ማንበቢያ",
+    bible_copy_verse:       "ጥቅስ ቅዳ",
+    bible_copy_ref:         "ዋቢ ቅዳ",
+    bible_no_verse:         "ምንም ጥቅስ አልተመረጠም",
+    bible_click_to_select:  "ጥቅስ ቁጥር ይጫኑ ለመምረጥ",
+    bible_signin_highlights:"ምልክቶች ለማስቀመጥ ይግቡ",
+    bible_highlights_saved: "ምልክቶችዎ በመለያዎ ይቀመጣሉ",
+    bible_no_highlights:    "ምንም ምልክት የለም",
+    bible_click_to_highlight: "ጥቅስ ቁጥር ይጫኑ ለምልክት",
+    bible_font_size:        "የፊደል መጠን",
+    bible_tip:              "ጠቃሚ ፍንጭ፡ ጥቅስ ቁጥር ይጫኑ ለምልክት።",
+    bible_signin_save:      " ምልክቶች ለማስቀመጥ ይግቡ።",
+    bible_search:           "ፈልግ",
+    bible_search_placeholder: "ጥቅሶች ፈልግ...",
+    bible_scope_whole:      "ሙሉ መጽሐፍ ቅዱስ",
+    bible_scope_ot:         "ብሉይ ኪዳን",
+    bible_scope_nt:         "አዲስ ኪዳን",
+    bible_scope_book:       "ይህ መጽሐፍ",
+    bible_no_text:          "ምንም ጽሑፍ የለም",
+    bible_highlighted:      "ምልክት የተደረገ",
+
+    // ── Liturgy ──────────────────────────────────
+    liturgy_title:          "ቅዳሴ",
+    liturgy_language_btn:   "ቋንቋ",
+    liturgy_select_langs:   "ቋንቋዎች ይምረጡ",
+    liturgy_no_content:     "ምንም የቅዳሴ ይዘት የለም",
+    liturgy_no_content_msg: "የቅዳሴ ጽሑፎች ሲጨመሩ እዚህ ይታያሉ።",
+    liturgy_note:           "ማሳሰቢያ፡",
+    liturgy_no_section:     "በዚህ ክፍል ምንም ጽሑፍ የለም",
 
     // ── Misc ────────────────────────────────────
     media_resources:    "የሚዲያ ውጤቶች",
