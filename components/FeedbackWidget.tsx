@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect } from "react"
 import { MessageCircle, X, Send, Check } from "lucide-react"
 import { useLocale } from "@/lib/i18n/LocaleContext"
+import { usePathname } from "next/navigation"
 
 export default function FeedbackWidget() {
+  const pathname = usePathname()
+  const isBiblePage = pathname.startsWith("/bible")
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState("")
   const [name, setName] = useState("")
@@ -48,7 +51,7 @@ export default function FeedbackWidget() {
   }
 
   return (
-    <div ref={ref} className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
+    <div ref={ref} className={`fixed bottom-5 right-5 z-50 flex-col items-end gap-2 ${isBiblePage ? "hidden lg:flex" : "flex"}`}>
       {open && (
         <div className="w-80 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
           {/* Header */}
