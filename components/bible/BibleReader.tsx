@@ -11,7 +11,12 @@ import {
   ChevronDown,
   BookMarked,
   MousePointerClick,
+  SlidersHorizontal,
+  Copy,
+  AlignJustify,
+  List,
 } from "lucide-react"
+import { toast } from "sonner"
 import {
   Select,
   SelectContent,
@@ -26,7 +31,7 @@ import {
 } from "@/components/ui/sheet"
 import { BlBook, BlVerse, BibleLanguage, BibleVersion } from "@/types/models/bible"
 import BookSidebar from "./BookSidebar"
-import VerseList from "./VerseList"
+import VerseList, { VerseViewMode } from "./VerseList"
 import HighlightPopover from "./HighlightPopover"
 import BibleSearchSheet from "./BibleSearchSheet"
 import CollectionDialog from "./CollectionDialog"
@@ -74,12 +79,14 @@ export default function BibleReader({
   )
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
   const [fontSizeIdx, setFontSizeIdx] = useState(1)
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false)
   const [selectMode, setSelectMode] = useState(false)
   const [selectedVerseIds, setSelectedVerseIds] = useState<Set<number>>(new Set())
   const [selectedVerseNums, setSelectedVerseNums] = useState<number[]>([])
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<VerseViewMode>("paragraph")
 
   // Separate refs for mobile and desktop chapter nav (both may be in DOM simultaneously)
   const mobileChapterNavRef = useRef<HTMLDivElement>(null)
@@ -185,6 +192,27 @@ export default function BibleReader({
     }
   }
 
+  // Copy single active verse
+  function copySingleVerse() {
+    const activeVerseText = verses.find(v => v.verse === activeVerse)?.text ?? null
+    if (!activeVerse || !activeVerseText) return
+    const ref = `${currentBookName} ${currentChapter}:${activeVerse}`
+    navigator.clipboard.writeText(`${activeVerseText} — ${ref}`)
+    toast.success("Verse copied")
+  }
+
+  // Copy all currently selected verses
+  function copySelectedVerses() {
+    const lines = verses
+      .filter(v => selectedVerseIds.has(v.id))
+      .sort((a, b) => a.verse - b.verse)
+      .map(v => `${currentBookName} ${currentChapter}:${v.verse}  ${v.text}`)
+      .join("\n")
+    if (!lines) return
+    navigator.clipboard.writeText(lines)
+    toast.success(`${selectedVerseIds.size} verse${selectedVerseIds.size !== 1 ? "s" : ""} copied`)
+  }
+
   const fontSize = FONT_SIZES[fontSizeIdx]
   const activeVerseText = verses.find(v => v.verse === activeVerse)?.text ?? null
 
@@ -205,6 +233,160 @@ export default function BibleReader({
           {ch}
         </Link>
       ))}
+    </div>
+  )
+
+  // Right panel content — shared between desktop sidebar and mobile sheet
+  const panelContent = (
+    <div className="space-y-4">
+      {/* Collections */}
+      <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+          My collections
+        </p>
+        {user ? (
+          <div className="space-y-2">
+            <button
+              onClick={() => {
+                if (selectMode) {
+                  closeSelectMode()
+                } else {
+                  setSelectMode(true)
+                  setIsMobilePanelOpen(false)
+                }
+              }}
+              className={`w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold transition-all ${
+                selectMode
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              <MousePointerClick className="w-3.5 h-3.5" />
+              {selectMode ? "Selecting…" : "Select Verses"}
+            </button>
+            {selectMode && selectedVerseIds.size > 0 && (
+              <>
+                <button
+                  onClick={() => { setIsCollectionDialogOpen(true); setIsMobilePanelOpen(false) }}
+                  className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all"
+                >
+                  <BookMarked className="w-3.5 h-3.5" />
+                  Save {selectedVerseIds.size} verse{selectedVerseIds.size !== 1 ? "s" : ""}
+                </button>
+                <button
+                  onClick={() => { copySelectedVerses(); setIsMobilePanelOpen(false) }}
+                  className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 transition-all"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy {selectedVerseIds.size} verse{selectedVerseIds.size !== 1 ? "s" : ""}
+                </button>
+              </>
+            )}
+            <a
+              href="/bible/collections"
+              className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100 border border-slate-200 bg-white transition-all"
+            >
+              View my collections
+            </a>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400">
+            <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600">Sign in</a> to save verses to collections.
+          </p>
+        )}
+      </div>
+
+      {/* Selected verse */}
+      <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+          Selected Verse
+        </p>
+        {activeVerse && activeVerseText ? (
+          <div>
+            <p className="text-xs font-bold text-blue-600 mb-2">
+              {currentBookName} {currentChapter}:{activeVerse}
+            </p>
+            <p className="text-[13px] text-slate-700 leading-relaxed font-serif">
+              {activeVerseText.length > 160
+                ? activeVerseText.slice(0, 157) + "…"
+                : activeVerseText}
+            </p>
+            <button
+              onClick={copySingleVerse}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 h-7 rounded-lg text-xs font-medium text-slate-500 bg-white hover:bg-slate-100 border border-slate-200 transition-all"
+            >
+              <Copy className="w-3 h-3" />
+              Copy verse
+            </button>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Tap a verse number to see it here.
+          </p>
+        )}
+      </div>
+
+      {/* Text size + view mode */}
+      <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
+          Reading
+        </p>
+        {/* Font size */}
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Text Size</p>
+        <div className="flex items-center gap-1.5 mb-4">
+          {(["S", "M", "L"] as const).map((label, i) => (
+            <button
+              key={i}
+              onClick={() => setFontSizeIdx(i)}
+              className={`flex-1 flex items-center justify-center h-8 rounded-lg text-xs font-bold transition-all ${
+                fontSizeIdx === i
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {/* View mode */}
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">View</p>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setViewMode("paragraph")}
+            title="Paragraph view"
+            className={`flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === "paragraph"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            <AlignJustify className="w-3.5 h-3.5" />
+            Paragraph
+          </button>
+          <button
+            onClick={() => setViewMode("line")}
+            title="One verse per line"
+            className={`flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === "line"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            <List className="w-3.5 h-3.5" />
+            By verse
+          </button>
+        </div>
+      </div>
+
+      {/* Commentary placeholder */}
+      <div className="rounded-xl border border-dashed border-slate-200 p-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-1.5">
+          Commentary
+        </p>
+        <p className="text-xs text-slate-300 leading-relaxed">
+          Verse commentary coming soon.
+        </p>
+      </div>
     </div>
   )
 
@@ -230,7 +412,6 @@ export default function BibleReader({
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isChapterNavOpen ? "rotate-180" : ""}`} />
               </button>
               {isChapterNavOpen && (
-                // Fixed position keeps the popover within the viewport on all screen sizes
                 <div className="fixed inset-x-4 z-[200] bg-white rounded-2xl shadow-xl border border-slate-100 p-3" style={{ top: "7.25rem" }}>
                   <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">
                     {currentBookName}
@@ -347,10 +528,11 @@ export default function BibleReader({
             fontSize={fontSize}
             selectMode={selectMode}
             selectedVerseIds={selectedVerseIds}
+            viewMode={viewMode}
             onVerseClick={handleVerseClick}
           />
 
-          {/* Prev / Next — language-neutral */}
+          {/* Prev / Next */}
           <div className="flex items-center justify-between mt-14 pt-6 border-t border-slate-100">
             {currentChapter > 1 ? (
               <Link
@@ -378,7 +560,7 @@ export default function BibleReader({
           </div>
         </main>
 
-        {/* ── Right: controls + verse panel ──────────────── */}
+        {/* ── Right: controls + verse panel (desktop only) ── */}
         <aside className="hidden lg:flex lg:flex-col border-l border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)]">
           {/* Right column header: translation + search */}
           <div className="flex-shrink-0 px-5 py-3 border-b border-slate-100">
@@ -410,108 +592,8 @@ export default function BibleReader({
           </div>
 
           {/* Right column content */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 space-y-4">
-            {/* Select mode & collections */}
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-                My collections
-              </p>
-              {user ? (
-                <div className="space-y-2">
-                  <button
-                    onClick={() => {
-                      if (selectMode) {
-                        closeSelectMode()
-                      } else {
-                        setSelectMode(true)
-                      }
-                    }}
-                    className={`w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold transition-all ${
-                      selectMode
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                  >
-                    <MousePointerClick className="w-3.5 h-3.5" />
-                    {selectMode ? "Selecting…" : "Select Verses"}
-                  </button>
-                  {selectMode && selectedVerseIds.size > 0 && (
-                    <button
-                      onClick={() => setIsCollectionDialogOpen(true)}
-                      className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all"
-                    >
-                      <BookMarked className="w-3.5 h-3.5" />
-                      Save {selectedVerseIds.size} verse{selectedVerseIds.size !== 1 ? "s" : ""}
-                    </button>
-                  )}
-                  <a
-                    href="/bible/collections"
-                    className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100 border border-slate-200 bg-white transition-all"
-                  >
-                    View my collections
-                  </a>
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400">
-                  <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600">Sign in</a> to save verses to collections.
-                </p>
-              )}
-            </div>
-
-            {/* Selected verse */}
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-                Selected Verse
-              </p>
-              {activeVerse && activeVerseText ? (
-                <div>
-                  <p className="text-xs font-bold text-blue-600 mb-2">
-                    {currentBookName} {currentChapter}:{activeVerse}
-                  </p>
-                  <p className="text-[13px] text-slate-700 leading-relaxed font-serif">
-                    {activeVerseText.length > 160
-                      ? activeVerseText.slice(0, 157) + "…"
-                      : activeVerseText}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Tap a verse number to see it here.
-                </p>
-              )}
-            </div>
-
-            {/* Text size */}
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-                Text Size
-              </p>
-              <div className="flex items-center gap-1.5">
-                {(["S", "M", "L"] as const).map((label, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setFontSizeIdx(i)}
-                    className={`flex-1 flex items-center justify-center h-8 rounded-lg text-xs font-bold transition-all ${
-                      fontSizeIdx === i
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "bg-white text-slate-500 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Commentary placeholder */}
-            <div className="rounded-xl border border-dashed border-slate-200 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-1.5">
-                Commentary
-              </p>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Verse commentary coming soon.
-              </p>
-            </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
+            {panelContent}
           </div>
         </aside>
       </div>
@@ -533,12 +615,21 @@ export default function BibleReader({
                 Cancel
               </button>
               {selectedVerseIds.size > 0 && (
-                <button
-                  onClick={() => setIsCollectionDialogOpen(true)}
-                  className="bg-white text-blue-700 text-xs font-semibold px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  Save
-                </button>
+                <>
+                  <button
+                    onClick={copySelectedVerses}
+                    className="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-lg hover:bg-white/30 transition-colors flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" />
+                    Copy
+                  </button>
+                  <button
+                    onClick={() => setIsCollectionDialogOpen(true)}
+                    className="bg-white text-blue-700 text-xs font-semibold px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    Save
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -583,20 +674,18 @@ export default function BibleReader({
           ) : <span className="w-9" />}
         </div>
 
+        {/* Controls panel button (replaces Search — search is in the top bar) */}
         <button
-          onClick={() => setIsSearchOpen(true)}
+          onClick={() => setIsMobilePanelOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
         >
-          <Search className="w-3.5 h-3.5" />
-          Search
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          Panel
         </button>
       </div>
 
       {/* ═══════════════════════════════════════════════════
           MOBILE BOOK DRAWER
-          onOpenAutoFocus: prevent keyboard from appearing
-          when the drawer opens (user taps the search input
-          explicitly if they want to search)
       ═══════════════════════════════════════════════════ */}
       <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
         <SheetContent
@@ -613,6 +702,41 @@ export default function BibleReader({
               language={language}
               version={version}
             />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ═══════════════════════════════════════════════════
+          MOBILE CONTROLS PANEL
+      ═══════════════════════════════════════════════════ */}
+      <Sheet open={isMobilePanelOpen} onOpenChange={setIsMobilePanelOpen}>
+        <SheetContent
+          side="right"
+          className="w-80 p-0 flex flex-col"
+          onOpenAutoFocus={e => e.preventDefault()}
+        >
+          <SheetTitle className="sr-only">Reading Controls</SheetTitle>
+          <div className="flex-shrink-0 px-5 py-4 border-b border-slate-100">
+            <Select
+              value={`${language}__${version}`}
+              onValueChange={value => {
+                const [l, v] = value.split("__")
+                router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
+                setIsMobilePanelOpen(false)
+              }}
+            >
+              <SelectTrigger className="w-full h-8 text-xs bg-slate-100 border-0 text-slate-700 focus:ring-0 rounded-lg">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
+                <SelectItem value="english__kjv">English KJV</SelectItem>
+                <SelectItem value="oromifa__v1">Oromifa</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-5">
+            {panelContent}
           </div>
         </SheetContent>
       </Sheet>

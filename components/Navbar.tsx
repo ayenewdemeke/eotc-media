@@ -211,7 +211,7 @@ export default function Navbar() {
               <button
                 onClick={() => setLocale(locale === "en" ? "am" : "en")}
                 title="Switch language"
-                className="hidden md:flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-md border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer select-none"
+                className="hidden md:flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer select-none"
               >
                 <span className={locale === "en" ? "text-blue-600" : "text-gray-400"}>EN</span>
                 <span className="text-gray-300">|</span>
@@ -514,7 +514,7 @@ export default function Navbar() {
             <div className="px-5 pb-5 pt-1">
               <button
                 onClick={() => setLocale(locale === "en" ? "am" : "en")}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer select-none"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-800 transition-colors cursor-pointer select-none"
               >
                 <span className={locale === "en" ? "text-blue-600" : "text-gray-400"}>EN</span>
                 <span className="text-gray-300">|</span>
