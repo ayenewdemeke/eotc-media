@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -12,6 +12,7 @@ import {
   BookMarked,
   SlidersHorizontal,
   Copy,
+  Check,
   AlignJustify,
   List,
   X,
@@ -35,7 +36,7 @@ import VerseList, { VerseViewMode } from "./VerseList"
 import BibleSearchSheet from "./BibleSearchSheet"
 import CollectionDialog from "./CollectionDialog"
 
-// ── Highlight colours (matches HighlightPopover) ──────────────────
+// ── Highlight colours ─────────────────────────────────────────────
 const HIGHLIGHT_COLORS = [
   { name: "Yellow", value: "#fef08a" },
   { name: "Green",  value: "#bbf7d0" },
@@ -78,7 +79,7 @@ export default function BibleReader({
   const parsed = selectedVerse ? parseInt(selectedVerse, 10) : null
   const initialVerse = parsed && !isNaN(parsed) ? parsed : null
 
-  // ── Core reading preferences (persisted to localStorage) ─────────
+  // ── Reading preferences (persisted) ──────────────────────────────
   const [fontSizeIdx, setFontSizeIdx] = useState(1)
   const [viewMode, setViewMode] = useState<VerseViewMode>("paragraph")
 
@@ -96,7 +97,6 @@ export default function BibleReader({
     setFontSizeIdx(i)
     localStorage.setItem("bible_font_size", String(i))
   }
-
   function changeViewMode(mode: VerseViewMode) {
     setViewMode(mode)
     localStorage.setItem("bible_view_mode", mode)
@@ -107,11 +107,12 @@ export default function BibleReader({
     () => new Map(verses.filter(v => v.highlight).map(v => [v.id, v.highlight!]))
   )
 
-  // ── Verse selection (unified single + multi) ──────────────────────
+  // ── Verse selection ───────────────────────────────────────────────
   const [activeVerse, setActiveVerse] = useState<number | null>(initialVerse)
   const [selectedVerseIds, setSelectedVerseIds] = useState<Set<number>>(new Set())
   const [selectedVerseNums, setSelectedVerseNums] = useState<number[]>([])
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // ── UI state ──────────────────────────────────────────────────────
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -122,7 +123,34 @@ export default function BibleReader({
   const mobileChapterNavRef = useRef<HTMLDivElement>(null)
   const desktopChapterNavRef = useRef<HTMLDivElement>(null)
 
-  // ── Derived: highlight colors of currently selected verses ────────
+  // ── Stable clear-selection callback ──────────────────────────────
+  const clearSelection = useCallback(() => {
+    setSelectedVerseIds(new Set())
+    setSelectedVerseNums([])
+    setActiveVerse(null)
+    setCopied(false)
+  }, [])
+
+  // ── Dismiss selection on click-outside or Escape ──────────────────
+  useEffect(() => {
+    if (selectedVerseIds.size === 0) return
+    function onOutsideClick(e: MouseEvent) {
+      // Keep selection if click is inside any designated zone
+      if ((e.target as Element).closest?.("[data-selection-zone]")) return
+      clearSelection()
+    }
+    function onEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") clearSelection()
+    }
+    document.addEventListener("mousedown", onOutsideClick)
+    document.addEventListener("keydown", onEscape)
+    return () => {
+      document.removeEventListener("mousedown", onOutsideClick)
+      document.removeEventListener("keydown", onEscape)
+    }
+  }, [selectedVerseIds.size, clearSelection])
+
+  // ── Derived highlight state ───────────────────────────────────────
   const selectedHighlightColors = useMemo(() => {
     const s = new Set<string>()
     for (const id of selectedVerseIds) {
@@ -139,7 +167,7 @@ export default function BibleReader({
 
   const activeVerseText = verses.find(v => v.verse === activeVerse)?.text ?? null
 
-  // ── Scroll to selected verse on load ─────────────────────────────
+  // ── Scroll to initial verse ───────────────────────────────────────
   useEffect(() => {
     if (!initialVerse) return
     setTimeout(() => {
@@ -147,7 +175,7 @@ export default function BibleReader({
     }, 300)
   }, [initialVerse])
 
-  // ── Arrow key chapter navigation ──────────────────────────────────
+  // ── Arrow-key chapter navigation ──────────────────────────────────
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement).tagName
@@ -161,7 +189,7 @@ export default function BibleReader({
     return () => window.removeEventListener("keydown", onKey)
   }, [currentChapter, chapterNumbers.length, language, version, currentBook.id, router])
 
-  // ── Close chapter popover on click outside ────────────────────────
+  // ── Chapter popover — click outside ──────────────────────────────
   useEffect(() => {
     if (!isChapterNavOpen) return
     function onClickOutside(e: MouseEvent) {
@@ -176,33 +204,33 @@ export default function BibleReader({
     return () => document.removeEventListener("mousedown", onClickOutside)
   }, [isChapterNavOpen])
 
-  // ── Verse click — unified select / deselect ───────────────────────
-  function handleVerseClick(verseNum: number, verseId: number) {
-    const isCurrentlySelected = selectedVerseIds.has(verseId)
+  // ── Verse click (now receives arrays for grouped empty verses) ────
+  function handleVerseClick(verseNums: number[], verseIds: number[]) {
+    const primaryId = verseIds[verseIds.length - 1]
+    const isCurrentlySelected = selectedVerseIds.has(primaryId)
 
     setSelectedVerseIds(prev => {
       const next = new Set(prev)
-      isCurrentlySelected ? next.delete(verseId) : next.add(verseId)
+      for (const id of verseIds) {
+        isCurrentlySelected ? next.delete(id) : next.add(id)
+      }
       return next
     })
-    setSelectedVerseNums(prev =>
-      isCurrentlySelected
-        ? prev.filter(n => n !== verseNum)
-        : [...prev, verseNum].sort((a, b) => a - b)
-    )
+    setSelectedVerseNums(prev => {
+      if (isCurrentlySelected) return prev.filter(n => !verseNums.includes(n))
+      return [...new Set([...prev, ...verseNums])].sort((a, b) => a - b)
+    })
 
+    const primaryNum = verseNums[verseNums.length - 1]
     if (!isCurrentlySelected) {
-      setActiveVerse(verseNum)
-    } else if (activeVerse === verseNum) {
-      const remaining = selectedVerseNums.filter(n => n !== verseNum)
+      setActiveVerse(primaryNum)
+    } else if (verseNums.includes(activeVerse ?? -1)) {
+      const remaining = selectedVerseNums.filter(n => !verseNums.includes(n))
       setActiveVerse(remaining.length > 0 ? remaining[remaining.length - 1] : null)
     }
-  }
 
-  function clearSelection() {
-    setSelectedVerseIds(new Set())
-    setSelectedVerseNums([])
-    setActiveVerse(null)
+    // Reset "Copied" state when selection changes
+    setCopied(false)
   }
 
   // ── Highlight all selected verses ─────────────────────────────────
@@ -211,7 +239,8 @@ export default function BibleReader({
     const selected = verses.filter(v => selectedVerseIds.has(v.id))
     if (selected.length === 0) return
 
-    // Optimistic update
+    const prevHighlights = selected.map(v => ({ id: v.id, color: localHighlights.get(v.id) }))
+
     setLocalHighlights(m => {
       const next = new Map(m)
       for (const v of selected) {
@@ -221,8 +250,6 @@ export default function BibleReader({
       return next
     })
 
-    const prevHighlights = selected.map(v => ({ id: v.id, color: localHighlights.get(v.id) }))
-
     try {
       await Promise.all(selected.map(v =>
         fetch("/api/bible/highlight", {
@@ -231,10 +258,8 @@ export default function BibleReader({
           body: JSON.stringify({ bookId: currentBook.id, chapter: currentChapter, verse: v.verse, color }),
         })
       ))
-      if (color) toast.success("Highlight applied")
-      else toast.success("Highlight removed")
+      toast.success(color ? "Highlight applied" : "Highlight removed")
     } catch {
-      // Rollback
       setLocalHighlights(m => {
         const next = new Map(m)
         for (const { id, color: prev } of prevHighlights) {
@@ -249,13 +274,15 @@ export default function BibleReader({
   // ── Copy selected verses ──────────────────────────────────────────
   function copySelectedVerses() {
     const lines = verses
-      .filter(v => selectedVerseIds.has(v.id))
+      .filter(v => selectedVerseIds.has(v.id) && v.text)
       .sort((a, b) => a.verse - b.verse)
       .map(v => `${currentBookName} ${currentChapter}:${v.verse}  ${v.text}`)
       .join("\n")
     if (!lines) return
     navigator.clipboard.writeText(lines)
+    setCopied(true)
     toast.success(`${selectedVerseIds.size} verse${selectedVerseIds.size !== 1 ? "s" : ""} copied`)
+    setTimeout(() => setCopied(false), 2500)
   }
 
   const fontSize = FONT_SIZES[fontSizeIdx]
@@ -280,7 +307,7 @@ export default function BibleReader({
     </div>
   )
 
-  // ── Colour swatches (used in both panel and action bar) ───────────
+  // ── Highlight colour swatches ──────────────────────────────────────
   const highlightSwatches = user && (
     <div className="flex items-center gap-1.5 flex-wrap">
       {HIGHLIGHT_COLORS.map(c => (
@@ -300,7 +327,7 @@ export default function BibleReader({
         <button
           onClick={() => handleHighlightAll("")}
           title="Remove highlight"
-          className="w-7 h-7 rounded-full border-2 border-transparent hover:border-slate-300 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all text-xs"
+          className="w-7 h-7 rounded-full border-2 border-transparent hover:border-slate-300 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-all"
         >
           <X className="w-3 h-3" />
         </button>
@@ -308,7 +335,22 @@ export default function BibleReader({
     </div>
   )
 
-  // ── Right-panel / mobile-sheet content ───────────────────────────
+  // ── Copy button (shared in panel + action bar) ────────────────────
+  const copyBtn = (small = false) => (
+    <button
+      onClick={copySelectedVerses}
+      className={`flex items-center justify-center gap-1.5 rounded-lg font-medium transition-all ${
+        copied
+          ? "text-green-700 bg-green-50 border border-green-200"
+          : "text-slate-600 bg-white hover:bg-slate-100 border border-slate-200"
+      } ${small ? "h-7 text-xs px-2" : "flex-1 h-7 text-xs"}`}
+    >
+      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+      {copied ? "Copied" : "Copy"}
+    </button>
+  )
+
+  // ── Right panel / mobile sheet shared content ────────────────────
   const panelContent = (
     <div className="space-y-4">
       {/* Collections */}
@@ -336,7 +378,8 @@ export default function BibleReader({
           </div>
         ) : (
           <p className="text-xs text-slate-400">
-            <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600">Sign in</a> to save verses to collections.
+            <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600">Sign in</a>{" "}
+            to save verses to collections.
           </p>
         )}
       </div>
@@ -358,24 +401,14 @@ export default function BibleReader({
                 </p>
               </div>
             )}
-
-            {/* Highlight colours */}
             {user && (
               <div className="mb-3">
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Highlight</p>
                 {highlightSwatches}
               </div>
             )}
-
-            {/* Copy & save actions */}
             <div className="flex gap-1.5">
-              <button
-                onClick={copySelectedVerses}
-                className="flex-1 flex items-center justify-center gap-1.5 h-7 rounded-lg text-xs font-medium text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 transition-all"
-              >
-                <Copy className="w-3 h-3" />
-                Copy
-              </button>
+              {copyBtn()}
               {user && (
                 <button
                   onClick={() => { setIsCollectionDialogOpen(true); setIsMobilePanelOpen(false) }}
@@ -410,8 +443,6 @@ export default function BibleReader({
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
           Reading
         </p>
-
-        {/* Text size */}
         <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Text size</p>
         <div className="flex items-center gap-1.5 mb-4">
           {(["S", "M", "L"] as const).map((label, i) => (
@@ -428,8 +459,6 @@ export default function BibleReader({
             </button>
           ))}
         </div>
-
-        {/* View mode */}
         <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">View</p>
         <div className="p-1 bg-slate-100 rounded-xl flex gap-1">
           <button
@@ -462,9 +491,7 @@ export default function BibleReader({
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-1.5">
           Commentary
         </p>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          Verse commentary coming soon.
-        </p>
+        <p className="text-xs text-slate-300 leading-relaxed">Verse commentary coming soon.</p>
       </div>
     </div>
   )
@@ -472,9 +499,7 @@ export default function BibleReader({
   return (
     <div className="min-h-screen bg-white">
 
-      {/* ═══════════════════════════════════════════════════
-          MOBILE-ONLY top bar
-      ═══════════════════════════════════════════════════ */}
+      {/* ═══ MOBILE TOP BAR ══════════════════════════════════════════ */}
       <div className="sticky top-16 z-30 lg:hidden bg-white/95 backdrop-blur-sm border-b border-slate-100/80">
         <div className="px-4 h-11 flex items-center justify-between gap-3">
           <nav className="flex items-center gap-1.5 text-sm min-w-0">
@@ -490,9 +515,7 @@ export default function BibleReader({
               </button>
               {isChapterNavOpen && (
                 <div className="fixed inset-x-4 z-[200] bg-white rounded-2xl shadow-xl border border-slate-100 p-3" style={{ top: "7.25rem" }}>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">
-                    {currentBookName}
-                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
                   {chapterGrid}
                 </div>
               )}
@@ -525,12 +548,10 @@ export default function BibleReader({
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════
-          THREE-COLUMN BODY
-      ═══════════════════════════════════════════════════ */}
+      {/* ═══ THREE-COLUMN BODY ═══════════════════════════════════════ */}
       <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr_256px]">
 
-        {/* ── Left: book navigation ─────────────────── */}
+        {/* Left: book navigation */}
         <aside className="hidden lg:flex lg:flex-col border-r border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)] z-10">
           <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100">
             <nav className="flex items-center gap-1 text-sm flex-wrap">
@@ -551,38 +572,24 @@ export default function BibleReader({
                 </button>
                 {isChapterNavOpen && (
                   <div className="absolute top-full left-0 mt-2 z-[200] bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-3 w-[272px]">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">
-                      {currentBookName}
-                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
                     {chapterGrid}
                   </div>
                 )}
               </div>
             </nav>
           </div>
-          <div
-            className="flex-1 min-h-0 overflow-y-auto px-3 py-3"
-            style={{ scrollbarWidth: "none" }}
-          >
-            <BookSidebar
-              books={books}
-              currentBook={currentBook}
-              language={language}
-              version={version}
-            />
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: "none" }}>
+            <BookSidebar books={books} currentBook={currentBook} language={language} version={version} />
           </div>
         </aside>
 
-        {/* ── Center: reading area ──────────────────── */}
-        <main className="px-6 sm:px-10 py-8 sm:py-10 pb-32 lg:pb-16">
+        {/* Center: reading area — data-selection-zone so clicks here keep selection */}
+        <main className="px-6 sm:px-10 py-8 sm:py-10 pb-32 lg:pb-16" data-selection-zone>
           <div className="mb-7">
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-1.5">
-              {currentBookName}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-1.5">{currentBookName}</p>
             <div className="flex items-baseline gap-2">
-              <h1 className="text-[26px] font-bold text-slate-900 leading-none">
-                {currentChapter}
-              </h1>
+              <h1 className="text-[26px] font-bold text-slate-900 leading-none">{currentChapter}</h1>
               <span className="text-sm text-slate-400 font-medium">of {chapterNumbers.length}</span>
               <span className="text-xs text-slate-300 ml-0.5">· {verses.length} verses</span>
             </div>
@@ -609,11 +616,9 @@ export default function BibleReader({
                 {currentChapter - 1}
               </Link>
             ) : <div />}
-
             <span className="text-xs text-slate-400 font-medium">
               {currentBookName} · {currentChapter} / {chapterNumbers.length}
             </span>
-
             {currentChapter < chapterNumbers.length ? (
               <Link
                 href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`}
@@ -626,8 +631,11 @@ export default function BibleReader({
           </div>
         </main>
 
-        {/* ── Right: controls panel (desktop) ──────── */}
-        <aside className="hidden lg:flex lg:flex-col border-l border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)]">
+        {/* Right: controls panel (desktop) — data-selection-zone so clicks here keep selection */}
+        <aside
+          className="hidden lg:flex lg:flex-col border-l border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)]"
+          data-selection-zone
+        >
           <div className="flex-shrink-0 px-5 py-3 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <Select
@@ -655,21 +663,19 @@ export default function BibleReader({
               </button>
             </div>
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5">
-            {panelContent}
-          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5">{panelContent}</div>
         </aside>
       </div>
 
-      {/* ═══════════════════════════════════════════════════
-          MOBILE FLOATING ACTION BAR
-          Slides up when any verse is selected
-      ═══════════════════════════════════════════════════ */}
+      {/* ═══ MOBILE FLOATING ACTION BAR ══════════════════════════════ */}
       {selectedVerseIds.size > 0 && (
-        <div className="fixed bottom-16 inset-x-0 lg:hidden z-20 px-3 pb-2">
+        <div
+          className="fixed bottom-16 inset-x-0 lg:hidden z-20 px-3 pb-2"
+          data-selection-zone
+        >
           <div className="bg-slate-900 rounded-2xl shadow-xl overflow-hidden">
-            {/* Top row: count + dismiss */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            {/* Row 1: count + dismiss */}
+            <div className="flex items-center justify-between px-4 pt-3 pb-1.5">
               <span className="text-xs font-semibold text-slate-300">
                 {selectedVerseIds.size} verse{selectedVerseIds.size !== 1 ? "s" : ""} selected
               </span>
@@ -681,9 +687,8 @@ export default function BibleReader({
               </button>
             </div>
 
-            {/* Bottom row: colours + actions */}
+            {/* Row 2: colours + copy + save */}
             <div className="flex items-center gap-3 px-4 pb-3 flex-wrap">
-              {/* Highlight colours (logged-in only) */}
               {user && (
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   {HIGHLIGHT_COLORS.map(c => (
@@ -700,7 +705,7 @@ export default function BibleReader({
                   {anyHighlighted && (
                     <button
                       onClick={() => handleHighlightAll("")}
-                      className="w-5 h-5 flex items-center justify-center rounded-full text-slate-500 hover:text-white transition-colors"
+                      className="w-5 h-5 flex items-center justify-center text-slate-500 hover:text-white transition-colors"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -708,19 +713,19 @@ export default function BibleReader({
                 </div>
               )}
 
-              {/* Divider */}
               <div className="w-px h-4 bg-slate-700 flex-shrink-0" />
 
               {/* Copy */}
               <button
                 onClick={copySelectedVerses}
-                className="flex items-center gap-1.5 text-xs font-medium text-slate-200 hover:text-white transition-colors flex-shrink-0"
+                className={`flex items-center gap-1.5 text-xs font-medium transition-colors flex-shrink-0 ${
+                  copied ? "text-green-400" : "text-slate-200 hover:text-white"
+                }`}
               >
-                <Copy className="w-3.5 h-3.5" />
-                Copy
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? "Copied" : "Copy"}
               </button>
 
-              {/* Save (logged in) */}
               {user && (
                 <button
                   onClick={() => setIsCollectionDialogOpen(true)}
@@ -735,10 +740,11 @@ export default function BibleReader({
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════
-          MOBILE BOTTOM BAR
-      ═══════════════════════════════════════════════════ */}
-      <div className="fixed bottom-0 inset-x-0 bg-white/96 backdrop-blur-sm border-t border-slate-200 px-5 py-3 flex items-center justify-between lg:hidden z-30">
+      {/* ═══ MOBILE BOTTOM BAR ═══════════════════════════════════════ */}
+      <div
+        className="fixed bottom-0 inset-x-0 bg-white/96 backdrop-blur-sm border-t border-slate-200 px-5 py-3 flex items-center justify-between lg:hidden z-30"
+        data-selection-zone
+      >
         <button
           onClick={() => setIsMobileNavOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
@@ -782,37 +788,19 @@ export default function BibleReader({
         </button>
       </div>
 
-      {/* ═══════════════════════════════════════════════════
-          MOBILE BOOK DRAWER
-      ═══════════════════════════════════════════════════ */}
+      {/* ═══ MOBILE BOOK DRAWER ═════════════════════════════════════ */}
       <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
-        <SheetContent
-          side="left"
-          className="w-72 p-0"
-          showCloseButton={false}
-          onOpenAutoFocus={e => e.preventDefault()}
-        >
+        <SheetContent side="left" className="w-72 p-0" showCloseButton={false} onOpenAutoFocus={e => e.preventDefault()}>
           <SheetTitle className="sr-only">Book Navigation</SheetTitle>
           <div className="p-4 h-full overflow-hidden flex flex-col">
-            <BookSidebar
-              books={books}
-              currentBook={currentBook}
-              language={language}
-              version={version}
-            />
+            <BookSidebar books={books} currentBook={currentBook} language={language} version={version} />
           </div>
         </SheetContent>
       </Sheet>
 
-      {/* ═══════════════════════════════════════════════════
-          MOBILE CONTROLS PANEL
-      ═══════════════════════════════════════════════════ */}
+      {/* ═══ MOBILE CONTROLS PANEL ══════════════════════════════════ */}
       <Sheet open={isMobilePanelOpen} onOpenChange={setIsMobilePanelOpen}>
-        <SheetContent
-          side="right"
-          className="w-80 p-0 flex flex-col"
-          onOpenAutoFocus={e => e.preventDefault()}
-        >
+        <SheetContent side="right" className="w-80 p-0 flex flex-col" onOpenAutoFocus={e => e.preventDefault()}>
           <SheetTitle className="sr-only">Reading Controls</SheetTitle>
           <div className="flex-shrink-0 px-5 py-4 border-b border-slate-100">
             <Select
@@ -833,25 +821,18 @@ export default function BibleReader({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex-1 overflow-y-auto px-5 py-5">
-            {panelContent}
-          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-5">{panelContent}</div>
         </SheetContent>
       </Sheet>
 
-      {/* ═══════════════════════════════════════════════════
-          COLLECTION DIALOG & SEARCH SHEET
-      ═══════════════════════════════════════════════════ */}
+      {/* ═══ COLLECTION DIALOG & SEARCH ════════════════════════════ */}
       <CollectionDialog
         open={isCollectionDialogOpen}
         selectedVerseIds={[...selectedVerseIds]}
         selectedVerseNums={selectedVerseNums}
         bookName={currentBookName}
         chapter={currentChapter}
-        onClose={() => {
-          setIsCollectionDialogOpen(false)
-          clearSelection()
-        }}
+        onClose={() => { setIsCollectionDialogOpen(false); clearSelection() }}
       />
 
       <BibleSearchSheet
