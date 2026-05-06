@@ -61,6 +61,12 @@ interface BibleReaderProps {
 
 const FONT_SIZES = [15, 17, 20] as const
 
+const VERSION_LABELS: Record<string, string> = {
+  kjv:  "KJV",
+  "1954": "Am 1954",
+  v1:   "Oromifa",
+}
+
 export default function BibleReader({
   currentBook,
   currentChapter,
@@ -81,7 +87,7 @@ export default function BibleReader({
 
   // ── Reading preferences (persisted) ──────────────────────────────
   const [fontSizeIdx, setFontSizeIdx] = useState(1)
-  const [viewMode, setViewMode] = useState<VerseViewMode>("paragraph")
+  const [viewMode, setViewMode] = useState<VerseViewMode>("line")
 
   useEffect(() => {
     const fs = localStorage.getItem("bible_font_size")
@@ -122,6 +128,8 @@ export default function BibleReader({
 
   const mobileChapterNavRef = useRef<HTMLDivElement>(null)
   const desktopChapterNavRef = useRef<HTMLDivElement>(null)
+  const mainChapterNavRef = useRef<HTMLDivElement>(null)
+  const [isMainChapterOpen, setIsMainChapterOpen] = useState(false)
 
   // ── Stable clear-selection callback ──────────────────────────────
   const clearSelection = useCallback(() => {
@@ -204,6 +212,17 @@ export default function BibleReader({
     return () => document.removeEventListener("mousedown", onClickOutside)
   }, [isChapterNavOpen])
 
+  // ── Main-heading chapter popover — click outside ──────────────────
+  useEffect(() => {
+    if (!isMainChapterOpen) return
+    function onClickOutside(e: MouseEvent) {
+      if (mainChapterNavRef.current?.contains(e.target as Node)) return
+      setIsMainChapterOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [isMainChapterOpen])
+
   // ── Verse click (now receives arrays for grouped empty verses) ────
   function handleVerseClick(verseNums: number[], verseIds: number[]) {
     const primaryId = verseIds[verseIds.length - 1]
@@ -271,17 +290,35 @@ export default function BibleReader({
     }
   }
 
-  // ── Copy selected verses ──────────────────────────────────────────
+  // ── Copy selected verses (standard citation format) ───────────────
   function copySelectedVerses() {
-    const lines = verses
+    const selected = verses
       .filter(v => selectedVerseIds.has(v.id) && v.text)
       .sort((a, b) => a.verse - b.verse)
-      .map(v => `${currentBookName} ${currentChapter}:${v.verse}  ${v.text}`)
-      .join("\n")
-    if (!lines) return
-    navigator.clipboard.writeText(lines)
+    if (selected.length === 0) return
+
+    const versionLabel = VERSION_LABELS[version] ?? version
+
+    // Build the reference header: "Genesis 1:1", "Genesis 1:1–3", or "Genesis 1:1,3,5"
+    let reference: string
+    if (selected.length === 1) {
+      reference = `${currentBookName} ${currentChapter}:${selected[0].verse}`
+    } else {
+      const isConsecutive = selected.every(
+        (v, i) => i === 0 || v.verse === selected[i - 1].verse + 1
+      )
+      if (isConsecutive) {
+        reference = `${currentBookName} ${currentChapter}:${selected[0].verse}–${selected[selected.length - 1].verse}`
+      } else {
+        reference = `${currentBookName} ${currentChapter}:${selected.map(v => v.verse).join(",")}`
+      }
+    }
+
+    const header = `${reference} (${versionLabel})`
+    const body = selected.map(v => `${v.verse} ${v.text}`).join("\n")
+    navigator.clipboard.writeText(`${header}\n${body}`)
     setCopied(true)
-    toast.success(`${selectedVerseIds.size} verse${selectedVerseIds.size !== 1 ? "s" : ""} copied`)
+    toast.success(`${selected.length} verse${selected.length !== 1 ? "s" : ""} copied`)
     setTimeout(() => setCopied(false), 2500)
   }
 
@@ -294,7 +331,7 @@ export default function BibleReader({
         <Link
           key={ch}
           href={`/bible/${language}/${version}/${currentBook.id}/${ch}`}
-          onClick={() => setIsChapterNavOpen(false)}
+          onClick={() => { setIsChapterNavOpen(false); setIsMainChapterOpen(false) }}
           className={`flex items-center justify-center h-8 rounded-lg text-xs font-semibold transition-all ${
             ch === currentChapter
               ? "bg-blue-600 text-white shadow-sm"
@@ -462,17 +499,6 @@ export default function BibleReader({
         <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">View</p>
         <div className="p-1 bg-slate-100 rounded-xl flex gap-1">
           <button
-            onClick={() => changeViewMode("paragraph")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all ${
-              viewMode === "paragraph"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
-          >
-            <AlignJustify className="w-3.5 h-3.5" />
-            Paragraph
-          </button>
-          <button
             onClick={() => changeViewMode("line")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all ${
               viewMode === "line"
@@ -482,6 +508,17 @@ export default function BibleReader({
           >
             <List className="w-3.5 h-3.5" />
             By verse
+          </button>
+          <button
+            onClick={() => changeViewMode("paragraph")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all ${
+              viewMode === "paragraph"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <AlignJustify className="w-3.5 h-3.5" />
+            Paragraph
           </button>
         </div>
       </div>
@@ -589,7 +626,24 @@ export default function BibleReader({
           <div className="mb-7">
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-1.5">{currentBookName}</p>
             <div className="flex items-baseline gap-2">
-              <h1 className="text-[26px] font-bold text-slate-900 leading-none">{currentChapter}</h1>
+              <div ref={mainChapterNavRef} className="relative">
+                <button
+                  onClick={() => setIsMainChapterOpen(v => !v)}
+                  className="flex items-baseline gap-1.5 group"
+                  title="Select chapter"
+                >
+                  <h1 className="text-[26px] font-bold text-slate-900 leading-none group-hover:text-blue-600 transition-colors">
+                    {currentChapter}
+                  </h1>
+                  <ChevronDown className={`w-4 h-4 text-slate-400 self-center transition-transform duration-150 ${isMainChapterOpen ? "rotate-180" : ""}`} />
+                </button>
+                {isMainChapterOpen && (
+                  <div className="absolute top-full left-0 mt-2 z-[200] bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-3 w-[272px]">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
+                    {chapterGrid}
+                  </div>
+                )}
+              </div>
               <span className="text-sm text-slate-400 font-medium">of {chapterNumbers.length}</span>
               <span className="text-xs text-slate-300 ml-0.5">· {verses.length} verses</span>
             </div>
