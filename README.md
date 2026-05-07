@@ -1,190 +1,118 @@
-# EOTC Media - Next.js Migration
+# EOTC Media
 
-A comprehensive Ethiopian Orthodox Church media platform migrated from Laravel/Vue to Next.js + TypeScript + PostgreSQL.
+A media platform for the Ethiopian Orthodox Tewahedo Church (EOTC), providing access to spiritual content including the Bible, hymns, sermons, books, liturgy, and interactive quizzes.
 
-## 🎯 Project Overview
+## What the App Offers
 
-This is a complete rewrite of a Laravel/Vue application featuring:
-- **Bible Library**: Multi-language Bible reader (6 translations)
-- **Christian Books**: User-uploaded books with approval workflow
-- **Hymns**: YouTube-based hymn collection with lyrics
-- **Sermons**: Video sermon library
-- **Quiz System**: Interactive Bible quiz with multiplayer rooms
-- **Statistics & Analytics**: Daily visit tracking and featured content
+- **Bible** — Browse scripture in multiple languages and translations. Save verses to personal collections.
+- **Hymns** — Stream hymns from YouTube with lyrics. Browse by singer or category, save favorites.
+- **Sermons** — Watch sermons organized by preacher, category, and channel. Save favorites.
+- **Books** — Download Christian books submitted by the community and approved by admins.
+- **Liturgy** — Read and listen to Orthodox liturgy texts organized by role and section.
+- **Quiz** — Test your Bible knowledge in solo practice or multiplayer rooms.
 
-## 🚀 Tech Stack
-
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Database**: PostgreSQL
-- **ORM**: Prisma 7
-- **Authentication**: NextAuth.js v5
-- **Styling**: Tailwind CSS
-- **Runtime**: Node.js 18+
-
-## 📦 Quick Start
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+ installed
-- PostgreSQL 14+ installed
 
-### Installation
+- Node.js 18+
+- PostgreSQL 14+
+
+### Setup
 
 ```bash
 # Install dependencies
 npm install
 
-# Set up environment variables
+# Configure environment variables
 cp .env.example .env
-# Edit .env with your PostgreSQL connection string
+# Edit .env with your database connection and secret keys
 
-# Run database setup (automated)
-.\setup-database.ps1
+# Run database migrations
+npx prisma migrate dev
 
-# Or manually:
-npx prisma migrate dev --name init
+# Seed initial data (optional)
+npm run db:refresh:base
 
-# Generate secret key for NextAuth
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-# Add the output to NEXTAUTH_SECRET in .env
-
-# Start development server
+# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📚 Documentation
-
-- **[PHASE1-COMPLETE.md](./PHASE1-COMPLETE.md)** - What's been done so far
-- **[PHASE1-SETUP.md](./PHASE1-SETUP.md)** - Detailed setup instructions
-- **[prisma/schema.prisma](./prisma/schema.prisma)** - Complete database schema
-
-## 🗂️ Project Structure
-
-```
-eotc-media/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   └── auth/         # NextAuth endpoints
-│   ├── layout.tsx        # Root layout
-│   └── page.tsx          # Home page
-├── lib/                   # Shared utilities
-│   └── prisma.ts         # Prisma client
-├── prisma/               # Database
-│   └── schema.prisma     # Database schema
-├── types/                # TypeScript definitions
-├── auth.ts               # NextAuth configuration
-└── middleware.ts         # Route protection
-```
-
-## 🔐 Authentication
-
-Uses NextAuth.js v5 with:
-- Email/password credentials
-- Role-based access control
-- JWT session strategy
-- Protected routes via middleware
-
-## 📊 Database
-
-Complete PostgreSQL schema with:
-- 50+ models
-- Full relationship mapping
-- Cascade deletes
-- Timestamp tracking
-- Multi-language support
-
-### Key Models
-- `User` - Authentication & user profiles
-- `BlBook` - Bible books and verses
-- `CbBook` - Christian books
-- `HmHymn` - Hymn videos
-- `SmSermon` - Sermon videos
-- `QzRoom` - Quiz game rooms
-
-## 🚦 Development Status
-
-### ✅ Phase 1 Complete
-- Database schema migrated
-- Prisma ORM configured
-- NextAuth.js authentication
-- Project structure setup
-
-### 🔄 Phase 2 (Next)
-- Authentication UI pages
-- Bible library interface
-- User dashboard
-- Admin panel foundation
-
-## 🛠️ Available Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm start            # Start production server
-npm run lint         # Run ESLint
-npx prisma studio    # Open Prisma Studio (DB GUI)
-npx prisma migrate dev  # Run migrations
-```
-
-## 📝 Environment Variables
-
-Required variables in `.env`:
+### Environment Variables
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/eotc_media"
 NEXTAUTH_SECRET="your-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
-UPLOAD_DIR="./public/uploads"
-NODE_ENV="development"
+GOOGLE_AI_API_KEY="your-google-ai-key"
 ```
 
-## 🌐 Deployment
+Generate a secret key with:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
-Designed for shared hosting environments:
-- Local file storage (no S3)
-- Standard PostgreSQL (no special features)
-- Polling instead of WebSockets
-- Node.js 18+ required
-
-### Build for Production
+## Available Scripts
 
 ```bash
-npm run build
-npm start
+npm run dev           # Start development server
+npm run build         # Build for production
+npm start             # Start production server
+npm run lint          # Run ESLint
+npx prisma studio     # Open database GUI
+npx prisma migrate dev  # Run database migrations
 ```
 
-## 📋 Feature Parity
+## How to Collaborate
 
-This rewrite maintains **100% feature parity** with the original Laravel app:
-- ✅ Same functionality
-- ✅ Same look and feel
-- ✅ Same user experience
-- ✅ Just different tech stack
+Contributions are welcome. Here's how to get involved:
 
-## 🤝 Migration Strategy
+### Reporting Issues
 
-1. **Phase 1**: Database & Auth ✅
-2. **Phase 2**: Bible Library & User Pages
-3. **Phase 3**: Christian Books Module
-4. **Phase 4**: Hymns & Sermons
-5. **Phase 5**: Quiz System
-6. **Phase 6**: Admin Panel
-7. **Phase 7**: Polish & Deploy
+Open an issue describing the bug or feature request. Include steps to reproduce for bugs, or a clear use case for features.
 
-## 📖 Learn More
+### Submitting Changes
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [NextAuth.js Documentation](https://next-auth.js.org/)
-- [Tailwind CSS](https://tailwindcss.com/docs)
+1. Fork the repository and create a branch from `main`.
+2. Make your changes with clear, focused commits.
+3. Ensure the app builds without errors (`npm run build`).
+4. Open a pull request with a description of what changed and why.
 
-## 📄 License
+### Code Guidelines
 
-Same as original project
+- Use TypeScript — avoid `any` types where possible.
+- Follow the existing file and folder conventions under `app/`.
+- API routes live in `app/api/`, page components in `app/[module]/`.
+- Shared utilities go in `lib/`, reusable UI components in `components/`.
 
----
+### Database Changes
 
-**Current Status**: Phase 1 Complete ✅  
-**Next Milestone**: User Authentication & Bible Library UI
+If your change requires a schema update, include a Prisma migration:
+
+```bash
+npx prisma migrate dev --name describe-your-change
+```
+
+## Project Structure
+
+```
+eotc-media/
+├── app/               # Pages and API routes (Next.js App Router)
+│   ├── api/           # REST API endpoints
+│   ├── bible/         # Bible module
+│   ├── hymns/         # Hymns module
+│   ├── sermons/       # Sermons module
+│   ├── books/         # Books module
+│   ├── liturgy/       # Liturgy module
+│   └── quiz/          # Quiz module
+├── components/        # Shared UI components
+├── lib/               # Utilities and helpers
+├── prisma/            # Database schema and migrations
+└── scripts/           # Database seed scripts
+```
+
+## License
+
+Same as original project.
