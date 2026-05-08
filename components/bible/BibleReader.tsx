@@ -314,7 +314,7 @@ export default function BibleReader({
         <Link
           key={ch}
           href={`/bible/${language}/${version}/${currentBook.id}/${ch}`}
-          onClick={() => { setIsChapterNavOpen(false); setIsMainChapterOpen(false) }}
+          onClick={() => setIsChapterNavOpen(false)}
           className={`flex items-center justify-center h-8 rounded-lg text-xs font-semibold transition-all ${
             ch === currentChapter
               ? "bg-blue-600 text-white shadow-sm"
