@@ -127,6 +127,8 @@ export default function BibleReader({
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false)
 
   const mobileChapterNavRef = useRef<HTMLDivElement>(null)
+  const mainChapterNavRef = useRef<HTMLDivElement>(null)
+  const [isMainChapterOpen, setIsMainChapterOpen] = useState(false)
 
   // ── Stable clear-selection callback ──────────────────────────────
   const clearSelection = useCallback(() => {
@@ -205,6 +207,17 @@ export default function BibleReader({
     document.addEventListener("mousedown", onClickOutside)
     return () => document.removeEventListener("mousedown", onClickOutside)
   }, [isChapterNavOpen])
+
+  // ── Main-heading chapter popover — click outside ──────────────────
+  useEffect(() => {
+    if (!isMainChapterOpen) return
+    function onClickOutside(e: MouseEvent) {
+      if (mainChapterNavRef.current?.contains(e.target as Node)) return
+      setIsMainChapterOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [isMainChapterOpen])
 
   // ── Verse click (now receives arrays for grouped empty verses) ────
   function handleVerseClick(verseNums: number[], verseIds: number[]) {
@@ -314,7 +327,7 @@ export default function BibleReader({
         <Link
           key={ch}
           href={`/bible/${language}/${version}/${currentBook.id}/${ch}`}
-          onClick={() => setIsChapterNavOpen(false)}
+          onClick={() => { setIsChapterNavOpen(false); setIsMainChapterOpen(false) }}
           className={`flex items-center justify-center h-8 rounded-lg text-xs font-semibold transition-all ${
             ch === currentChapter
               ? "bg-blue-600 text-white shadow-sm"
@@ -574,10 +587,7 @@ export default function BibleReader({
         {/* Left: book navigation */}
         <aside className="hidden lg:flex lg:flex-col border-r border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)] z-10">
           <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100">
-            <p className="text-xs font-semibold text-slate-700 truncate">{currentBookName}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Chapter {currentChapter} of {chapterNumbers.length}
-            </p>
+            <p className="text-sm font-semibold text-slate-700 truncate">{currentBookName}</p>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: "none" }}>
             <BookSidebar books={books} currentBook={currentBook} language={language} version={version} />
@@ -587,14 +597,30 @@ export default function BibleReader({
         {/* Center: reading area — data-selection-zone so clicks here keep selection */}
         <main className="px-6 sm:px-10 py-8 sm:py-10 pb-32 lg:pb-16" data-selection-zone>
           <div className="mb-7">
-            <h1 className="text-[26px] font-bold text-slate-900 leading-none mb-1.5">
-              {currentBookName}
-              <span className="text-slate-300 font-light mx-2">/</span>
-              {currentChapter}
-            </h1>
-            <p className="text-sm text-slate-400 font-medium">
-              of {chapterNumbers.length} · {verses.length} verses
-            </p>
+            {/* Book + chapter dropdown nav label */}
+            <div ref={mainChapterNavRef} className="relative flex items-center gap-1 mb-1.5">
+              <span className="text-sm font-medium text-slate-500">{currentBookName}</span>
+              <span className="text-slate-300 select-none">/</span>
+              <button
+                onClick={() => setIsMainChapterOpen(v => !v)}
+                className="flex items-center gap-0.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+              >
+                {currentChapter}
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isMainChapterOpen ? "rotate-180" : ""}`} />
+              </button>
+              {isMainChapterOpen && (
+                <div className="absolute top-full left-0 mt-2 z-[200] bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-3 w-[272px]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
+                  {chapterGrid}
+                </div>
+              )}
+            </div>
+            {/* Original "1 of 36 · N verses" display — unchanged */}
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-[26px] font-bold text-slate-900 leading-none">{currentChapter}</h1>
+              <span className="text-sm text-slate-400 font-medium">of {chapterNumbers.length}</span>
+              <span className="text-xs text-slate-300 ml-0.5">· {verses.length} verses</span>
+            </div>
           </div>
 
           <VerseList
