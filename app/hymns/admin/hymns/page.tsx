@@ -115,16 +115,21 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
               <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Title</th>
               <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Singer</th>
               <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+              {/* action columns */}
+              <th className="px-4 py-2.5" />
               {isPending && (
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                <>
+                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5" />
+                </>
               )}
-              <th className="px-4 py-2.5 w-24" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {hymns.length === 0 && (
               <tr>
-                <td colSpan={isPending ? 9 : 8} className="py-14 text-center text-slate-400 text-sm">
+                <td colSpan={isPending ? 11 : 8} className="py-14 text-center text-slate-400 text-sm">
                   No hymns found
                 </td>
               </tr>
@@ -144,14 +149,27 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
                     {hymn.approvalStatus.name}
                   </span>
                 </td>
-                {isPending && (
-                  <td className="px-4 py-2.5">
+                {isPending ? (
+                  <>
+                    {/* view on YouTube */}
+                    <td className="px-4 py-2.5">
+                      <a
+                        href={`https://www.youtube.com/watch?v=${hymn.videoId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-slate-500 hover:underline"
+                      >
+                        view
+                      </a>
+                    </td>
+                    {/* new singer | accept | decline — renders 3 tds */}
                     <HymnApproveDeclineButtons hymnId={hymn.id} hymnTitle={hymn.title} />
+                  </>
+                ) : (
+                  <td className="px-4 py-2.5">
+                    <HymnAdminActions hymnId={hymn.id} slug={hymn.slug} />
                   </td>
                 )}
-                <td className="px-4 py-2.5">
-                  <HymnAdminActions hymnId={hymn.id} slug={hymn.slug} />
-                </td>
               </tr>
             ))}
           </tbody>

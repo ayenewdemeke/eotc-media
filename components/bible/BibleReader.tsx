@@ -615,12 +615,10 @@ export default function BibleReader({
                 </div>
               )}
             </div>
-            {/* Original "1 of 36 · N verses" display — unchanged */}
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-[26px] font-bold text-slate-900 leading-none">{currentChapter}</h1>
-              <span className="text-sm text-slate-400 font-medium">of {chapterNumbers.length}</span>
-              <span className="text-xs text-slate-300 ml-0.5">· {verses.length} verses</span>
-            </div>
+            {/* "1 of 36 · N verses" — uniform size */}
+            <p className="text-sm text-slate-500">
+              {currentChapter} of {chapterNumbers.length} · {verses.length} verses
+            </p>
           </div>
 
           <VerseList
