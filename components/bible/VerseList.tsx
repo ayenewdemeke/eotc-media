@@ -12,13 +12,23 @@ type VerseGroup = {
   text: string | null  // text from the last (non-empty) verse
 }
 
+// Treat a verse as "empty" if it has no text or only Ethiopic / common punctuation
+// e.g. "፤", "።", "፡" alone should merge with the next verse
+const PUNCT_ONLY_RE = /^[\s፠-፨!?,.;:·÷]+$/
+
+function hasTextContent(text: string | null | undefined): boolean {
+  if (!text) return false
+  const trimmed = text.trim()
+  if (trimmed.length === 0) return false
+  return !PUNCT_ONLY_RE.test(trimmed)
+}
+
 function buildVerseGroups(verses: BlVerse[]): VerseGroup[] {
   const groups: VerseGroup[] = []
   const buffer: { id: number; num: number }[] = []
 
   for (const v of verses) {
-    const hasText = !!(v.text && v.text.trim().length > 0)
-    if (!hasText) {
+    if (!hasTextContent(v.text)) {
       buffer.push({ id: v.id, num: v.verse })
     } else {
       groups.push({

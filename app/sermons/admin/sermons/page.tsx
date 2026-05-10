@@ -113,16 +113,21 @@ export default async function AdminSermonsPage({ searchParams }: PageProps) {
               <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Subcategory</th>
               <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Title</th>
               <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+              {/* action columns */}
+              <th className="px-4 py-2.5" />
               {isPending && (
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
+                <>
+                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5" />
+                  <th className="px-4 py-2.5" />
+                </>
               )}
-              <th className="px-4 py-2.5 w-24" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {sermons.length === 0 && (
               <tr>
-                <td colSpan={isPending ? 8 : 7} className="py-14 text-center text-slate-400 text-sm">
+                <td colSpan={isPending ? 10 : 7} className="py-14 text-center text-slate-400 text-sm">
                   No sermons found
                 </td>
               </tr>
@@ -141,14 +146,27 @@ export default async function AdminSermonsPage({ searchParams }: PageProps) {
                     {sermon.approvalStatus.name}
                   </span>
                 </td>
-                {isPending && (
-                  <td className="px-4 py-2.5">
+                {isPending ? (
+                  <>
+                    {/* view on YouTube */}
+                    <td className="px-4 py-2.5">
+                      <a
+                        href={`https://www.youtube.com/watch?v=${sermon.videoId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-slate-500 hover:underline"
+                      >
+                        view
+                      </a>
+                    </td>
+                    {/* new preacher | accept | decline — renders 3 tds */}
                     <SermonApproveDeclineButtons sermonId={sermon.id} sermonTitle={sermon.title} />
+                  </>
+                ) : (
+                  <td className="px-4 py-2.5">
+                    <SermonAdminActions sermonId={sermon.id} slug={sermon.slug} />
                   </td>
                 )}
-                <td className="px-4 py-2.5">
-                  <SermonAdminActions sermonId={sermon.id} slug={sermon.slug} />
-                </td>
               </tr>
             ))}
           </tbody>
