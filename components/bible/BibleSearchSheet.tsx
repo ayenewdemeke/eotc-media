@@ -229,8 +229,8 @@ export default function BibleSearchSheet({
           {!loading && query.trim().length < 2 && (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400 px-6 text-center">
               <Search className="w-10 h-10 mb-3 opacity-20" />
-              <p className="text-sm font-medium">Type to search</p>
-              <p className="text-xs mt-1 opacity-70">Search for words or phrases across the Bible</p>
+              <p className="text-sm font-medium">{t("bible_type_to_search")}</p>
+              <p className="text-xs mt-1 opacity-70">{t("bible_search_desc")}</p>
             </div>
           )}
 

@@ -35,6 +35,7 @@ import BookSidebar from "./BookSidebar"
 import VerseList, { VerseViewMode } from "./VerseList"
 import BibleSearchSheet from "./BibleSearchSheet"
 import CollectionDialog from "./CollectionDialog"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 // ── Highlight colours ─────────────────────────────────────────────
 const HIGHLIGHT_COLORS = [
@@ -81,6 +82,7 @@ export default function BibleReader({
   user,
 }: BibleReaderProps) {
   const router = useRouter()
+  const { t } = useLocale()
 
   const parsed = selectedVerse ? parseInt(selectedVerse, 10) : null
   const initialVerse = parsed && !isNaN(parsed) ? parsed : null
@@ -389,7 +391,7 @@ export default function BibleReader({
       {/* Collections */}
       <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-          My collections
+          {t("bible_my_collections")}
         </p>
         {user ? (
           <div className="space-y-2">
@@ -406,13 +408,13 @@ export default function BibleReader({
               href="/bible/collections"
               className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100 border border-slate-200 bg-white transition-all"
             >
-              View my collections
+              {t("bible_view_collections")}
             </a>
           </div>
         ) : (
           <p className="text-xs text-slate-400">
             <a href="/auth/login" className="underline underline-offset-2 hover:text-slate-600">Sign in</a>{" "}
-            to save verses to collections.
+            {t("bible_signin_collections")}
           </p>
         )}
       </div>
@@ -436,7 +438,7 @@ export default function BibleReader({
             )}
             {user && (
               <div className="mb-3">
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Highlight</p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">{t("bible_highlight_label")}</p>
                 {highlightSwatches}
               </div>
             )}
@@ -448,7 +450,7 @@ export default function BibleReader({
                   className="flex-1 flex items-center justify-center gap-1.5 h-7 rounded-lg text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-all"
                 >
                   <BookMarked className="w-3 h-3" />
-                  Save
+                  {t("bible_save_label")}
                 </button>
               )}
             </div>
@@ -456,16 +458,16 @@ export default function BibleReader({
               onClick={clearSelection}
               className="mt-2 w-full text-center text-xs text-slate-400 hover:text-slate-600 py-1 transition-colors"
             >
-              Clear selection
+              {t("bible_clear_selection")}
             </button>
           </>
         ) : (
           <>
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-              Selected Verse
+              {t("bible_selected_verse")}
             </p>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Tap a verse number to select it. Tap more to build a multi-verse selection.
+              {t("bible_tap_to_select")}
             </p>
           </>
         )}
@@ -474,9 +476,9 @@ export default function BibleReader({
       {/* Reading preferences */}
       <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">
-          Reading
+          {t("bible_reading_label")}
         </p>
-        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">Text size</p>
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">{t("bible_text_size")}</p>
         <div className="flex items-center gap-1.5 mb-4">
           {(["S", "M", "L"] as const).map((label, i) => (
             <button
@@ -492,7 +494,7 @@ export default function BibleReader({
             </button>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">View</p>
+        <p className="text-[10px] text-slate-400 uppercase tracking-wider mb-2">{t("bible_view_mode")}</p>
         <div className="p-1 bg-slate-100 rounded-xl flex gap-1">
           <button
             onClick={() => changeViewMode("line")}
@@ -503,7 +505,7 @@ export default function BibleReader({
             }`}
           >
             <List className="w-3.5 h-3.5" />
-            By verse
+            {t("bible_by_verse")}
           </button>
           <button
             onClick={() => changeViewMode("paragraph")}
@@ -514,7 +516,7 @@ export default function BibleReader({
             }`}
           >
             <AlignJustify className="w-3.5 h-3.5" />
-            Paragraph
+            {t("bible_paragraph_mode")}
           </button>
         </div>
       </div>
@@ -522,9 +524,9 @@ export default function BibleReader({
       {/* Commentary placeholder */}
       <div className="rounded-xl border border-dashed border-slate-200 p-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 mb-1.5">
-          Commentary
+          {t("bible_commentary_label")}
         </p>
-        <p className="text-xs text-slate-300 leading-relaxed">Verse commentary coming soon.</p>
+        <p className="text-xs text-slate-300 leading-relaxed">{t("bible_commentary_soon")}</p>
       </div>
     </div>
   )
@@ -617,7 +619,7 @@ export default function BibleReader({
             </div>
             {/* "1 of 36 · N verses" — uniform size */}
             <p className="text-sm text-slate-500">
-              {currentChapter} of {chapterNumbers.length} · {verses.length} verses
+              {currentChapter} {t("bible_of")} {chapterNumbers.length} · {verses.length} {t("bible_verses")}
             </p>
           </div>
 

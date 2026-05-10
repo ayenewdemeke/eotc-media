@@ -94,7 +94,7 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-w-0">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">{pageTitle}</h1>

@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface HymnInfiniteGridProps {
   initialHymns: HmHymn[]
@@ -41,6 +42,7 @@ export default function HymnInfiniteGrid({
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeSort = searchParams.get("sort") ?? "clicks-desc"
+  const { t } = useLocale()
 
   const [hymns, setHymns] = useState<HmHymn[]>(initialHymns)
   const [page, setPage] = useState(1)
@@ -126,7 +128,7 @@ export default function HymnInfiniteGrid({
     return (
       <div className="flex flex-col items-center justify-center py-24 text-slate-400">
         <Music className="w-12 h-12 mb-4 opacity-20" strokeWidth={1.5} />
-        <p className="font-semibold">No hymns found</p>
+        <p className="font-semibold">{t("hymn_none_found")}</p>
         <p className="text-sm mt-1 opacity-60">Try a different filter or search term</p>
       </div>
     )
@@ -137,7 +139,7 @@ export default function HymnInfiniteGrid({
       {initialTotal > 0 && (
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <p className="text-xs text-slate-400">
-            {initialTotal.toLocaleString()} hymn{initialTotal !== 1 ? "s" : ""}
+            {initialTotal.toLocaleString()} {initialTotal !== 1 ? t("hymn_plural") : t("hymn_singular")}
           </p>
           <span className="text-slate-300 text-xs select-none">|</span>
           <Select value={activeSort} onValueChange={applySort}>
@@ -145,10 +147,10 @@ export default function HymnInfiniteGrid({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date-desc">Newest First</SelectItem>
-              <SelectItem value="date-asc">Oldest First</SelectItem>
-              <SelectItem value="clicks-desc">Most Clicked</SelectItem>
-              <SelectItem value="clicks-asc">Least Clicked</SelectItem>
+              <SelectItem value="date-desc">{t("sort_newest_first")}</SelectItem>
+              <SelectItem value="date-asc">{t("sort_oldest_first")}</SelectItem>
+              <SelectItem value="clicks-desc">{t("sort_most_clicked")}</SelectItem>
+              <SelectItem value="clicks-asc">{t("sort_least_clicked")}</SelectItem>
             </SelectContent>
           </Select>
           {initialTotal >= 1 && initialTotal <= 200 && (
@@ -159,7 +161,7 @@ export default function HymnInfiniteGrid({
                 className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors font-medium"
               >
                 <PlayCircle className="w-3.5 h-3.5" />
-                Play All
+                {t("hymn_play_all")}
               </Link>
             </>
           )}
@@ -178,7 +180,7 @@ export default function HymnInfiniteGrid({
         </div>
       )}
       {!loading && page >= totalPages && hymns.length > 0 && (
-        <p className="text-center text-xs text-slate-400 py-6">All hymns loaded</p>
+        <p className="text-center text-xs text-slate-400 py-6">{t("hymn_all_loaded")}</p>
       )}
     </div>
   )
