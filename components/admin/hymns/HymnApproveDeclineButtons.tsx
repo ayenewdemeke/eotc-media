@@ -3,203 +3,266 @@
 import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
-import { Check, X, Loader2, Search } from "lucide-react"
+import { Loader2 } from "lucide-react"
 
 interface Singer { id: number; name: string }
+interface Props { hymnId: number; hymnTitle: string }
 
-interface Props {
-  hymnId: number
-  hymnTitle: string
-}
+type ModalType = "accept" | "decline" | "new-singer" | null
 
 export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) {
   const router = useRouter()
-  const [showAcceptModal, setShowAcceptModal] = useState(false)
-  const [declineLoading, setDeclineLoading] = useState(false)
-  const [acceptLoading, setAcceptLoading] = useState(false)
+  const [modal, setModal] = useState<ModalType>(null)
+
+  // Singer select state (accept modal)
   const [singers, setSingers] = useState<Singer[]>([])
-  const [selectedSingerIds, setSelectedSingerIds] = useState<number[]>([])
+  const [selectedIds, setSelectedIds] = useState<number[]>([])
+  const [search, setSearch] = useState("")
   const [singersLoading, setSingersLoading] = useState(false)
   const [singersError, setSingersError] = useState("")
-  const [singerSearch, setSingerSearch] = useState("")
+
+  // New singer state
+  const [newSingerName, setNewSingerName] = useState("")
+
+  // Shared
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const searchRef = useRef<HTMLInputElement>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
 
+  function openModal(m: ModalType) {
+    setModal(m)
+    setError("")
+  }
+
+  function closeModal() {
+    setModal(null)
+    setSelectedIds([])
+    setSearch("")
+    setNewSingerName("")
+    setError("")
+  }
+
+  // Load singers list when accept modal opens
   useEffect(() => {
-    if (!showAcceptModal) {
-      setSelectedSingerIds([])
-      setSingerSearch("")
-      setError("")
-      return
-    }
+    if (modal !== "accept") return
     setTimeout(() => searchRef.current?.focus(), 50)
     if (singers.length > 0) return
     setSingersLoading(true)
     setSingersError("")
     fetch("/api/hymns/admin/singers")
-      .then(r => { if (!r.ok) throw new Error("Failed to load"); return r.json() })
-      .then(data => setSingers(data))
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(setSingers)
       .catch(() => setSingersError("Failed to load singers. Please close and try again."))
       .finally(() => setSingersLoading(false))
-  }, [showAcceptModal, singers.length])
+  }, [modal, singers.length])
+
+  // Focus name input in new singer modal
+  useEffect(() => {
+    if (modal === "new-singer") setTimeout(() => nameRef.current?.focus(), 50)
+  }, [modal])
 
   function toggleSinger(id: number) {
-    setSelectedSingerIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
   }
 
   async function handleAccept() {
-    if (!selectedSingerIds.length) { setError("Please select at least one singer."); return }
-    setAcceptLoading(true)
-    setError("")
+    if (!selectedIds.length) { setError("Please select at least one singer."); return }
+    setLoading(true); setError("")
     try {
       const res = await fetch(`/api/hymns/admin/hymns/${hymnId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ singerIds: selectedSingerIds }),
+        body: JSON.stringify({ singerIds: selectedIds }),
       })
-      if (!res.ok) {
-        const d = await res.json()
-        setError(d.error ?? "Failed to accept hymn")
-        return
-      }
-      setShowAcceptModal(false)
-      router.refresh()
-    } finally {
-      setAcceptLoading(false)
-    }
+      if (!res.ok) { const d = await res.json(); setError(d.error ?? "Failed to accept hymn."); return }
+      closeModal(); router.refresh()
+    } finally { setLoading(false) }
   }
 
   async function handleDecline() {
-    if (!confirm(`Decline "${hymnTitle}"?`)) return
-    setDeclineLoading(true)
+    setLoading(true)
     try {
       await fetch(`/api/hymns/admin/hymns/${hymnId}/decline`, { method: "POST" })
-      router.refresh()
-    } finally {
-      setDeclineLoading(false)
-    }
+      closeModal(); router.refresh()
+    } finally { setLoading(false) }
   }
+
+  async function handleAddSinger() {
+    if (!newSingerName.trim()) { setError("Name is required."); return }
+    setLoading(true); setError("")
+    try {
+      const res = await fetch("/api/hymns/admin/singers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newSingerName.trim() }),
+      })
+      if (!res.ok) { const d = await res.json(); setError(d.error ?? "Failed to add singer."); return }
+      const added: Singer = await res.json()
+      setSingers(prev => [...prev, added].sort((a, b) => a.name.localeCompare(b.name)))
+      closeModal()
+    } finally { setLoading(false) }
+  }
+
+  const filtered = singers.filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
+
+  // ── Shared modal shell ────────────────────────────────────────────
+  function modalShell(title: string, body: React.ReactNode, footer: React.ReactNode) {
+    return createPortal(
+      <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
+        <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md border border-slate-200">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h4 className="text-base font-medium text-slate-800">{title}</h4>
+          </div>
+          <div className="px-5 py-4">{body}</div>
+          <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            {footer}
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+  }
+
+  // ── Shared buttons ────────────────────────────────────────────────
+  const closeBtn = (
+    <button type="button" onClick={closeModal}
+      className="px-4 py-1.5 text-sm border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition-colors cursor-pointer">
+      Close
+    </button>
+  )
 
   return (
     <>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => setShowAcceptModal(true)}
-          disabled={declineLoading}
-          className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-green-50 text-green-700 hover:bg-green-100 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          <Check className="w-3.5 h-3.5" /> Accept
+      {/* ── Three inline table cells ── */}
+      <td className="px-4 py-2.5">
+        <button onClick={() => openModal("new-singer")}
+          className="text-xs text-slate-500 hover:text-slate-900 hover:underline cursor-pointer whitespace-nowrap">
+          new singer
         </button>
-        <button
-          onClick={handleDecline}
-          disabled={declineLoading}
-          className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          {declineLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
-          Decline
+      </td>
+      <td className="px-4 py-2.5">
+        <button onClick={() => openModal("accept")}
+          className="text-xs text-blue-600 hover:underline cursor-pointer">
+          accept
         </button>
-      </div>
+      </td>
+      <td className="px-4 py-2.5">
+        <button onClick={() => openModal("decline")}
+          className="text-xs text-red-500 hover:underline cursor-pointer">
+          decline
+        </button>
+      </td>
 
-      {showAcceptModal && createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowAcceptModal(false)} />
-
-          {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-1">Accept hymn</h2>
-            <p className="text-sm text-slate-500 mb-5 line-clamp-2">{hymnTitle}</p>
-
-            <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">Select singer(s) *</p>
-
-            {singersLoading && (
-              <div className="flex items-center gap-2 text-sm text-slate-400 py-4">
-                <Loader2 className="w-4 h-4 animate-spin" /> Loading singers…
-              </div>
-            )}
-            {singersError && (
-              <p className="text-sm text-red-500 py-2">{singersError}</p>
-            )}
-            {!singersLoading && !singersError && (
-              <>
-                {/* Selected chips */}
-                {selectedSingerIds.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {selectedSingerIds.map(id => {
-                      const s = singers.find(x => x.id === id)
-                      if (!s) return null
-                      return (
-                        <span key={id} className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-600 text-white rounded-full">
-                          {s.name}
-                          <button type="button" onClick={() => toggleSinger(id)} className="hover:opacity-70 cursor-pointer">
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* Search input */}
-                <div className="relative mb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input
-                    ref={searchRef}
-                    type="text"
-                    value={singerSearch}
-                    onChange={e => setSingerSearch(e.target.value)}
-                    placeholder="Search singers…"
-                    className="w-full pl-8 pr-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400"
-                  />
-                </div>
-
-                {/* Filtered list */}
-                <div className="max-h-44 overflow-y-auto space-y-0.5 pr-1">
-                  {singers
-                    .filter(s => s.name.toLowerCase().includes(singerSearch.toLowerCase()))
-                    .map(s => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => toggleSinger(s.id)}
-                        className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
-                          selectedSingerIds.includes(s.id)
-                            ? "bg-green-50 text-green-700 font-medium"
-                            : "text-slate-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        {s.name}
-                      </button>
-                    ))}
-                  {singers.filter(s => s.name.toLowerCase().includes(singerSearch.toLowerCase())).length === 0 && (
-                    <p className="text-sm text-slate-400 py-2 px-3">No results</p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {error && <p className="text-xs text-red-600 mt-3">{error}</p>}
-
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={handleAccept}
-                disabled={acceptLoading || singersLoading}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-green-600 text-white text-sm font-semibold rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors cursor-pointer"
-              >
-                {acceptLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Confirm accept
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAcceptModal(false)}
-                className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
+      {/* ── Accept modal ── */}
+      {modal === "accept" && modalShell(
+        "Accept hymn",
+        <>
+          <p className="text-sm text-slate-600 mb-4">
+            Make sure you want to accept this hymn. Also please select the correct singer(s)
+            below — this will greatly help in searching hymns. You can add a new singer by
+            clicking the <em>new singer</em> link if they are not in the list.
+          </p>
+          <label className="text-sm font-medium text-slate-700">
+            Singer/s <span className="text-red-500">*</span>
+          </label>
+          {singersLoading && (
+            <div className="flex items-center gap-2 text-sm text-slate-400 py-3">
+              <Loader2 className="w-4 h-4 animate-spin" /> Loading singers…
             </div>
-          </div>
-        </div>,
-        document.body
+          )}
+          {singersError && <p className="text-sm text-red-500 py-2">{singersError}</p>}
+          {!singersLoading && !singersError && (
+            <div className="mt-2">
+              {selectedIds.length > 0 && (
+                <p className="text-xs text-slate-500 mb-1.5">
+                  {selectedIds.length} selected:{" "}
+                  {selectedIds.map(id => singers.find(s => s.id === id)?.name).filter(Boolean).join(", ")}
+                </p>
+              )}
+              <input
+                ref={searchRef}
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search singers…"
+                className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-blue-400 mb-1"
+              />
+              <div className="border border-slate-200 rounded max-h-44 overflow-y-auto">
+                {filtered.length === 0
+                  ? <p className="text-sm text-slate-400 px-3 py-2">No results</p>
+                  : filtered.map(s => (
+                    <label key={s.id}
+                      className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer text-sm select-none">
+                      <input type="checkbox" checked={selectedIds.includes(s.id)}
+                        onChange={() => toggleSinger(s.id)} className="cursor-pointer" />
+                      {s.name}
+                    </label>
+                  ))
+                }
+              </div>
+            </div>
+          )}
+          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+        </>,
+        <>
+          {closeBtn}
+          <button type="button" onClick={handleAccept}
+            disabled={loading || singersLoading}
+            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            Accept
+          </button>
+        </>
+      )}
+
+      {/* ── Decline modal ── */}
+      {modal === "decline" && modalShell(
+        "Decline acceptance",
+        <p className="text-sm text-slate-600 py-3">
+          Are you sure you want to decline accepting this hymn?
+        </p>,
+        <>
+          {closeBtn}
+          <button type="button" onClick={handleDecline}
+            disabled={loading}
+            className="px-4 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            Decline
+          </button>
+        </>
+      )}
+
+      {/* ── New Singer modal ── */}
+      {modal === "new-singer" && modalShell(
+        "Add New Singer",
+        <>
+          <label htmlFor={`singer-name-${hymnId}`} className="text-sm text-slate-700 block mb-1">
+            Singer name
+          </label>
+          <input
+            ref={nameRef}
+            id={`singer-name-${hymnId}`}
+            type="text"
+            value={newSingerName}
+            onChange={e => setNewSingerName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleAddSinger()}
+            placeholder="Name"
+            className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-blue-400"
+          />
+          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+        </>,
+        <>
+          {closeBtn}
+          <button type="button" onClick={handleAddSinger}
+            disabled={loading}
+            style={{ minWidth: 80 }}
+            className="px-5 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            Add
+          </button>
+        </>
       )}
     </>
   )
