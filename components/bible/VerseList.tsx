@@ -164,7 +164,7 @@ export default function VerseList({
             // Anchor for first verse in the group; hidden spans for the rest
             id={`verse-${group.nums[0]}`}
             onClick={() => onVerseClick(group.nums, group.ids)}
-            className={`flex items-start gap-2.5 px-2 py-[5px] cursor-pointer rounded-md transition-colors duration-150 ${
+            className={`flex items-start gap-2.5 pr-2 py-[5px] cursor-pointer rounded-md transition-colors duration-150 ${
               !bgColor ? "hover:bg-slate-50" : ""
             }`}
             style={rowStyle}
