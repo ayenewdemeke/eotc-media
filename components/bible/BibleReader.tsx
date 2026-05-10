@@ -295,9 +295,7 @@ export default function BibleReader({
       .sort((a, b) => a.verse - b.verse)
     if (selected.length === 0) return
 
-    const versionLabel = VERSION_LABELS[version] ?? version
-
-    // Build the reference header: "Genesis 1:1", "Genesis 1:1–3", or "Genesis 1:1,3,5"
+    // Build reference: "Genesis 1:1", "Genesis 1:1–3", or "Genesis 1:1,3,5"
     let reference: string
     if (selected.length === 1) {
       reference = `${currentBookName} ${currentChapter}:${selected[0].verse}`
@@ -312,9 +310,15 @@ export default function BibleReader({
       }
     }
 
-    const header = `${reference} (${versionLabel})`
-    const body = selected.map(v => `${v.verse} ${v.text}`).join("\n")
-    navigator.clipboard.writeText(`${header}\n${body}`)
+    let text: string
+    if (selected.length === 1) {
+      text = `"${selected[0].text}"\n${reference}`
+    } else {
+      const body = selected.map(v => `${v.verse} ${v.text}`).join("\n")
+      text = `${reference}\n${body}`
+    }
+
+    navigator.clipboard.writeText(text)
     setCopied(true)
     toast.success(`${selected.length} verse${selected.length !== 1 ? "s" : ""} copied`)
     setTimeout(() => setCopied(false), 2500)

@@ -14,7 +14,7 @@ type VerseGroup = {
 
 // Treat a verse as "empty" if it has no text or only Ethiopic / common punctuation
 // e.g. "፤", "።", "፡" alone should merge with the next verse
-const PUNCT_ONLY_RE = /^[\s፠-፨!?,.;:·÷]+$/
+const PUNCT_ONLY_RE = /^[\s፠-፨!?,.;:·÷\-_]+$/
 
 function hasTextContent(text: string | null | undefined): boolean {
   if (!text) return false
