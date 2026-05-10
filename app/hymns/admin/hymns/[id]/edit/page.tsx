@@ -237,7 +237,7 @@ export default function EditHymnPage() {
           <button type="submit" disabled={saving}
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save Changes
+            Save changes
           </button>
           <button type="button" onClick={() => router.back()}
             className="px-6 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
