@@ -68,7 +68,7 @@ export const translations = {
     quiz_my:    "My questions",
 
     // ── Common actions ──────────────────────────
-    action_save:        "Save Changes",
+    action_save:        "Save changes",
     action_cancel:      "Cancel",
     action_accept:      "Accept",
     action_decline:     "Decline",
@@ -128,6 +128,54 @@ export const translations = {
     bible_scope_book:       "This Book",
     bible_no_text:          "No text available",
     bible_highlighted:      "highlighted",
+
+    // ── Bible right panel ────────────────────────
+    bible_my_collections:       "My collections",
+    bible_view_collections:     "View my collections",
+    bible_signin_collections:   "to save verses to collections.",
+    bible_selected_verse:       "Selected verse",
+    bible_tap_to_select:        "Tap a verse number to select it. Tap more to build a multi-verse selection.",
+    bible_reading_label:        "Reading",
+    bible_text_size:            "Text size",
+    bible_view_mode:            "View",
+    bible_by_verse:             "By verse",
+    bible_paragraph_mode:       "Paragraph",
+    bible_commentary_label:     "Commentary",
+    bible_commentary_soon:      "Verse commentary coming soon.",
+    bible_highlight_label:      "Highlight",
+    bible_save_label:           "Save",
+    bible_clear_selection:      "Clear selection",
+    bible_of:                   "of",
+    bible_verses:               "verses",
+    bible_type_to_search:       "Type to search",
+    bible_search_desc:          "Search for words or phrases across the Bible",
+
+    // ── Sort options (shared) ────────────────────
+    sort_newest_first:  "Newest first",
+    sort_oldest_first:  "Oldest first",
+    sort_most_clicked:  "Most clicked",
+    sort_least_clicked: "Least clicked",
+
+    // ── Hymns count / actions ────────────────────
+    hymn_singular:   "hymn",
+    hymn_plural:     "hymns",
+    hymn_play_all:   "Play all",
+    hymn_all_loaded: "All hymns loaded",
+    hymn_none_found: "No hymns found",
+
+    // ── Sermons count / actions ──────────────────
+    sermon_singular:   "sermon",
+    sermon_plural:     "sermons",
+    sermon_play_all:   "Play all",
+    sermon_all_loaded: "All sermons loaded",
+    sermon_none_found: "No sermons found",
+
+    // ── Channels ─────────────────────────────────
+    channel_title:        "Channels",
+    channel_singular:     "channel",
+    channel_plural:       "channels",
+    channel_none_found:   "No channels found",
+    channel_all_loaded:   "All channels loaded",
 
     // ── Liturgy ──────────────────────────────────
     liturgy_title:          "Liturgy",
@@ -269,6 +317,54 @@ export const translations = {
     bible_scope_book:       "ይህ መጽሐፍ",
     bible_no_text:          "ምንም ጽሑፍ የለም",
     bible_highlighted:      "ምልክት የተደረገ",
+
+    // ── Bible right panel ────────────────────────
+    bible_my_collections:       "የእኔ ስብስቦች",
+    bible_view_collections:     "ስብስቦቼን ይመልከቱ",
+    bible_signin_collections:   "ጥቅሶችን ለማስቀመጥ ይግቡ።",
+    bible_selected_verse:       "የተመረጠ ጥቅስ",
+    bible_tap_to_select:        "ጥቅስ ለመምረጥ ቁጥሩን ይጫኑ። ብዙ ጥቅሶችን ለመምረጥ ተጨማሪ ቁጥሮችን ይጫኑ።",
+    bible_reading_label:        "ማንበቢያ",
+    bible_text_size:            "የፊደል መጠን",
+    bible_view_mode:            "አሳይ",
+    bible_by_verse:             "በጥቅስ",
+    bible_paragraph_mode:       "አንቀጽ",
+    bible_commentary_label:     "ትርጓሜ",
+    bible_commentary_soon:      "የጥቅስ ትርጓሜ በቅርብ ይመጣል።",
+    bible_highlight_label:      "ምልክት",
+    bible_save_label:           "አስቀምጥ",
+    bible_clear_selection:      "ምርጫ ሰርዝ",
+    bible_of:                   "ከ",
+    bible_verses:               "ጥቅሶች",
+    bible_type_to_search:       "ፈልጉ",
+    bible_search_desc:          "በቅዱስ መጽሐፍ ቃላት ወይም ሐረጎችን ፈልጉ",
+
+    // ── Sort options (shared) ────────────────────
+    sort_newest_first:  "አዲሱ ቀደም",
+    sort_oldest_first:  "ያረጀው ቀደም",
+    sort_most_clicked:  "በጣም የተጫወቱ",
+    sort_least_clicked: "ያነሰ የተጫወቱ",
+
+    // ── Hymns count / actions ────────────────────
+    hymn_singular:   "መዝሙር",
+    hymn_plural:     "መዝሙሮች",
+    hymn_play_all:   "ሁሉንም አጫውት",
+    hymn_all_loaded: "ሁሉም መዝሙሮች ተጭነዋል",
+    hymn_none_found: "ምንም መዝሙር አልተገኘም",
+
+    // ── Sermons count / actions ──────────────────
+    sermon_singular:   "ስብከት",
+    sermon_plural:     "ስብከቶች",
+    sermon_play_all:   "ሁሉንም አጫውት",
+    sermon_all_loaded: "ሁሉም ስብከቶች ተጭነዋል",
+    sermon_none_found: "ምንም ስብከት አልተገኘም",
+
+    // ── Channels ─────────────────────────────────
+    channel_title:        "ቻናሎች",
+    channel_singular:     "ቻናል",
+    channel_plural:       "ቻናሎች",
+    channel_none_found:   "ምንም ቻናል አልተገኘም",
+    channel_all_loaded:   "ሁሉም ቻናሎች ተጭነዋል",
 
     // ── Liturgy ──────────────────────────────────
     liturgy_title:          "ቅዳሴ",

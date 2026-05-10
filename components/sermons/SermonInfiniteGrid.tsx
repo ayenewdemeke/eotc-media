@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface SermonInfiniteGridProps {
   initialSermons: SmSermon[]
@@ -43,6 +44,7 @@ export default function SermonInfiniteGrid({
   const router = useRouter()
   const searchParams = useSearchParams()
   const activeSort = searchParams.get("sort") ?? "clicks-desc"
+  const { t } = useLocale()
 
   const [sermons, setSermons] = useState<SmSermon[]>(initialSermons)
   const [page, setPage] = useState(1)
@@ -127,7 +129,7 @@ export default function SermonInfiniteGrid({
     return (
       <div className="flex flex-col items-center justify-center py-24 text-slate-400">
         <MessageSquare className="w-12 h-12 mb-4 opacity-20" strokeWidth={1.5} />
-        <p className="font-semibold">No sermons found</p>
+        <p className="font-semibold">{t("sermon_none_found")}</p>
         <p className="text-sm mt-1 opacity-60">Try a different filter or search term</p>
       </div>
     )
@@ -138,7 +140,7 @@ export default function SermonInfiniteGrid({
       {initialTotal > 0 && (
         <div className="flex items-center gap-2 mb-4 flex-wrap">
           <p className="text-xs text-slate-400">
-            {initialTotal.toLocaleString()} sermon{initialTotal !== 1 ? "s" : ""}
+            {initialTotal.toLocaleString()} {initialTotal !== 1 ? t("sermon_plural") : t("sermon_singular")}
           </p>
           <span className="text-slate-300 text-xs select-none">|</span>
           <Select value={activeSort} onValueChange={applySort}>
@@ -146,10 +148,10 @@ export default function SermonInfiniteGrid({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date-desc">Newest First</SelectItem>
-              <SelectItem value="date-asc">Oldest First</SelectItem>
-              <SelectItem value="clicks-desc">Most Clicked</SelectItem>
-              <SelectItem value="clicks-asc">Least Clicked</SelectItem>
+              <SelectItem value="date-desc">{t("sort_newest_first")}</SelectItem>
+              <SelectItem value="date-asc">{t("sort_oldest_first")}</SelectItem>
+              <SelectItem value="clicks-desc">{t("sort_most_clicked")}</SelectItem>
+              <SelectItem value="clicks-asc">{t("sort_least_clicked")}</SelectItem>
             </SelectContent>
           </Select>
           {initialTotal >= 1 && initialTotal <= 200 && (
@@ -160,7 +162,7 @@ export default function SermonInfiniteGrid({
                 className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors font-medium"
               >
                 <PlayCircle className="w-3.5 h-3.5" />
-                Play All
+                {t("sermon_play_all")}
               </Link>
             </>
           )}
@@ -178,7 +180,7 @@ export default function SermonInfiniteGrid({
         </div>
       )}
       {!loading && page >= totalPages && sermons.length > 0 && (
-        <p className="text-center text-xs text-slate-400 py-6">All sermons loaded</p>
+        <p className="text-center text-xs text-slate-400 py-6">{t("sermon_all_loaded")}</p>
       )}
     </div>
   )

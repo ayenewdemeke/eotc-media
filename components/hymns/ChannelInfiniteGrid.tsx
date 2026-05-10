@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Tv, Loader2 } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface Channel {
   id: number
@@ -28,6 +29,7 @@ export default function ChannelInfiniteGrid({
   const [page, setPage] = useState(1)
   const [totalPages] = useState(initialTotalPages)
   const [loading, setLoading] = useState(false)
+  const { t } = useLocale()
   const sentinelRef = useRef<HTMLDivElement>(null)
   const loadingRef = useRef(false)
 
@@ -68,15 +70,16 @@ export default function ChannelInfiniteGrid({
     return (
       <div className="flex flex-col items-center justify-center py-24 text-slate-400">
         <Tv className="w-10 h-10 mb-3 opacity-20" strokeWidth={1.5} />
-        <p className="font-semibold text-sm">No channels found</p>
+        <p className="font-semibold text-sm">{t("channel_none_found")}</p>
       </div>
     )
   }
 
   return (
     <div>
+      <h1 className="text-base font-semibold text-slate-900 mb-1">{t("channel_title")}</h1>
       <p className="text-xs text-slate-400 mb-5">
-        {initialTotal.toLocaleString()} channel{initialTotal !== 1 ? "s" : ""}
+        {initialTotal.toLocaleString()} {initialTotal !== 1 ? t("channel_plural") : t("channel_singular")}
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {channels.map(channel => (
@@ -104,7 +107,7 @@ export default function ChannelInfiniteGrid({
                 {channel.title}
               </p>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                {channel._count.hymns} {channel._count.hymns === 1 ? "hymn" : "hymns"}
+                {channel._count.hymns} {channel._count.hymns === 1 ? t("hymn_singular") : t("hymn_plural")}
               </p>
             </div>
           </Link>
@@ -117,7 +120,7 @@ export default function ChannelInfiniteGrid({
         </div>
       )}
       {!loading && page >= totalPages && channels.length > 0 && (
-        <p className="text-center text-xs text-slate-400 py-6">All channels loaded</p>
+        <p className="text-center text-xs text-slate-400 py-6">{t("channel_all_loaded")}</p>
       )}
     </div>
   )

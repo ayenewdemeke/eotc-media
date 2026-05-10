@@ -33,7 +33,6 @@ export default async function ChannelsPage() {
           <HymnSidebar userId={userId} />
 
           <main className="px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-base font-semibold text-slate-900 mb-5">Channels</h1>
             <ChannelInfiniteGrid
               initialChannels={channels}
               initialTotal={total}

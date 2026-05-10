@@ -60,9 +60,13 @@ export default function BookSidebar({ books, currentBook, language, version }: B
   }
 
   const orderedSections = BIBLE_SECTIONS
-    .map(s => ({ name: s.name, books: sectionMap[s.name] ?? [] }))
+    .map(s => ({
+      name: language === "amharic" ? s.nameAmharic : s.name,
+      books: sectionMap[s.name] ?? [],
+    }))
     .filter(s => s.books.length > 0)
-  if (otherBooks.length > 0) orderedSections.push({ name: "Other Books", books: otherBooks })
+  const otherLabel = language === "amharic" ? "ሌሎች መጻሕፍት" : "Other Books"
+  if (otherBooks.length > 0) orderedSections.push({ name: otherLabel, books: otherBooks })
 
   return (
     <div className="flex flex-col h-full gap-2">
