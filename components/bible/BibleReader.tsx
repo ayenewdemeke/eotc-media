@@ -16,6 +16,7 @@ import {
   AlignJustify,
   List,
   X,
+  ExternalLink,
 } from "lucide-react"
 import { toast } from "sonner"
 import {
@@ -61,6 +62,14 @@ interface BibleReaderProps {
 }
 
 const FONT_SIZES = [15, 17, 20] as const
+
+type CollectionsMode = "verses" | "collections" | "collection"
+interface CollectionItem { id: number; name: string; _count?: { verses: number } }
+interface CollectionVerseData {
+  verseId: number; bookId: number; bookEnglishName: string; bookAmharicName: string | null
+  chapter: number; verseNum: number; text: string
+}
+interface OpenedCollection { id: number; name: string; verses: CollectionVerseData[] }
 
 const VERSION_LABELS: Record<string, string> = {
   kjv:  "KJV",
@@ -121,6 +130,49 @@ export default function BibleReader({
   const [selectedVerseNums, setSelectedVerseNums] = useState<number[]>([])
   const [isCollectionDialogOpen, setIsCollectionDialogOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  // ── Inline collections view ───────────────────────────────────────
+  const [collectionsMode, setCollectionsMode] = useState<CollectionsMode>("verses")
+  const [collectionsList, setCollectionsList] = useState<CollectionItem[]>([])
+  const [openedCollection, setOpenedCollection] = useState<OpenedCollection | null>(null)
+  const [collectionsLoading, setCollectionsLoading] = useState(false)
+
+  async function openCollections() {
+    clearSelection()
+    setCollectionsMode("collections")
+    setCollectionsLoading(true)
+    try {
+      const res = await fetch("/api/bible/collections")
+      if (res.ok) setCollectionsList(await res.json())
+    } finally {
+      setCollectionsLoading(false)
+    }
+  }
+
+  async function openCollection(id: number, name: string) {
+    setCollectionsMode("collection")
+    setOpenedCollection({ id, name, verses: [] })
+    setCollectionsLoading(true)
+    try {
+      const res = await fetch(`/api/bible/collections/${id}?language=${language}&version=${version}`)
+      if (res.ok) setOpenedCollection(await res.json())
+    } finally {
+      setCollectionsLoading(false)
+    }
+  }
+
+  const collectionGroups = useMemo(() => {
+    if (!openedCollection?.verses.length) return []
+    const groups: { key: string; bookName: string; bookId: number; chapter: number; verses: CollectionVerseData[] }[] = []
+    const seen = new Map<string, number>()
+    for (const v of openedCollection.verses) {
+      const bookName = language === "amharic" ? (v.bookAmharicName ?? v.bookEnglishName) : v.bookEnglishName
+      const key = `${v.bookId}::${v.chapter}`
+      if (!seen.has(key)) { seen.set(key, groups.length); groups.push({ key, bookName, bookId: v.bookId, chapter: v.chapter, verses: [] }) }
+      groups[seen.get(key)!].verses.push(v)
+    }
+    return groups
+  }, [openedCollection, language])
 
   // ── UI state ──────────────────────────────────────────────────────
   const [isSearchOpen, setIsSearchOpen] = useState(false)
@@ -408,12 +460,12 @@ export default function BibleReader({
                 Save {selectedVerseIds.size} verse{selectedVerseIds.size !== 1 ? "s" : ""}
               </button>
             )}
-            <a
-              href="/bible/collections"
+            <button
+              onClick={() => { openCollections(); setIsMobilePanelOpen(false) }}
               className="w-full flex items-center justify-center gap-1.5 h-8 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100 border border-slate-200 bg-white transition-all"
             >
               {t("bible_view_collections")}
-            </a>
+            </button>
           </div>
         ) : (
           <p className="text-xs text-slate-400">
@@ -602,65 +654,179 @@ export default function BibleReader({
 
         {/* Center: reading area — data-selection-zone so clicks here keep selection */}
         <main className="px-6 sm:px-10 py-8 sm:py-10 pb-32 lg:pb-16" data-selection-zone>
-          <div className="mb-7">
-            {/* Book + chapter dropdown nav label */}
-            <div ref={mainChapterNavRef} className="relative flex items-center gap-1 mb-1.5">
-              <span className="text-sm font-medium text-slate-500">{currentBookName}</span>
-              <span className="text-slate-300 select-none">/</span>
-              <button
-                onClick={() => setIsMainChapterOpen(v => !v)}
-                className="flex items-center gap-0.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
-              >
-                {currentChapter}
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isMainChapterOpen ? "rotate-180" : ""}`} />
-              </button>
-              {isMainChapterOpen && (
-                <div className="absolute top-full left-0 mt-2 z-[200] bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-3 w-[272px]">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
-                  {chapterGrid}
+
+          {collectionsMode === "verses" ? (
+            <>
+              <div className="mb-7">
+                {/* Book + chapter dropdown nav label */}
+                <div ref={mainChapterNavRef} className="relative flex items-center gap-1 mb-1.5">
+                  <span className="text-sm font-medium text-slate-500">{currentBookName}</span>
+                  <span className="text-slate-300 select-none">/</span>
+                  <button
+                    onClick={() => setIsMainChapterOpen(v => !v)}
+                    className="flex items-center gap-0.5 text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors"
+                  >
+                    {currentChapter}
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isMainChapterOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {isMainChapterOpen && (
+                    <div className="absolute top-full left-0 mt-2 z-[200] bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-100 p-3 w-[272px]">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
+                      {chapterGrid}
+                    </div>
+                  )}
+                </div>
+                {/* "1 of 36 · N verses" — uniform size */}
+                <p className="text-sm text-slate-500">
+                  {currentChapter} {t("bible_of")} {chapterNumbers.length} · {verses.length} {t("bible_verses")}
+                </p>
+              </div>
+
+              <VerseList
+                verses={verses}
+                dir={dir}
+                user={user}
+                localHighlights={localHighlights}
+                fontSize={fontSize}
+                selectedVerseIds={selectedVerseIds}
+                viewMode={viewMode}
+                onVerseClick={handleVerseClick}
+              />
+
+              <div className="flex items-center justify-between mt-14 pt-6 border-t border-slate-100">
+                {currentChapter > 1 ? (
+                  <Link
+                    href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter - 1}`}
+                    className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group"
+                  >
+                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                    {currentChapter - 1}
+                  </Link>
+                ) : <div />}
+                <span className="text-xs text-slate-400 font-medium">
+                  {currentBookName} · {currentChapter} / {chapterNumbers.length}
+                </span>
+                {currentChapter < chapterNumbers.length ? (
+                  <Link
+                    href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`}
+                    className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group"
+                  >
+                    {currentChapter + 1}
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                ) : <div />}
+              </div>
+            </>
+          ) : collectionsMode === "collections" ? (
+            <>
+              <div className="flex items-center gap-3 mb-8">
+                <button
+                  onClick={() => setCollectionsMode("verses")}
+                  className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </button>
+                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <BookMarked className="w-5 h-5 text-blue-600" />
+                  {t("bible_my_collections")}
+                </h2>
+              </div>
+
+              {collectionsLoading ? (
+                <div className="text-center py-16 text-slate-400 text-sm">{t("action_loading")}</div>
+              ) : collectionsList.length === 0 ? (
+                <div className="text-center py-20 border border-dashed border-slate-200 rounded-2xl">
+                  <BookMarked className="w-10 h-10 mx-auto mb-3 text-slate-300" strokeWidth={1.5} />
+                  <p className="font-semibold text-slate-500">{t("col_empty_state")}</p>
+                  <p className="text-sm text-slate-400 mt-1">{t("col_empty_page_hint")}</p>
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {collectionsList.map(col => (
+                    <button
+                      key={col.id}
+                      onClick={() => openCollection(col.id, col.name)}
+                      className="group flex items-center gap-4 p-5 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all text-left"
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <BookMarked className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-slate-900 truncate group-hover:text-blue-700 transition-colors">{col.name}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {col._count?.verses ?? 0}{" "}
+                          {(col._count?.verses ?? 0) !== 1 ? t("col_verse_pl") : t("col_verse_sg")}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-400 transition-colors shrink-0" />
+                    </button>
+                  ))}
                 </div>
               )}
-            </div>
-            {/* "1 of 36 · N verses" — uniform size */}
-            <p className="text-sm text-slate-500">
-              {currentChapter} {t("bible_of")} {chapterNumbers.length} · {verses.length} {t("bible_verses")}
-            </p>
-          </div>
-
-          <VerseList
-            verses={verses}
-            dir={dir}
-            user={user}
-            localHighlights={localHighlights}
-            fontSize={fontSize}
-            selectedVerseIds={selectedVerseIds}
-            viewMode={viewMode}
-            onVerseClick={handleVerseClick}
-          />
-
-          <div className="flex items-center justify-between mt-14 pt-6 border-t border-slate-100">
-            {currentChapter > 1 ? (
-              <Link
-                href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter - 1}`}
-                className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group"
+            </>
+          ) : (
+            <>
+              <button
+                onClick={openCollections}
+                className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors mb-6"
               >
-                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                {currentChapter - 1}
-              </Link>
-            ) : <div />}
-            <span className="text-xs text-slate-400 font-medium">
-              {currentBookName} · {currentChapter} / {chapterNumbers.length}
-            </span>
-            {currentChapter < chapterNumbers.length ? (
-              <Link
-                href={`/bible/${language}/${version}/${currentBook.id}/${currentChapter + 1}`}
-                className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors group"
-              >
-                {currentChapter + 1}
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            ) : <div />}
-          </div>
+                <ChevronLeft className="w-4 h-4" />
+                {t("bible_my_collections")}
+              </button>
+
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
+                  <BookMarked className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">{openedCollection?.name}</h2>
+                  {!collectionsLoading && openedCollection && (
+                    <p className="text-sm text-slate-400">
+                      {openedCollection.verses.length}{" "}
+                      {openedCollection.verses.length !== 1 ? t("col_verse_pl") : t("col_verse_sg")}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {collectionsLoading ? (
+                <div className="text-center py-16 text-slate-400 text-sm">{t("action_loading")}</div>
+              ) : !openedCollection || openedCollection.verses.length === 0 ? (
+                <div className="text-center py-16 border border-dashed border-slate-200 rounded-2xl">
+                  <p className="text-slate-400 text-sm">{t("col_no_verses_yet")}</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {collectionGroups.map(({ key, bookName, bookId, chapter, verses: groupVerses }) => (
+                    <div key={key} className="rounded-xl border border-slate-100 overflow-hidden">
+                      <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-100">
+                        <p className="text-sm font-semibold text-slate-700">{bookName} {chapter}</p>
+                        <Link
+                          href={`/bible/${language}/${version}/${bookId}/${chapter}`}
+                          onClick={() => setCollectionsMode("verses")}
+                          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          {t("col_open")} <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                      <ul className="divide-y divide-slate-50">
+                        {groupVerses.map(v => (
+                          <li key={v.verseId} className="px-5 py-3 flex items-start gap-3">
+                            <span className="text-xs font-bold text-blue-400 pt-0.5 shrink-0 w-5 text-right">{v.verseNum}</span>
+                            <p className="text-sm text-slate-700 leading-relaxed font-serif" dir={dir}>
+                              {v.text || <span className="text-slate-400 italic">[no text]</span>}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
         </main>
 
         {/* Right: controls panel (desktop) — data-selection-zone so clicks here keep selection */}
