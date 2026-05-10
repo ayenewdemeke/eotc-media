@@ -22,7 +22,7 @@ interface Suggestion {
   originalText: string
   suggestedText: string
   reason: string
-  issueType: "typo" | "incomplete" | "missing_text" | "incorrect"
+  issueType: "typo" | "incomplete" | "missing_text"
   warning?: "no_verse_record"
   // client state
   _status?: "accepted" | "declined" | "editing"
@@ -33,14 +33,12 @@ const ISSUE_LABELS: Record<string, string> = {
   typo: "Typo",
   incomplete: "Incomplete",
   missing_text: "Missing text",
-  incorrect: "Incorrect",
 }
 
 const ISSUE_COLORS: Record<string, string> = {
   typo: "bg-yellow-100 text-yellow-800",
   incomplete: "bg-orange-100 text-orange-800",
   missing_text: "bg-red-100 text-red-800",
-  incorrect: "bg-purple-100 text-purple-800",
 }
 
 export function VerseCorrectionsClient({
