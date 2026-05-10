@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Check, Loader2, BookMarked } from "lucide-react"
+import { Check, Loader2, BookMarked } from "lucide-react"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { BlCollection } from "@/types/models/bible"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface CollectionDialogProps {
   open: boolean
@@ -32,6 +33,7 @@ export default function CollectionDialog({
   chapter,
   onClose,
 }: CollectionDialogProps) {
+  const { t, locale } = useLocale()
   const [collections, setCollections] = useState<BlCollection[]>([])
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set())
   const [newName, setNewName] = useState("")
@@ -97,9 +99,12 @@ export default function CollectionDialog({
       )
       const count = selectedVerseIds.length
       const collCount = checkedIds.size
-      toast.success(
-        `${count} verse${count !== 1 ? "s" : ""} saved to ${collCount} collection${collCount !== 1 ? "s" : ""}`
-      )
+      const vWord = count !== 1 ? t("col_verse_pl") : t("col_verse_sg")
+      const cWord = collCount !== 1 ? t("col_collection_pl") : t("col_collection_sg")
+      const msg = locale === "am"
+        ? `${count} ${vWord} ወደ ${collCount} ${cWord} ተቀምጧል`
+        : `${count} ${vWord} saved to ${collCount} ${cWord}`
+      toast.success(msg)
       onClose()
     } catch {
       toast.error("Failed to save verses")
@@ -113,7 +118,13 @@ export default function CollectionDialog({
       ? ""
       : selectedVerseNums.length === 1
       ? `${bookName} ${chapter}:${selectedVerseNums[0]}`
-      : `${bookName} ${chapter}:${selectedVerseNums[0]}–${selectedVerseNums[selectedVerseNums.length - 1]} (${selectedVerseNums.length} verses)`
+      : `${bookName} ${chapter}:${selectedVerseNums[0]}–${selectedVerseNums[selectedVerseNums.length - 1]} (${selectedVerseNums.length} ${t("col_verse_pl")})`
+
+  const n = checkedIds.size
+  const cWord = n !== 1 ? t("col_collection_pl") : t("col_collection_sg")
+  const saveBtnLabel = n > 0
+    ? (locale === "am" ? `ወደ ${n} ${cWord} አስቀምጥ` : `Save to ${n} ${cWord}`)
+    : t("col_save_title")
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
@@ -121,33 +132,12 @@ export default function CollectionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookMarked className="w-4 h-4 text-blue-600" />
-            Save to collection
+            {t("col_save_title")}
           </DialogTitle>
           {verseLabel && (
             <p className="text-xs text-slate-500 mt-0.5">{verseLabel}</p>
           )}
         </DialogHeader>
-
-        {/* Create new collection inline */}
-        <div className="flex gap-2">
-          <Input
-            placeholder="New collection name…"
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") handleCreateNew() }}
-            disabled={creatingNew}
-            className="h-8 text-sm"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleCreateNew}
-            disabled={!newName.trim() || creatingNew}
-            className="h-8 shrink-0"
-          >
-            {creatingNew ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-          </Button>
-        </div>
 
         {/* Collections list */}
         <div className="border border-slate-100 rounded-lg overflow-hidden">
@@ -157,8 +147,8 @@ export default function CollectionDialog({
             </div>
           ) : collections.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-sm text-slate-400">No collections yet.</p>
-              <p className="text-xs text-slate-300 mt-0.5">Create one above to get started.</p>
+              <p className="text-sm text-slate-400">{t("col_empty_state")}</p>
+              <p className="text-xs text-slate-300 mt-0.5">{t("col_empty_hint")}</p>
             </div>
           ) : (
             <ul className="max-h-52 overflow-y-auto divide-y divide-slate-50">
@@ -174,7 +164,7 @@ export default function CollectionDialog({
                       <p className="text-sm font-medium text-slate-800 truncate">{col.name}</p>
                       {col._count !== undefined && (
                         <p className="text-xs text-slate-400">
-                          {col._count.verses} verse{col._count.verses !== 1 ? "s" : ""}
+                          {col._count.verses} {col._count.verses !== 1 ? t("col_verse_pl") : t("col_verse_sg")}
                         </p>
                       )}
                     </div>
@@ -188,9 +178,35 @@ export default function CollectionDialog({
           )}
         </div>
 
+        {/* Create new collection — secondary action below the list */}
+        <div>
+          <p className="text-xs font-medium text-slate-500 mb-1.5">{t("col_new_label")}</p>
+          <div className="flex gap-2">
+            <Input
+              placeholder={t("col_new_placeholder")}
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleCreateNew() }}
+              disabled={creatingNew}
+              className="h-8 text-sm"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCreateNew}
+              disabled={!newName.trim() || creatingNew}
+              className="h-8 shrink-0 px-3"
+            >
+              {creatingNew
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : t("col_create_btn")}
+            </Button>
+          </div>
+        </div>
+
         <DialogFooter>
           <Button variant="outline" size="sm" onClick={onClose} disabled={saving}>
-            Cancel
+            {t("action_cancel")}
           </Button>
           <Button
             size="sm"
@@ -199,7 +215,7 @@ export default function CollectionDialog({
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
-            Save to {checkedIds.size > 0 ? `${checkedIds.size} collection${checkedIds.size !== 1 ? "s" : ""}` : "collection"}
+            {saveBtnLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

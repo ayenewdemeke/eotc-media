@@ -186,6 +186,23 @@ export const translations = {
     liturgy_note:           "Note:",
     liturgy_no_section:     "No texts in this section yet",
 
+    // ── Collections ──────────────────────────────
+    col_save_title:       "Save to collection",
+    col_new_placeholder:  "New collection name…",
+    col_create_btn:       "Create",
+    col_empty_state:      "No collections yet.",
+    col_empty_hint:       "Create a new collection below to get started.",
+    col_collection_sg:    "collection",
+    col_collection_pl:    "collections",
+    col_verse_sg:         "verse",
+    col_verse_pl:         "verses",
+    col_new_label:        "New collection",
+    col_subtitle:         "Your saved verse collections",
+    col_empty_page_hint:  "Open the Bible reader, select verses, and save them to a collection.",
+    col_go_bible:         "Go to Bible",
+    col_open:             "Open",
+    col_no_verses_yet:    "No verses in this collection yet.",
+
     // ── Misc ────────────────────────────────────
     media_resources:    "Media Resources",
   },
@@ -374,6 +391,23 @@ export const translations = {
     liturgy_no_content_msg: "የቅዳሴ ጽሑፎች ሲጨመሩ እዚህ ይታያሉ።",
     liturgy_note:           "ማሳሰቢያ፡",
     liturgy_no_section:     "በዚህ ክፍል ምንም ጽሑፍ የለም",
+
+    // ── Collections ──────────────────────────────
+    col_save_title:       "ወደ ስብስብ አስቀምጥ",
+    col_new_placeholder:  "አዲስ ስብስብ ስም…",
+    col_create_btn:       "ፍጠር",
+    col_empty_state:      "ምንም ስብስብ የለም።",
+    col_empty_hint:       "ለመጀመር ከታች አዲስ ስብስብ ይፍጠሩ።",
+    col_collection_sg:    "ስብስብ",
+    col_collection_pl:    "ስብስቦች",
+    col_verse_sg:         "ጥቅስ",
+    col_verse_pl:         "ጥቅሶች",
+    col_new_label:        "አዲስ ስብስብ",
+    col_subtitle:         "የተቀመጡ ጥቅሶችዎ",
+    col_empty_page_hint:  "ቅዱስ መጽሐፍን ክፈቱ፣ ጥቅሶችን ይምረጡ፣ ወደ ስብስብ ያስቀምጡ።",
+    col_go_bible:         "ወደ መጽሐፍ ቅዱስ",
+    col_open:             "ክፈት",
+    col_no_verses_yet:    "በዚህ ስብስብ ምንም ጥቅስ የለም።",
 
     // ── Misc ────────────────────────────────────
     media_resources:    "የሚዲያ ውጤቶች",

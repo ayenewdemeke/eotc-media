@@ -164,14 +164,14 @@ export default function VerseList({
             // Anchor for first verse in the group; hidden spans for the rest
             id={`verse-${group.nums[0]}`}
             onClick={() => onVerseClick(group.nums, group.ids)}
-            className={`flex items-start gap-1.5 pr-2 py-[5px] cursor-pointer rounded-md transition-colors duration-150 ${
+            className={`relative flex items-start gap-1.5 pr-2 py-[5px] cursor-pointer rounded-md transition-colors duration-150 ${
               !bgColor ? "hover:bg-slate-50" : ""
             }`}
             style={rowStyle}
           >
-            {/* Hidden scroll anchors for merged verse numbers */}
+            {/* Hidden scroll anchors — absolute so they don't affect flex gap */}
             {group.nums.slice(1).map(n => (
-              <span key={n} id={`verse-${n}`} aria-hidden />
+              <span key={n} id={`verse-${n}`} aria-hidden className="absolute" />
             ))}
 
             <span
