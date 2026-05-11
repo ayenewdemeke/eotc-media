@@ -614,7 +614,7 @@ model HmHymn {
   channelId         Int       @map("channel_id")
   slug              String    @unique
   videoId           String    @map("video_id")
-  publishedAt       DateTime? @map("published_at") @db.Date
+  publishedAt       DateTime? @map("published_at")
   singer            String?
   title             String
   lyrics            String?   @db.Text
@@ -814,7 +814,7 @@ model SmSermon {
   channelId         Int       @map("channel_id")
   slug              String    @unique
   videoId           String    @map("video_id")
-  publishedAt       DateTime? @map("published_at") @db.Date
+  publishedAt       DateTime? @map("published_at")
   preacher          String?
   title             String
   description           String?   @db.Text

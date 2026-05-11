@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { extractVideoId, fetchYoutubeVideo, fetchYoutubeChannel } from '@/lib/youtube'
 
 function generateSlug(title: string): string {
-  return title.trim().replace(/\s+/g, '-').replace(/[^\w\u1200-\u137F-]/g, '').slice(0, 120) + '-' + Date.now().toString(36)
-}
-
-function parseVideoId(input: string): string {
-  const s = input.trim()
-  try {
-    const url = new URL(s)
-    if (url.hostname === 'youtu.be') return url.pathname.slice(1).split('?')[0]
-    if (url.hostname.includes('youtube.com')) return url.searchParams.get('v') ?? s
-  } catch { /* not a URL */ }
-  return s
+  return title.trim().replace(/\s+/g, '-').replace(/[^\wሀ-፿-]/g, '').slice(0, 120) + '-' + Date.now().toString(36)
 }
 
 export async function POST(req: NextRequest) {
@@ -27,41 +18,65 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Video URL/ID is required' }, { status: 400 })
   }
 
-  const vid = parseVideoId(videoUrl)
+  const vid = extractVideoId(videoUrl.trim()) ?? videoUrl.trim()
 
-  const [pendingStatus, defaultChannel] = await Promise.all([
-    prisma.smApprovalStatus.findFirst({ where: { name: 'Submitted' } }),
-    prisma.smChannel.findFirst({ orderBy: { id: 'asc' } }),
-  ])
-
-  if (!pendingStatus || !defaultChannel) {
+  const submittedStatus = await prisma.smApprovalStatus.findFirst({ where: { name: 'Submitted' } })
+  if (!submittedStatus) {
     return NextResponse.json({ error: 'System configuration incomplete' }, { status: 500 })
   }
 
-  let title = vid
+  // Fetch video + channel metadata from YouTube Data API
+  let video: Awaited<ReturnType<typeof fetchYoutubeVideo>>
   try {
-    const oembedRes = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${vid}&format=json`)
-    if (oembedRes.ok) {
-      const data = await oembedRes.json()
-      if (data.title) title = data.title
-    }
-  } catch { /* use video ID as fallback */ }
+    video = await fetchYoutubeVideo(vid)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'YouTube API error'
+    return NextResponse.json({ error: `Could not fetch video info: ${msg}` }, { status: 422 })
+  }
+
+  let ytChannel: Awaited<ReturnType<typeof fetchYoutubeChannel>>
+  try {
+    ytChannel = await fetchYoutubeChannel(video.channelId)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'YouTube API error'
+    return NextResponse.json({ error: `Could not fetch channel info: ${msg}` }, { status: 422 })
+  }
+
+  // Upsert the channel so it's created automatically if not yet in DB
+  const channel = await prisma.smChannel.upsert({
+    where: { ytChannelId: ytChannel.ytChannelId },
+    create: {
+      ytChannelId: ytChannel.ytChannelId,
+      name: ytChannel.title,
+      slug: generateSlug(ytChannel.title),
+      description: ytChannel.description,
+      handle: ytChannel.handle,
+      publishedAt: ytChannel.publishedAt ? new Date(ytChannel.publishedAt) : null,
+      thumbnailDefault: ytChannel.thumbnailDefault,
+      thumbnailMedium: ytChannel.thumbnailMedium,
+      thumbnailHigh: ytChannel.thumbnailHigh,
+      coverImage: ytChannel.coverImage,
+      country: ytChannel.country,
+    },
+    update: {},
+  })
 
   const sermon = await prisma.smSermon.create({
     data: {
       userId: parseInt(session.user.id),
-      title,
+      title: video.title,
       videoId: vid,
-      slug: generateSlug(title),
-      approvalStatusId: pendingStatus.id,
-      channelId: defaultChannel.id,
+      slug: generateSlug(video.title),
+      approvalStatusId: submittedStatus.id,
+      channelId: channel.id,
+      publishedAt: video.publishedAt ? new Date(video.publishedAt) : null,
       preacher: preacher?.trim() || null,
       description: description?.trim() || null,
-      thumbnailDefault: `https://img.youtube.com/vi/${vid}/default.jpg`,
-      thumbnailMedium: `https://img.youtube.com/vi/${vid}/mqdefault.jpg`,
-      thumbnailHigh: `https://img.youtube.com/vi/${vid}/hqdefault.jpg`,
-      thumbnailStandard: `https://img.youtube.com/vi/${vid}/sddefault.jpg`,
-      thumbnailMaxres: `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`,
+      thumbnailDefault: video.thumbnailDefault,
+      thumbnailMedium: video.thumbnailMedium,
+      thumbnailHigh: video.thumbnailHigh,
+      thumbnailStandard: video.thumbnailStandard,
+      thumbnailMaxres: video.thumbnailMaxres,
       updatedAt: new Date(),
     },
   })
