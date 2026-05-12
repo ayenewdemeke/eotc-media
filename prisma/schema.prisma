@@ -614,7 +614,7 @@ model HmHymn {
   channelId         Int       @map("channel_id")
   slug              String    @unique
   videoId           String    @map("video_id")
-  publishedAt       DateTime? @map("published_at") @db.Date
+  publishedAt       DateTime? @map("published_at")
   singer            String?
   title             String
   lyrics            String?   @db.Text
@@ -734,17 +734,20 @@ model SmLanguage {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sermons SmLanguageSermon[]
+  sermons    SmLanguageSermon[]
+  categories SmCategory[]
 
   @@map("sm_languages")
 }
 
 model SmCategory {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  languageId Int?     @map("language_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
+  language      SmLanguage?        @relation(fields: [languageId], references: [id])
   subCategories SmSubCategory[]
   sermons       SmCategorySermon[]
 
@@ -814,7 +817,7 @@ model SmSermon {
   channelId         Int       @map("channel_id")
   slug              String    @unique
   videoId           String    @map("video_id")
-  publishedAt       DateTime? @map("published_at") @db.Date
+  publishedAt       DateTime? @map("published_at")
   preacher          String?
   title             String
   description           String?   @db.Text

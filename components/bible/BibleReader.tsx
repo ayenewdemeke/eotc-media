@@ -678,7 +678,7 @@ export default function BibleReader({
                 </div>
                 {/* "1 of 36 · N verses" — uniform size */}
                 <p className="text-sm text-slate-500">
-                  {currentChapter} {t("bible_of")} {chapterNumbers.length} · {verses.length} {t("bible_verses")}
+                  {currentChapter}{t("bible_of")}{chapterNumbers.length} · {verses.length} {t("bible_verses")}
                 </p>
               </div>
 

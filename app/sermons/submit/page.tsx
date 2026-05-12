@@ -8,7 +8,7 @@ import Navbar from "@/components/Navbar"
 import SermonSidebar from "@/components/sermons/SermonSidebar"
 
 interface Language { id: number; name: string }
-interface Category { id: number; name: string }
+interface Category { id: number; name: string; languageId?: number | null }
 interface SubCategory { id: number; name: string; categoryId: number }
 
 function parseVideoId(input: string): string {
@@ -139,9 +139,19 @@ export default function SubmitSermonPage() {
     })
   }, [])
 
+  const visibleCategories = selectedLanguageIds.length > 0
+    ? allCategories.filter(c => selectedLanguageIds.includes(c.languageId ?? -1))
+    : allCategories
+
   const visibleSubCategories = selectedCategoryIds.length > 0
     ? allSubCategories.filter(sc => selectedCategoryIds.includes(sc.categoryId))
     : []
+
+  function handleLanguageChange(ids: number[]) {
+    setSelectedLanguageIds(ids)
+    setSelectedCategoryIds([])
+    setSelectedSubCategoryIds([])
+  }
 
   function handleCategoryChange(ids: number[]) {
     setSelectedCategoryIds(ids)
@@ -262,7 +272,7 @@ export default function SubmitSermonPage() {
                     <MultiSelect
                       label="Language" required
                       value={selectedLanguageIds}
-                      onChange={setSelectedLanguageIds}
+                      onChange={handleLanguageChange}
                       options={languages}
                       placeholder="Select language…"
                     />
@@ -270,8 +280,9 @@ export default function SubmitSermonPage() {
                       label="Category" required
                       value={selectedCategoryIds}
                       onChange={handleCategoryChange}
-                      options={allCategories}
-                      placeholder="Select category…"
+                      options={visibleCategories}
+                      placeholder={selectedLanguageIds.length > 0 ? "Select category…" : "Select language first"}
+                      disabled={selectedLanguageIds.length === 0}
                     />
                     <MultiSelect
                       label="Sub-category" required

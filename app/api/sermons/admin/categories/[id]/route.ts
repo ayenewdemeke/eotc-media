@@ -10,9 +10,13 @@ export async function PATCH(
   const session = await auth()
   if (!hasSermonAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
-  const { name } = await req.json()
+  const { name, languageId } = await req.json()
   if (!name?.trim()) return NextResponse.json({ error: 'Name required' }, { status: 400 })
-  const category = await prisma.smCategory.update({ where: { id: parseInt(id) }, data: { name: name.trim() } })
+  const category = await prisma.smCategory.update({
+    where: { id: parseInt(id) },
+    data: { name: name.trim(), languageId: languageId ?? null },
+    select: { id: true, name: true, languageId: true },
+  })
   return NextResponse.json(category)
 }
 

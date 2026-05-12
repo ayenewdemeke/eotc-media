@@ -145,7 +145,7 @@ export const translations = {
     bible_highlight_label:      "Highlight",
     bible_save_label:           "Save",
     bible_clear_selection:      "Clear selection",
-    bible_of:                   "of",
+    bible_of:                   " of ",
     bible_verses:               "verses",
     bible_type_to_search:       "Type to search",
     bible_search_desc:          "Search for words or phrases across the Bible",
@@ -155,6 +155,7 @@ export const translations = {
     sort_oldest_first:  "Oldest first",
     sort_most_clicked:  "Most clicked",
     sort_least_clicked: "Least clicked",
+
 
     // ── Hymns count / actions ────────────────────
     hymn_singular:   "hymn",
@@ -337,7 +338,7 @@ export const translations = {
 
     // ── Bible right panel ────────────────────────
     bible_my_collections:       "የእኔ ስብስቦች",
-    bible_view_collections:     "ስብስቦቼን ይመልከቱ",
+    bible_view_collections:     "ስብስቦችን ተመልከት",
     bible_signin_collections:   "ጥቅሶችን ለማስቀመጥ ይግቡ።",
     bible_selected_verse:       "የተመረጠ ጥቅስ",
     bible_tap_to_select:        "ጥቅስ ለመምረጥ ቁጥሩን ይጫኑ። ብዙ ጥቅሶችን ለመምረጥ ተጨማሪ ቁጥሮችን ይጫኑ።",
@@ -351,16 +352,16 @@ export const translations = {
     bible_highlight_label:      "ምልክት",
     bible_save_label:           "አስቀምጥ",
     bible_clear_selection:      "ምርጫ ሰርዝ",
-    bible_of:                   "ከ",
+    bible_of:                   "/",
     bible_verses:               "ጥቅሶች",
     bible_type_to_search:       "ፈልጉ",
     bible_search_desc:          "በቅዱስ መጽሐፍ ቃላት ወይም ሐረጎችን ፈልጉ",
 
     // ── Sort options (shared) ────────────────────
-    sort_newest_first:  "አዲሱ ቀደም",
-    sort_oldest_first:  "ያረጀው ቀደም",
-    sort_most_clicked:  "በጣም የተጫወቱ",
-    sort_least_clicked: "ያነሰ የተጫወቱ",
+    sort_newest_first:  "አዳዲሶችን አስቀድም",
+    sort_oldest_first:  "የድሮዎችን አስቀድም",
+    sort_most_clicked:  "በብዛት የተከፈቱትን አስቀድም",
+    sort_least_clicked: "ጥቂት የተከፈቱትን አስቀድም",
 
     // ── Hymns count / actions ────────────────────
     hymn_singular:   "መዝሙር",
