@@ -734,17 +734,20 @@ model SmLanguage {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sermons SmLanguageSermon[]
+  sermons    SmLanguageSermon[]
+  categories SmCategory[]
 
   @@map("sm_languages")
 }
 
 model SmCategory {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  languageId Int?     @map("language_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
+  language      SmLanguage?        @relation(fields: [languageId], references: [id])
   subCategories SmSubCategory[]
   sermons       SmCategorySermon[]
 
