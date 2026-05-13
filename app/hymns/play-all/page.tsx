@@ -15,13 +15,14 @@ interface PageProps {
     subCategory?: string
     singer?: string
     channel?: string
+    collection?: string
     search?: string
     sort?: string
   }>
 }
 
 export default async function PlayAllPage({ searchParams }: PageProps) {
-  const { view, language, category, subCategory, singer, channel, search, sort } = await searchParams
+  const { view, language, category, subCategory, singer, channel, collection, search, sort } = await searchParams
 
   const session = await auth()
   const userId = session?.user?.id ? parseInt(session.user.id) : undefined
@@ -31,6 +32,7 @@ export default async function PlayAllPage({ searchParams }: PageProps) {
   const subCategoryId = subCategory ? parseInt(subCategory) || undefined : undefined
   const singerId = singer ? parseInt(singer) || undefined : undefined
   const channelId = channel ? parseInt(channel) || undefined : undefined
+  const collectionId = collection ? parseInt(collection) || undefined : undefined
 
   const { hymns } = await getHymns({
     page: 1,
@@ -41,6 +43,7 @@ export default async function PlayAllPage({ searchParams }: PageProps) {
     subCategoryId,
     singerId,
     channelId,
+    collectionId,
     search,
     sort,
     userId,
