@@ -48,7 +48,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Pag
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
             <div className="mb-5">
               <a href="/hymns/collections" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">
-                ← My Lists
+                ← My lists
               </a>
               <h1 className="text-xl font-semibold text-slate-900 mt-1">{collection.name}</h1>
             </div>
