@@ -27,6 +27,7 @@ interface HymnInfiniteGridProps {
     language?: string
     singer?: string
     channel?: string
+    collection?: string
     sort?: string
   }
   userId?: number
@@ -75,6 +76,7 @@ export default function HymnInfiniteGrid({
       if (filters.language) params.set("language", filters.language)
       if (filters.singer) params.set("singer", filters.singer)
       if (filters.channel) params.set("channel", filters.channel)
+      if (filters.collection) params.set("collection", filters.collection)
       if (filters.sort) params.set("sort", filters.sort)
 
       const res = await fetch(`/api/hymns?${params.toString()}`)
@@ -118,6 +120,7 @@ export default function HymnInfiniteGrid({
     if (filters.subCategory) params.set("subCategory", filters.subCategory)
     if (filters.singer) params.set("singer", filters.singer)
     if (filters.channel) params.set("channel", filters.channel)
+    if (filters.collection) params.set("collection", filters.collection)
     if (filters.search) params.set("search", filters.search)
     if (filters.sort) params.set("sort", filters.sort)
     const q = params.toString()

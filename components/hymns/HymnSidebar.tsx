@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Music, Heart, User, Tv } from "lucide-react"
+import { Music, Heart, User, Tv, ListMusic } from "lucide-react"
 import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface HymnSidebarProps {
@@ -16,6 +16,7 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
   const isActive = (path: string) => {
     if (path === "/hymns/channels") return pathname.startsWith("/hymns/channels")
     if (path === "/hymns/my-hymns") return pathname === "/hymns/my-hymns" || pathname === "/hymns/submit"
+    if (path === "/hymns/collections") return pathname.startsWith("/hymns/collections")
     return pathname === path
   }
 
@@ -44,6 +45,10 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
             <Heart className="w-4 h-4 flex-shrink-0" />
             {t("hymn_favorites")}
           </Link>
+          <Link href="/hymns/collections" className={linkClass("/hymns/collections")}>
+            <ListMusic className="w-4 h-4 flex-shrink-0" />
+            My Lists
+          </Link>
           <Link href="/hymns/my-hymns" className={linkClass("/hymns/my-hymns")}>
             <User className="w-4 h-4 flex-shrink-0" />
             {t("hymn_my_uploads")}
@@ -54,6 +59,10 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
           <Link href="/auth/login" className={dimLink}>
             <Heart className="w-4 h-4 flex-shrink-0" />
             {t("hymn_favorites")}
+          </Link>
+          <Link href="/auth/login" className={dimLink}>
+            <ListMusic className="w-4 h-4 flex-shrink-0" />
+            My Lists
           </Link>
           <Link href="/auth/login" className={dimLink}>
             <User className="w-4 h-4 flex-shrink-0" />
