@@ -70,7 +70,7 @@ export async function getSermonsFilterData(): Promise<{
   categoriesByLanguage: Record<string, number[]>
 }> {
   const [categories, subCategories, languages, preachers, catLangRows] = await Promise.all([
-    prisma.smCategory.findMany({ orderBy: { id: 'asc' } }),
+    prisma.smCategory.findMany({ orderBy: { id: 'asc' }, select: { id: true, name: true } }),
     prisma.smSubCategory.findMany({ orderBy: { id: 'asc' } }),
     prisma.smLanguage.findMany({ orderBy: { id: 'asc' } }),
     prisma.smPreacher.findMany({ orderBy: { name: 'asc' } }),

@@ -4,11 +4,20 @@ import { prisma } from '@/lib/prisma'
 import { hasSermonAdminAccess } from '@/lib/auth-helpers'
 
 export async function GET() {
-  const categories = await prisma.smCategory.findMany({
-    orderBy: { id: 'asc' },
-    select: { id: true, name: true, languageId: true },
-  })
-  return NextResponse.json(categories)
+  try {
+    const categories = await prisma.smCategory.findMany({
+      orderBy: { id: 'asc' },
+      select: { id: true, name: true, languageId: true },
+    })
+    return NextResponse.json(categories)
+  } catch {
+    // language_id column not yet migrated — return without it
+    const categories = await prisma.smCategory.findMany({
+      orderBy: { id: 'asc' },
+      select: { id: true, name: true },
+    })
+    return NextResponse.json(categories)
+  }
 }
 
 export async function POST(req: NextRequest) {
