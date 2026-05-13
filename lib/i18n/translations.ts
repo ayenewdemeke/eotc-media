@@ -26,6 +26,7 @@ export const translations = {
     hymn_all:           "All Hymns",
     hymn_channels:      "Channels",
     hymn_favorites:     "Favorites",
+    hymn_my_lists:      "My lists",
     hymn_my_uploads:    "My Uploads",
 
     // ── Hymns page ──────────────────────────────
@@ -233,6 +234,7 @@ export const translations = {
     hymn_all:           "ሁሉም መዝሙራት",
     hymn_channels:      "ቻናሎች",
     hymn_favorites:     "የተመረጡ መዝሙራት",
+    hymn_my_lists:      "የእኔ ዝርዝሮች",
     hymn_my_uploads:    "በእርስዎ የተጫኑ መዝሙሮች",
 
     // ── Hymns page ──────────────────────────────

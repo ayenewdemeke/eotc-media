@@ -47,7 +47,7 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
           </Link>
           <Link href="/hymns/collections" className={linkClass("/hymns/collections")}>
             <ListMusic className="w-4 h-4 flex-shrink-0" />
-            My Lists
+            {t("hymn_my_lists")}
           </Link>
           <Link href="/hymns/my-hymns" className={linkClass("/hymns/my-hymns")}>
             <User className="w-4 h-4 flex-shrink-0" />
@@ -62,7 +62,7 @@ export default function HymnSidebar({ userId }: HymnSidebarProps) {
           </Link>
           <Link href="/auth/login" className={dimLink}>
             <ListMusic className="w-4 h-4 flex-shrink-0" />
-            My Lists
+            {t("hymn_my_lists")}
           </Link>
           <Link href="/auth/login" className={dimLink}>
             <User className="w-4 h-4 flex-shrink-0" />
