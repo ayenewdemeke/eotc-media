@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { MousePointerClick } from "lucide-react"
 import { HmHymn } from "@/types/models/hymn"
+import SaveToListButton from "./SaveToListButton"
 
 interface HymnCardProps {
   hymn: HmHymn
@@ -27,7 +28,7 @@ function timeAgo(date: Date | null): string {
   return `${Math.floor(months / 12)}y ago`
 }
 
-export default function HymnCard({ hymn, userId: _userId }: HymnCardProps) {
+export default function HymnCard({ hymn, userId }: HymnCardProps) {
   const thumbnail = hymn.thumbnailMedium || hymn.thumbnailDefault
   const channelAvatar = hymn.channel?.thumbnailDefault || hymn.channel?.thumbnailMedium || hymn.channel?.thumbnailHigh
   const singers = hymn.singers && hymn.singers.length > 0 ? hymn.singers : null
@@ -51,7 +52,7 @@ export default function HymnCard({ hymn, userId: _userId }: HymnCardProps) {
       </Link>
 
       {/* Below thumbnail: avatar + meta */}
-      <div className="flex gap-2.5 min-w-0">
+      <div className="flex gap-2.5 min-w-0 items-start">
         {/* Channel avatar */}
         {channelAvatar ? (
           <Link href={`/hymns/channels/${hymn.channel!.id}`} className="flex-shrink-0 mt-0.5">
@@ -73,7 +74,8 @@ export default function HymnCard({ hymn, userId: _userId }: HymnCardProps) {
           </Link>
         )}
 
-        {/* Text */}
+        {/* Text + three-dot menu */}
+        <div className="flex gap-1 min-w-0 flex-1">
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
           <Link href={`/hymns/${hymn.slug}`}>
             <h3 className="text-[13px] font-semibold text-neutral-900 leading-snug line-clamp-2">
@@ -118,6 +120,13 @@ export default function HymnCard({ hymn, userId: _userId }: HymnCardProps) {
               </div>
             )}
           </div>
+        </div>
+        {/* Three-dot save menu — shown on hover for logged-in users */}
+        {userId && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
+            <SaveToListButton hymnId={hymn.id} userId={userId} initialFavorited={hymn.isFavorited} />
+          </div>
+        )}
         </div>
       </div>
     </div>

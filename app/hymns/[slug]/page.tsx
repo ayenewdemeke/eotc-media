@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar"
 import HymnPlayer from "@/components/hymns/HymnPlayer"
 import LyricsPanel from "@/components/hymns/LyricsPanel"
 import FavoriteButton from "@/components/hymns/FavoriteButton"
+import SaveToListButton from "@/components/hymns/SaveToListButton"
 import CommentSection from "@/components/hymns/CommentSection"
 import HymnCard from "@/components/hymns/HymnCard"
 
@@ -63,15 +64,19 @@ export default async function HymnPage({ params }: PageProps) {
                 </div>
               </div>
 
-              {/* Title + favorite */}
+              {/* Title + favorite + save to list */}
               <div className="mt-4 flex items-start justify-between gap-4">
                 <h1 className="text-base font-bold text-neutral-900 leading-snug">{hymn.title}</h1>
-                <FavoriteButton
-                  hymnId={hymn.id}
-                  initialFavorited={isFavorited}
-                  userId={userId}
-                  className="flex-shrink-0 mt-0.5"
-                />
+                <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                  <FavoriteButton
+                    hymnId={hymn.id}
+                    initialFavorited={isFavorited}
+                    userId={userId}
+                  />
+                  {userId && (
+                    <SaveToListButton hymnId={hymn.id} userId={userId} initialFavorited={isFavorited} />
+                  )}
+                </div>
               </div>
 
               {/* Channel + singers + clicks */}

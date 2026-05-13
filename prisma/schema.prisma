@@ -35,6 +35,7 @@ model User {
   hmHymns            HmHymn[]
   hmChannels         HmChannel[]
   hmFavorites        HmFavorite[]
+  hmCollections      HmCollection[]
   hmComments         HmComment[]
   smSermons          SmSermon[]
   smFavorites        SmFavorite[]
@@ -639,6 +640,7 @@ model HmHymn {
   subCategories HmHymnSubCategory[]
   singers       HmHymnSinger[]
   favorites     HmFavorite[]
+  collections   HmCollectionHymn[]
   comments      HmComment[]
 
   @@map("hm_hymns")
@@ -708,6 +710,32 @@ model HmFavorite {
 
   @@unique([userId, hymnId])
   @@map("hm_favorites")
+}
+
+model HmCollection {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hymns HmCollectionHymn[]
+
+  @@map("hm_collections")
+}
+
+model HmCollectionHymn {
+  id           Int      @id @default(autoincrement())
+  collectionId Int      @map("collection_id")
+  hymnId       Int      @map("hymn_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  collection HmCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  hymn       HmHymn       @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, hymnId])
+  @@map("hm_collection_hymns")
 }
 
 model HmComment {

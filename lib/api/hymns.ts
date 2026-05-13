@@ -108,6 +108,7 @@ export async function getHymns({
   view,
   sort,
   itemIds,
+  collectionId,
 }: {
   page?: number
   limit?: number
@@ -121,6 +122,7 @@ export async function getHymns({
   view?: string
   sort?: string
   itemIds?: number[]
+  collectionId?: number
 } = {}): Promise<{ hymns: HmHymn[]; total: number }> {
   const where: Record<string, unknown> = {}
 
@@ -132,6 +134,8 @@ export async function getHymns({
     where.favorites = { some: { userId } }
   } else if (view === 'my-hymns' && userId) {
     where.userId = userId
+  } else if (view === 'collection' && collectionId) {
+    where.collections = { some: { collectionId } }
   }
 
   if (categoryId) {
