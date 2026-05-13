@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
 import { getHymns } from "@/lib/api/hymns"
 import Navbar from "@/components/Navbar"
 import PlayAllPlayer from "@/components/hymns/PlayAllPlayer"
@@ -34,6 +35,27 @@ export default async function PlayAllPage({ searchParams }: PageProps) {
   const channelId = channel ? parseInt(channel) || undefined : undefined
   const collectionId = collection ? parseInt(collection) || undefined : undefined
 
+  // For collection view: resolve hymn IDs directly from the collection,
+  // the same way the collection detail page does it (proven to work).
+  if (view === 'collection' && collectionId) {
+    const col = await prisma.hmCollection.findFirst({
+      where: { id: collectionId, ...(userId ? { userId } : {}) },
+      include: { hymns: { orderBy: { createdAt: 'asc' }, select: { hymnId: true } } },
+    })
+    if (!col || col.hymns.length === 0) notFound()
+    const itemIds = col.hymns.map(h => h.hymnId)
+    const { hymns } = await getHymns({ itemIds, sort, userId, limit: 200 })
+    if (hymns.length === 0) notFound()
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="pt-16">
+          <PlayAllPlayer hymns={hymns} userId={userId} />
+        </div>
+      </div>
+    )
+  }
+
   const { hymns } = await getHymns({
     page: 1,
     limit: 200,
@@ -43,7 +65,6 @@ export default async function PlayAllPage({ searchParams }: PageProps) {
     subCategoryId,
     singerId,
     channelId,
-    collectionId,
     search,
     sort,
     userId,

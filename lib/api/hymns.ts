@@ -130,12 +130,20 @@ export async function getHymns({
     where.id = { in: itemIds }
   }
 
-  if (view === 'favorites' && userId) {
+  // For collection view: resolve hymn IDs directly via the join table
+  // rather than relying on a Prisma relation filter, which requires
+  // the generated client to be up-to-date with the new relation.
+  if (view === 'collection' && collectionId && !(itemIds && itemIds.length > 0)) {
+    const entries = await prisma.hmCollectionHymn.findMany({
+      where: { collectionId },
+      select: { hymnId: true },
+    })
+    if (entries.length === 0) return { hymns: [], total: 0 }
+    where.id = { in: entries.map(e => e.hymnId) }
+  } else if (view === 'favorites' && userId) {
     where.favorites = { some: { userId } }
   } else if (view === 'my-hymns' && userId) {
     where.userId = userId
-  } else if (view === 'collection' && collectionId) {
-    where.collections = { some: { collectionId } }
   }
 
   if (categoryId) {
