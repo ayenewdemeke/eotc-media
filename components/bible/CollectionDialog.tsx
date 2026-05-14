@@ -128,7 +128,7 @@ export default function CollectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose() }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" data-selection-zone>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookMarked className="w-4 h-4 text-blue-600" />
