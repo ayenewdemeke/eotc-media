@@ -139,7 +139,8 @@ export default function SubmitSermonPage() {
     })
   }, [])
 
-  const visibleCategories = selectedLanguageIds.length > 0
+  const hasLanguageData = allCategories.some(c => c.languageId != null)
+  const visibleCategories = (selectedLanguageIds.length > 0 && hasLanguageData)
     ? allCategories.filter(c => selectedLanguageIds.includes(c.languageId ?? -1))
     : allCategories
 
@@ -281,8 +282,8 @@ export default function SubmitSermonPage() {
                       value={selectedCategoryIds}
                       onChange={handleCategoryChange}
                       options={visibleCategories}
-                      placeholder={selectedLanguageIds.length > 0 ? "Select category…" : "Select language first"}
-                      disabled={selectedLanguageIds.length === 0}
+                      placeholder={selectedLanguageIds.length > 0 && hasLanguageData ? "Select category…" : hasLanguageData ? "Select language first" : "Select category…"}
+                      disabled={selectedLanguageIds.length === 0 && hasLanguageData}
                     />
                     <MultiSelect
                       label="Sub-category" required
