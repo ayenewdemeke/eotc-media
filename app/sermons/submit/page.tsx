@@ -122,6 +122,7 @@ export default function SubmitSermonPage() {
   const [languages, setLanguages] = useState<Language[]>([])
   const [allCategories, setAllCategories] = useState<Category[]>([])
   const [allSubCategories, setAllSubCategories] = useState<SubCategory[]>([])
+  const [categoriesByLanguage, setCategoriesByLanguage] = useState<Record<string, number[]>>({})
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
@@ -132,16 +133,20 @@ export default function SubmitSermonPage() {
       fetch("/api/sermons/admin/languages").then(r => r.json()),
       fetch("/api/sermons/admin/categories").then(r => r.json()),
       fetch("/api/sermons/admin/sub-categories").then(r => r.json()),
-    ]).then(([langs, cats, subs]) => {
+      fetch("/api/sermons/admin/categories-by-language").then(r => r.json()),
+    ]).then(([langs, cats, subs, catByLang]) => {
       setLanguages(Array.isArray(langs) ? langs : [])
       setAllCategories(Array.isArray(cats) ? cats : [])
       setAllSubCategories(Array.isArray(subs) ? subs : [])
+      setCategoriesByLanguage(catByLang?.categoriesByLanguage ?? {})
     })
   }, [])
 
-  const hasLanguageData = allCategories.some(c => c.languageId != null)
-  const visibleCategories = (selectedLanguageIds.length > 0 && hasLanguageData)
-    ? allCategories.filter(c => selectedLanguageIds.includes(c.languageId ?? -1))
+  const hasCategoryLanguageData = Object.keys(categoriesByLanguage).length > 0
+  const visibleCategories = (selectedLanguageIds.length > 0 && hasCategoryLanguageData)
+    ? allCategories.filter(c =>
+        selectedLanguageIds.some(lid => (categoriesByLanguage[String(lid)] ?? []).includes(c.id))
+      )
     : allCategories
 
   const visibleSubCategories = selectedCategoryIds.length > 0
@@ -282,8 +287,8 @@ export default function SubmitSermonPage() {
                       value={selectedCategoryIds}
                       onChange={handleCategoryChange}
                       options={visibleCategories}
-                      placeholder={selectedLanguageIds.length > 0 && hasLanguageData ? "Select category…" : hasLanguageData ? "Select language first" : "Select category…"}
-                      disabled={selectedLanguageIds.length === 0 && hasLanguageData}
+                      placeholder={selectedLanguageIds.length > 0 || !hasCategoryLanguageData ? "Select category…" : "Select language first"}
+                      disabled={selectedLanguageIds.length === 0 && hasCategoryLanguageData}
                     />
                     <MultiSelect
                       label="Sub-category" required
