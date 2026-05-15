@@ -8,21 +8,25 @@ interface Props {
   hymnId: number
   hymnTitle: string
   lyricsSuggestion: string
+  type?: "user" | "ai"
 }
 
-export default function LyricsSuggestionActions({ hymnId, hymnTitle, lyricsSuggestion }: Props) {
+export default function LyricsSuggestionActions({ hymnId, hymnTitle, lyricsSuggestion, type = "user" }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState<"approve" | "decline" | null>(null)
 
-  const handle = async (action: "approve-lyrics" | "decline-lyrics") => {
-    const msg =
-      action === "approve-lyrics"
-        ? `Approve lyrics for "${hymnTitle}"? This will replace the current lyrics.`
-        : `Decline the lyrics suggestion for "${hymnTitle}"?`
+  const approveAction = type === "ai" ? "approve-ai-lyrics" : "approve-lyrics"
+  const declineAction = type === "ai" ? "decline-ai-lyrics" : "decline-lyrics"
+
+  const handle = async (action: typeof approveAction | typeof declineAction) => {
+    const isApprove = action === approveAction
+    const msg = isApprove
+      ? `Approve ${type === "ai" ? "AI-generated" : ""} lyrics for "${hymnTitle}"? This will replace the current lyrics.`
+      : `Decline the ${type === "ai" ? "AI-generated" : ""} lyrics suggestion for "${hymnTitle}"?`
     if (!confirm(msg)) return
 
-    setLoading(action === "approve-lyrics" ? "approve" : "decline")
+    setLoading(isApprove ? "approve" : "decline")
     setOpen(false)
     try {
       await fetch(`/api/hymns/admin/hymns/${hymnId}/${action}`, { method: "POST" })
@@ -44,7 +48,7 @@ export default function LyricsSuggestionActions({ hymnId, hymnTitle, lyricsSugge
         </button>
         <span className="text-slate-300">|</span>
         <button
-          onClick={() => handle("approve-lyrics")}
+          onClick={() => handle(approveAction)}
           disabled={loading !== null}
           className="text-xs text-green-600 hover:text-green-800 font-medium disabled:opacity-50 cursor-pointer"
         >
@@ -52,7 +56,7 @@ export default function LyricsSuggestionActions({ hymnId, hymnTitle, lyricsSugge
         </button>
         <span className="text-slate-300">|</span>
         <button
-          onClick={() => handle("decline-lyrics")}
+          onClick={() => handle(declineAction)}
           disabled={loading !== null}
           className="text-xs text-red-600 hover:text-red-800 font-medium disabled:opacity-50 cursor-pointer"
         >
@@ -81,14 +85,14 @@ export default function LyricsSuggestionActions({ hymnId, hymnTitle, lyricsSugge
                 Close
               </button>
               <button
-                onClick={() => handle("decline-lyrics")}
+                onClick={() => handle(declineAction)}
                 disabled={loading !== null}
                 className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 cursor-pointer"
               >
                 Decline
               </button>
               <button
-                onClick={() => handle("approve-lyrics")}
+                onClick={() => handle(approveAction)}
                 disabled={loading !== null}
                 className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 cursor-pointer"
               >
