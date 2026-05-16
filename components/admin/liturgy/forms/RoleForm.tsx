@@ -27,7 +27,7 @@ const roleSchema = z.object({
     .regex(/^[a-z_]+$/, "Role key must be lowercase letters and underscores only"),
   nameAmharic: z.string().min(1, "Amharic name is required"),
   nameEnglish: z.string().min(1, "English name is required"),
-  orderIndex: z.number().int().min(0, "Order index must be a positive number"),
+  orderIndex: z.coerce.number().int().min(0, "Order index must be a positive number"),
 })
 
 type RoleFormValues = z.infer<typeof roleSchema>
@@ -50,7 +50,7 @@ export function RoleForm({ initialData, inModal, onSuccess, onCancel }: RoleForm
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!initialData
 
-  const form = useForm<RoleFormValues>({
+  const form = useForm({
     resolver: zodResolver(roleSchema),
     defaultValues: {
       roleKey: initialData?.roleKey || "",
@@ -160,7 +160,6 @@ export function RoleForm({ initialData, inModal, onSuccess, onCancel }: RoleForm
                       min="0"
                       placeholder="0"
                       {...field}
-                      onChange={e => field.onChange(Number.isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
                       disabled={isLoading}
                     />
                   </FormControl>

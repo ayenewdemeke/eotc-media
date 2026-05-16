@@ -24,7 +24,7 @@ const sectionSchema = z.object({
   nameGeez: z.string().min(1, "Ge'ez name is required"),
   nameAmharic: z.string().min(1, "Amharic name is required"),
   nameEnglish: z.string().min(1, "English name is required"),
-  orderIndex: z.number().int().min(0, "Order index must be a positive number"),
+  orderIndex: z.coerce.number().int().min(0, "Order index must be a positive number"),
 })
 
 type SectionFormValues = z.infer<typeof sectionSchema>
@@ -47,7 +47,7 @@ export function SectionForm({ initialData, inModal, onSuccess, onCancel }: Secti
   const [isLoading, setIsLoading] = useState(false)
   const isEditing = !!initialData
 
-  const form = useForm<SectionFormValues>({
+  const form = useForm({
     resolver: zodResolver(sectionSchema),
     defaultValues: {
       nameGeez: initialData?.nameGeez || "",
@@ -164,7 +164,6 @@ export function SectionForm({ initialData, inModal, onSuccess, onCancel }: Secti
                   min="0"
                   placeholder="0"
                   {...field}
-                  onChange={e => field.onChange(Number.isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
                   disabled={isLoading}
                 />
               </FormControl>

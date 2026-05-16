@@ -33,7 +33,7 @@ import { Separator } from "@/components/ui/separator"
 const textSchema = z.object({
   sectionId: z.string().min(1, "Section is required"),
   roleId: z.string().min(1, "Role is required"),
-  orderIndex: z.number().int().min(0, "Order index must be a positive number"),
+  orderIndex: z.coerce.number().int().min(0, "Order index must be a positive number"),
   textGeez: z.string().min(1, "Ge'ez text is required"),
   textAmharic: z.string().min(1, "Amharic text is required"),
   textEnglishTransliteration: z.string().min(1, "English transliteration is required"),
@@ -85,7 +85,7 @@ export function TextForm({ initialData, inModal, onSuccess, onCancel }: TextForm
   const [uploadingAudio, setUploadingAudio] = useState<string | null>(null)
   const isEditing = !!initialData
 
-  const form = useForm<TextFormValues>({
+  const form = useForm({
     resolver: zodResolver(textSchema),
     defaultValues: {
       sectionId: initialData?.sectionId?.toString() || "",
@@ -280,7 +280,6 @@ export function TextForm({ initialData, inModal, onSuccess, onCancel }: TextForm
                       min="0"
                       placeholder="0"
                       {...field}
-                      onChange={e => field.onChange(Number.isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
                       disabled={isLoading}
                       className="max-w-[200px]"
                     />
