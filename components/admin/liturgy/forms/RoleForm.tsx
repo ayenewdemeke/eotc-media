@@ -160,7 +160,7 @@ export function RoleForm({ initialData, inModal, onSuccess, onCancel }: RoleForm
                       min="0"
                       placeholder="0"
                       {...field}
-                      onChange={e => field.onChange(e.target.valueAsNumber)}
+                      onChange={e => field.onChange(Number.isNaN(e.target.valueAsNumber) ? 0 : e.target.valueAsNumber)}
                       disabled={isLoading}
                     />
                   </FormControl>
