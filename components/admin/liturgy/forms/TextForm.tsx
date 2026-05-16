@@ -33,7 +33,7 @@ import { Separator } from "@/components/ui/separator"
 const textSchema = z.object({
   sectionId: z.string().min(1, "Section is required"),
   roleId: z.string().min(1, "Role is required"),
-  orderIndex: z.number().int().min(0, "Order index must be a positive number"),
+  orderIndex: z.coerce.number().int().min(0, "Order index must be a positive number"),
   textGeez: z.string().min(1, "Ge'ez text is required"),
   textAmharic: z.string().min(1, "Amharic text is required"),
   textEnglishTransliteration: z.string().min(1, "English transliteration is required"),

@@ -27,7 +27,7 @@ const roleSchema = z.object({
     .regex(/^[a-z_]+$/, "Role key must be lowercase letters and underscores only"),
   nameAmharic: z.string().min(1, "Amharic name is required"),
   nameEnglish: z.string().min(1, "English name is required"),
-  orderIndex: z.number().int().min(0, "Order index must be a positive number"),
+  orderIndex: z.coerce.number().int().min(0, "Order index must be a positive number"),
 })
 
 type RoleFormValues = z.infer<typeof roleSchema>
