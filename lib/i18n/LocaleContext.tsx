@@ -30,18 +30,14 @@ function setCookie(name: string, value: string, days = 365) {
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en")
-  const [detected, setDetected] = useState(false)
 
   useEffect(() => {
-    // 1. Check for existing cookie
     const saved = getCookie("locale") as Locale | undefined
     if (saved === "en" || saved === "am") {
       setLocaleState(saved)
-      setDetected(true)
       return
     }
 
-    // 2. No cookie — call detect API, set cookie, update state
     fetch("/api/locale/detect")
       .then(r => r.json())
       .then(({ locale: detected }: { locale: Locale }) => {
@@ -49,11 +45,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
         setLocaleState(loc)
         setCookie("locale", loc)
       })
-      .catch(() => {
-        // fallback to English on any error
-        setCookie("locale", "en")
-      })
-      .finally(() => setDetected(true))
+      .catch(() => setCookie("locale", "en"))
   }, [])
 
   const setLocale = useCallback((loc: Locale) => {
@@ -65,19 +57,6 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     (key: TranslationKey): string => translations[locale][key] ?? translations.en[key],
     [locale]
   )
-
-  // Avoid flash: render children immediately, locale updates after detection
-  if (!detected) {
-    // Use cookie hint synchronously if available (avoids flash on reload)
-    const hint = getCookie("locale") as Locale | undefined
-    const syncLocale: Locale = hint === "am" || hint === "en" ? hint : "en"
-    const syncT = (key: TranslationKey) => translations[syncLocale][key] ?? translations.en[key]
-    return (
-      <LocaleContext.Provider value={{ locale: syncLocale, setLocale, t: syncT }}>
-        {children}
-      </LocaleContext.Provider>
-    )
-  }
 
   return (
     <LocaleContext.Provider value={{ locale, setLocale, t }}>
