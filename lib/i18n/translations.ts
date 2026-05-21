@@ -156,6 +156,10 @@ export const translations = {
     sort_oldest_first:  "Oldest first",
     sort_most_clicked:  "Most clicked",
     sort_least_clicked: "Least clicked",
+    sort_name_az:       "Name (A–Z)",
+    sort_name_za:       "Name (Z–A)",
+    sort_most_hymns:    "Most hymns",
+    sort_fewest_hymns:  "Fewest hymns",
 
 
     // ── Hymns count / actions ────────────────────
@@ -364,6 +368,10 @@ export const translations = {
     sort_oldest_first:  "የድሮዎችን አስቀድም",
     sort_most_clicked:  "በብዛት የተከፈቱትን አስቀድም",
     sort_least_clicked: "ጥቂት የተከፈቱትን አስቀድም",
+    sort_name_az:       "ስም (ሀ–ፐ)",
+    sort_name_za:       "ስም (ፐ–ሀ)",
+    sort_most_hymns:    "ብዙ መዝሙሮች",
+    sort_fewest_hymns:  "ጥቂት መዝሙሮች",
 
     // ── Hymns count / actions ────────────────────
     hymn_singular:   "መዝሙር",
