@@ -5,6 +5,13 @@ import Link from "next/link"
 import { Tv, Loader2 } from "lucide-react"
 import { useLocale } from "@/lib/i18n/LocaleContext"
 
+type SortOption = "title_asc" | "title_desc" | "hymns_desc" | "hymns_asc"
+
+function sortQuery(s: SortOption) {
+  const [by, ord] = s.split("_")
+  return `sortBy=${by}&sortOrder=${ord}`
+}
+
 interface Channel {
   id: number
   title: string
@@ -25,13 +32,32 @@ export default function ChannelInfiniteGrid({
   initialTotal,
   initialTotalPages,
 }: Props) {
+  const [sort, setSort] = useState<SortOption>("title_asc")
   const [channels, setChannels] = useState<Channel[]>(initialChannels)
   const [page, setPage] = useState(1)
-  const [totalPages] = useState(initialTotalPages)
+  const [totalPages, setTotalPages] = useState(initialTotalPages)
   const [loading, setLoading] = useState(false)
   const { t } = useLocale()
   const sentinelRef = useRef<HTMLDivElement>(null)
   const loadingRef = useRef(false)
+
+  const handleSortChange = async (newSort: SortOption) => {
+    if (newSort === sort) return
+    setSort(newSort)
+    setLoading(true)
+    setChannels([])
+    loadingRef.current = false
+    try {
+      const res = await fetch(`/api/hymns/channels?page=1&${sortQuery(newSort)}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setChannels(data.channels ?? [])
+      setTotalPages(data.totalPages)
+      setPage(1)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current) return
@@ -41,7 +67,7 @@ export default function ChannelInfiniteGrid({
     loadingRef.current = true
     setLoading(true)
     try {
-      const res = await fetch(`/api/hymns/channels?page=${nextPage}`)
+      const res = await fetch(`/api/hymns/channels?page=${nextPage}&${sortQuery(sort)}`)
       if (!res.ok) return
       const data = await res.json()
       setChannels(prev => {
@@ -53,7 +79,7 @@ export default function ChannelInfiniteGrid({
       setLoading(false)
       loadingRef.current = false
     }
-  }, [page, totalPages])
+  }, [page, totalPages, sort])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
@@ -75,9 +101,27 @@ export default function ChannelInfiniteGrid({
     )
   }
 
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: "title_asc",  label: t("sort_name_az") },
+    { value: "title_desc", label: t("sort_name_za") },
+    { value: "hymns_desc", label: t("sort_most_hymns") },
+    { value: "hymns_asc",  label: t("sort_fewest_hymns") },
+  ]
+
   return (
     <div>
-      <h1 className="text-base font-semibold text-slate-900 mb-1">{t("channel_title")}</h1>
+      <div className="flex items-center justify-between gap-3 mb-1">
+        <h1 className="text-base font-semibold text-slate-900">{t("channel_title")}</h1>
+        <select
+          value={sort}
+          onChange={e => handleSortChange(e.target.value as SortOption)}
+          className="text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 border-0 rounded-lg px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {sortOptions.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
       <p className="text-xs text-slate-400 mb-5">
         {initialTotal.toLocaleString()} {initialTotal !== 1 ? t("channel_plural") : t("channel_singular")}
       </p>

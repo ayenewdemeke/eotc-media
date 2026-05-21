@@ -178,9 +178,7 @@ export default function BibleReader({
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false)
-  const [isChapterNavOpen, setIsChapterNavOpen] = useState(false)
 
-  const mobileChapterNavRef = useRef<HTMLDivElement>(null)
   const mainChapterNavRef = useRef<HTMLDivElement>(null)
   const [isMainChapterOpen, setIsMainChapterOpen] = useState(false)
 
@@ -249,18 +247,6 @@ export default function BibleReader({
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [currentChapter, chapterNumbers.length, language, version, currentBook.id, router])
-
-  // ── Chapter popover (mobile top bar) — click outside ─────────────
-  useEffect(() => {
-    if (!isChapterNavOpen) return
-    function onClickOutside(e: MouseEvent) {
-      const target = e.target as Node
-      if (mobileChapterNavRef.current?.contains(target)) return
-      setIsChapterNavOpen(false)
-    }
-    document.addEventListener("mousedown", onClickOutside)
-    return () => document.removeEventListener("mousedown", onClickOutside)
-  }, [isChapterNavOpen])
 
   // ── Main-heading chapter popover — click outside ──────────────────
   useEffect(() => {
@@ -385,7 +371,7 @@ export default function BibleReader({
         <Link
           key={ch}
           href={`/bible/${language}/${version}/${currentBook.id}/${ch}`}
-          onClick={() => { setIsChapterNavOpen(false); setIsMainChapterOpen(false) }}
+          onClick={() => setIsMainChapterOpen(false)}
           className={`flex items-center justify-center h-8 rounded-lg text-xs font-semibold transition-all ${
             ch === currentChapter
               ? "bg-blue-600 text-white shadow-sm"
@@ -596,21 +582,7 @@ export default function BibleReader({
           <nav className="flex items-center gap-1.5 text-sm min-w-0">
             <span className="text-slate-600 font-medium truncate max-w-[120px]">{currentBookName}</span>
             <span className="text-slate-300 select-none">/</span>
-            <div ref={mobileChapterNavRef} className="relative shrink-0">
-              <button
-                onClick={() => setIsChapterNavOpen(v => !v)}
-                className="flex items-center gap-1 text-slate-800 font-semibold hover:text-blue-600 transition-colors"
-              >
-                {currentChapter}
-                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${isChapterNavOpen ? "rotate-180" : ""}`} />
-              </button>
-              {isChapterNavOpen && (
-                <div className="fixed inset-x-4 z-[200] bg-white rounded-2xl shadow-xl border border-slate-100 p-3" style={{ top: "7.25rem" }}>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-2 px-1">{currentBookName}</p>
-                  {chapterGrid}
-                </div>
-              )}
-            </div>
+            <span className="text-slate-800 font-semibold">{currentChapter}</span>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
             <button
