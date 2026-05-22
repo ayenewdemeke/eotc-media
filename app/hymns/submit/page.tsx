@@ -8,12 +8,23 @@ import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
 import Placeholder from "@tiptap/extension-placeholder"
 import {
-  Loader2, CheckCircle, Music2, Youtube, Bold, Italic,
-  Underline as UnderlineIcon, List, Undo2, Redo2, ChevronDown, X,
-  Info, FileText, Tag, User,
+  Loader2, CheckCircle, Bold, Italic, Underline as UnderlineIcon,
+  List, Undo2, Redo2, ChevronDown, X,
 } from "lucide-react"
 import Navbar from "@/components/Navbar"
 import HymnSidebar from "@/components/hymns/HymnSidebar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Separator } from "@/components/ui/separator"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 interface Language { id: number; name: string }
 interface Category { id: number; name: string; languageId?: number | null }
@@ -29,34 +40,6 @@ function parseVideoId(input: string): string {
   return s
 }
 
-// ── Toolbar button ────────────────────────────────────────────────────────────
-
-function ToolbarBtn({
-  onClick, active, disabled, title, children,
-}: {
-  onClick: () => void
-  active?: boolean
-  disabled?: boolean
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onMouseDown={e => { e.preventDefault(); onClick() }}
-      disabled={disabled}
-      className={`p-1.5 rounded-md text-sm transition-colors disabled:opacity-30 disabled:cursor-default ${
-        active
-          ? "bg-blue-100 text-blue-700"
-          : "text-slate-500 hover:bg-slate-200 hover:text-slate-700"
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
-
 // ── TipTap lyrics editor ──────────────────────────────────────────────────────
 
 function LyricsEditor({ onChange }: { onChange: (html: string) => void }) {
@@ -68,36 +51,72 @@ function LyricsEditor({ onChange }: { onChange: (html: string) => void }) {
     ],
     onUpdate: ({ editor }) => onChange(editor.isEmpty ? "" : editor.getHTML()),
     editorProps: {
-      attributes: { class: "px-4 py-3 text-sm text-slate-800 leading-relaxed" },
+      attributes: { class: "px-3 py-2.5 text-sm text-foreground leading-relaxed min-h-[200px] outline-none" },
     },
   })
 
   if (!editor) return null
 
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-all bg-white">
+    <div className="rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring overflow-hidden">
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 bg-slate-50 border-b border-slate-200">
-        <ToolbarBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Bold (Ctrl+B)">
-          <Bold className="w-3.5 h-3.5" />
-        </ToolbarBtn>
-        <ToolbarBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Italic (Ctrl+I)">
-          <Italic className="w-3.5 h-3.5" />
-        </ToolbarBtn>
-        <ToolbarBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive("underline")} title="Underline (Ctrl+U)">
-          <UnderlineIcon className="w-3.5 h-3.5" />
-        </ToolbarBtn>
-        <div className="w-px h-4 bg-slate-300 mx-1" />
-        <ToolbarBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Bullet list">
-          <List className="w-3.5 h-3.5" />
-        </ToolbarBtn>
+      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-input bg-muted/40 flex-wrap">
+        <Button
+          type="button" variant="ghost" size="icon"
+          className="h-7 w-7"
+          title="Bold (Ctrl+B)"
+          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleBold().run() }}
+          data-active={editor.isActive("bold") || undefined}
+        >
+          <Bold className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          type="button" variant="ghost" size="icon"
+          className="h-7 w-7"
+          title="Italic (Ctrl+I)"
+          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleItalic().run() }}
+          data-active={editor.isActive("italic") || undefined}
+        >
+          <Italic className="h-3.5 w-3.5" />
+        </Button>
+        <Button
+          type="button" variant="ghost" size="icon"
+          className="h-7 w-7"
+          title="Underline (Ctrl+U)"
+          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleUnderline().run() }}
+          data-active={editor.isActive("underline") || undefined}
+        >
+          <UnderlineIcon className="h-3.5 w-3.5" />
+        </Button>
+        <Separator orientation="vertical" className="h-4 mx-1" />
+        <Button
+          type="button" variant="ghost" size="icon"
+          className="h-7 w-7"
+          title="Bullet list"
+          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleBulletList().run() }}
+          data-active={editor.isActive("bulletList") || undefined}
+        >
+          <List className="h-3.5 w-3.5" />
+        </Button>
         <div className="ml-auto flex items-center gap-0.5">
-          <ToolbarBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo">
-            <Undo2 className="w-3.5 h-3.5" />
-          </ToolbarBtn>
-          <ToolbarBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo">
-            <Redo2 className="w-3.5 h-3.5" />
-          </ToolbarBtn>
+          <Button
+            type="button" variant="ghost" size="icon"
+            className="h-7 w-7"
+            title="Undo"
+            onMouseDown={e => { e.preventDefault(); editor.chain().focus().undo().run() }}
+            disabled={!editor.can().undo()}
+          >
+            <Undo2 className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button" variant="ghost" size="icon"
+            className="h-7 w-7"
+            title="Redo"
+            onMouseDown={e => { e.preventDefault(); editor.chain().focus().redo().run() }}
+            disabled={!editor.can().redo()}
+          >
+            <Redo2 className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
       <EditorContent editor={editor} />
@@ -136,31 +155,31 @@ function MultiSelect({
   const selected = options.filter(o => value.includes(o.id))
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1.5">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
+    <div className="space-y-1.5">
+      <Label>
+        {label}{required && <span className="text-destructive ml-0.5">*</span>}
+      </Label>
       <div ref={ref} className="relative">
         <button
           type="button"
           onClick={() => { if (!disabled) setOpen(o => !o) }}
           disabled={disabled}
-          className="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg bg-white text-left flex items-center justify-between disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer transition-colors hover:border-slate-300 focus:outline-none focus:border-blue-400"
+          className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <span className={value.length === 0 ? "text-slate-400" : "text-slate-900"}>
+          <span className={value.length === 0 ? "text-muted-foreground" : ""}>
             {value.length === 0 ? placeholder : `${value.length} selected`}
           </span>
-          <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`h-4 w-4 opacity-50 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
         {open && (
-          <div className="absolute z-20 top-full mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-y-auto max-h-52">
+          <div className="absolute z-20 top-full mt-1 w-full rounded-md border border-input bg-popover shadow-md overflow-y-auto max-h-52">
             {options.length === 0 ? (
-              <p className="px-3 py-2.5 text-sm text-slate-400">No options available</p>
+              <p className="px-3 py-2.5 text-sm text-muted-foreground">No options available</p>
             ) : options.map(opt => (
-              <label key={opt.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer">
+              <label key={opt.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-accent cursor-pointer">
                 <input type="checkbox" checked={value.includes(opt.id)} onChange={() => toggle(opt.id)}
-                  className="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-pointer" />
-                <span className="text-sm text-slate-700">{opt.name}</span>
+                  className="h-4 w-4 rounded border-input" />
+                <span className="text-sm">{opt.name}</span>
               </label>
             ))}
           </div>
@@ -168,10 +187,10 @@ function MultiSelect({
         {selected.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {selected.map(opt => (
-              <span key={opt.id} className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
+              <span key={opt.id} className="inline-flex items-center gap-1 rounded-full border border-input bg-muted px-2.5 py-0.5 text-xs font-medium">
                 {opt.name}
-                <button type="button" onClick={() => toggle(opt.id)} className="hover:text-blue-900">
-                  <X className="w-3 h-3" />
+                <button type="button" onClick={() => toggle(opt.id)} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-3 w-3" />
                 </button>
               </span>
             ))}
@@ -181,32 +200,6 @@ function MultiSelect({
     </div>
   )
 }
-
-// ── Section card ──────────────────────────────────────────────────────────────
-
-function Section({
-  num, icon: Icon, title, children,
-}: {
-  num: number
-  icon: React.ElementType
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-slate-100 flex items-center gap-3">
-        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0">
-          {num}
-        </div>
-        <Icon className="w-4 h-4 text-slate-400 flex-shrink-0" />
-        <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
-      </div>
-      <div className="p-5">{children}</div>
-    </div>
-  )
-}
-
-const inputCls = "w-full h-10 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 bg-white transition-colors"
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -277,7 +270,7 @@ export default function SubmitHymnPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          videoId,
+          videoId: parseVideoId(videoInput),
           singer: singer.trim() || null,
           lyrics: lyrics || null,
           description: description.trim() || null,
@@ -295,36 +288,20 @@ export default function SubmitHymnPage() {
   }
 
   const parsedId = parseVideoId(videoInput)
-  const validId = videoInput.trim() && parsedId.length > 4
-  const thumbUrl = validId ? `https://img.youtube.com/vi/${parsedId}/mqdefault.jpg` : null
+  const showParsedId = videoInput.trim() && parsedId !== videoInput.trim()
 
   // ── Success screen ────────────────────────────────────────────────────────
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
           <div className="text-center max-w-sm px-4">
-            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
-              <CheckCircle className="w-10 h-10 text-green-500" />
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Hymn submitted!</h1>
-            <p className="text-slate-500 mb-7">Your hymn is pending review. Thank you for your contribution!</p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={() => { setSubmitted(false); setVideoInput(""); setSinger(""); setLyrics(""); setDescription(""); setSelectedLanguageIds([]); setSelectedCategoryIds([]); setSelectedSubCategoryIds([]) }}
-                className="px-5 py-2.5 text-sm font-medium border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Submit another
-              </button>
-              <button
-                onClick={() => router.push("/hymns/my-hymns")}
-                className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
-              >
-                View my hymns
-              </button>
-            </div>
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Hymn submitted!</h1>
+            <p className="text-muted-foreground mb-6">Your hymn has been submitted and is pending review. Thank you!</p>
+            <Button onClick={() => router.push("/hymns/my-hymns")}>View my hymns</Button>
           </div>
         </div>
       </div>
@@ -334,166 +311,124 @@ export default function SubmitHymnPage() {
   // ── Form ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
         <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
           <HymnSidebar userId={userId} />
 
-          <main className="min-w-0">
-            {/* Page header */}
-            <div className="bg-white border-b border-slate-200">
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Music2 className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-bold text-slate-900">Add new hymn</h1>
-                  <p className="text-sm text-slate-500 mt-0.5">Share a YouTube hymn for review and approval</p>
-                </div>
+          <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
+            <div className="max-w-2xl">
+
+              <div className="mb-6">
+                <h1 className="text-xl font-semibold">Add new hymn</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">Submit a YouTube hymn for review</p>
               </div>
-            </div>
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="lg:grid lg:grid-cols-[1fr_260px] lg:gap-6 items-start">
+              <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* ── Left: form ── */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-
-                  <Section num={1} icon={Youtube} title="Video">
+                {/* Video */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Video</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          YouTube URL <span className="text-red-500">*</span>
-                        </label>
-                        <input
+                      <div className="space-y-1.5">
+                        <Label htmlFor="video-url">
+                          YouTube URL <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="video-url"
                           value={videoInput}
                           onChange={e => setVideoInput(e.target.value)}
-                          placeholder="https://youtube.com/watch?v=…"
-                          className={inputCls}
+                          placeholder="https://www.youtube.com/watch?v=…"
                         />
-                        {validId && parsedId !== videoInput.trim() && (
-                          <p className="text-xs text-blue-600 mt-1.5">
-                            ID: <span className="font-mono">{parsedId}</span>
+                        {showParsedId && (
+                          <p className="text-xs text-blue-600">
+                            Parsed ID: <span className="font-mono">{parsedId}</span>
                           </p>
                         )}
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                          <User className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
-                          Singer / Artist
-                        </label>
-                        <input
+                      <div className="space-y-1.5">
+                        <Label htmlFor="singer">Singer / Artist</Label>
+                        <Input
+                          id="singer"
                           value={singer}
                           onChange={e => setSinger(e.target.value)}
                           placeholder="Name (optional)"
-                          className={inputCls}
                         />
                       </div>
                     </div>
-                  </Section>
+                  </CardContent>
+                </Card>
 
-                  <Section num={2} icon={Tag} title="Classification">
+                {/* Classification */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Classification</CardTitle>
+                    <CardDescription className="text-xs">Select language first to filter categories</CardDescription>
+                  </CardHeader>
+                  <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <MultiSelect label="Language" required value={selectedLanguageIds}
-                        onChange={handleLanguageChange} options={languages} placeholder="Select language…" />
+                        onChange={handleLanguageChange} options={languages} placeholder="Select…" />
                       <MultiSelect label="Category" required value={selectedCategoryIds}
                         onChange={handleCategoryChange} options={visibleCategories}
-                        placeholder={selectedLanguageIds.length > 0 ? "Select category…" : "Select language first"}
+                        placeholder={selectedLanguageIds.length > 0 ? "Select…" : "Select language first"}
                         disabled={selectedLanguageIds.length === 0} />
                       <MultiSelect label="Sub-category" required value={selectedSubCategoryIds}
                         onChange={setSelectedSubCategoryIds} options={visibleSubCategories}
-                        placeholder={selectedCategoryIds.length > 0 ? "Select sub-category…" : "Select category first"}
+                        placeholder={selectedCategoryIds.length > 0 ? "Select…" : "Select category first"}
                         disabled={selectedCategoryIds.length === 0} />
                     </div>
-                  </Section>
+                  </CardContent>
+                </Card>
 
-                  <Section num={3} icon={FileText} title="Lyrics">
+                {/* Lyrics */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Lyrics</CardTitle>
+                    <CardDescription className="text-xs">Optional but highly appreciated</CardDescription>
+                  </CardHeader>
+                  <CardContent>
                     <LyricsEditor onChange={setLyrics} />
-                    <p className="text-xs text-slate-400 mt-2">
-                      Optional but highly appreciated. Use <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[11px] font-mono">Enter</kbd> for a new verse, <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[11px] font-mono">Shift+Enter</kbd> for a line break within a verse.
-                    </p>
-                  </Section>
+                  </CardContent>
+                </Card>
 
-                  <Section num={4} icon={Info} title="Description (optional)">
-                    <textarea
+                {/* Description */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Description</CardTitle>
+                    <CardDescription className="text-xs">Optional notes or context</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
                       value={description}
                       onChange={e => setDescription(e.target.value)}
-                      rows={3}
+                      rows={4}
                       placeholder="Optional notes, context, or translation…"
-                      className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-y bg-white transition-colors"
                     />
-                  </Section>
+                  </CardContent>
+                </Card>
 
-                  {error && (
-                    <div className="flex items-start gap-2.5 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-                      <X className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      {error}
-                    </div>
-                  )}
+                {error && (
+                  <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-4 py-2.5">
+                    {error}
+                  </p>
+                )}
 
-                  <div className="flex items-center justify-end gap-3 pt-1 pb-6">
-                    <button
-                      type="button"
-                      onClick={() => router.push("/hymns/my-hymns")}
-                      className="px-5 py-2.5 text-sm font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-white transition-colors cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={saving}
-                      className="flex items-center gap-2 px-7 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer shadow-sm shadow-blue-200"
-                    >
-                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Music2 className="w-4 h-4" />}
-                      {saving ? "Submitting…" : "Submit hymn"}
-                    </button>
-                  </div>
-                </form>
-
-                {/* ── Right: preview panel ── */}
-                <div className="hidden lg:block space-y-4 sticky top-24">
-                  {/* YouTube preview */}
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Video preview</p>
-                    </div>
-                    <div className="p-3">
-                      {thumbUrl ? (
-                        <div className="rounded-xl overflow-hidden bg-black aspect-video">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={thumbUrl}
-                            alt="YouTube thumbnail"
-                            className="w-full h-full object-cover"
-                            onError={e => { (e.target as HTMLImageElement).style.opacity = "0" }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="rounded-xl bg-slate-100 aspect-video flex flex-col items-center justify-center gap-2 text-slate-400">
-                          <Youtube className="w-8 h-8 opacity-40" />
-                          <p className="text-xs">Paste a YouTube URL above</p>
-                        </div>
-                      )}
-                      {validId && (
-                        <p className="text-xs text-slate-400 mt-2 text-center font-mono truncate">{parsedId}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Tips */}
-                  <div className="bg-amber-50 rounded-2xl border border-amber-100 p-4">
-                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2.5">Tips</p>
-                    <ul className="space-y-2 text-xs text-amber-800 leading-relaxed">
-                      <li className="flex gap-2"><span className="mt-0.5 text-amber-500">•</span>Paste the full YouTube URL or just the video ID</li>
-                      <li className="flex gap-2"><span className="mt-0.5 text-amber-500">•</span>Select language first to filter relevant categories</li>
-                      <li className="flex gap-2"><span className="mt-0.5 text-amber-500">•</span>Lyrics are optional but greatly improve the hymn page</li>
-                      <li className="flex gap-2"><span className="mt-0.5 text-amber-500">•</span>Your submission will be reviewed before it appears publicly</li>
-                    </ul>
-                  </div>
+                <div className="flex items-center justify-end gap-3 pb-4">
+                  <Button type="button" variant="outline" onClick={() => router.push("/hymns/my-hymns")}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {saving ? "Submitting…" : "Submit hymn"}
+                  </Button>
                 </div>
 
-              </div>
+              </form>
             </div>
           </main>
         </div>
