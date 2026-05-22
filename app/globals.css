@@ -218,7 +218,25 @@ body {
   scrollbar-width: none;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
+/* TipTap / ProseMirror editor styles */
+.ProseMirror {
+  outline: none;
+  min-height: 220px;
+}
+.ProseMirror p { margin-bottom: 0.75rem; }
+.ProseMirror p:last-child { margin-bottom: 0; }
+.ProseMirror ul { list-style-type: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+.ProseMirror li { margin-bottom: 0.25rem; }
+.ProseMirror p.is-empty:first-child::before,
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #94a3b8;
+  pointer-events: none;
+  height: 0;
+}
+
+
   display: none;
 }
 
