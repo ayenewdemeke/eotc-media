@@ -40,9 +40,10 @@ export default function HymnSearchFilters({
 
   const [searchValue, setSearchValue] = useState(activeSearch)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const composingRef = useRef(false)
 
   useEffect(() => {
-    setSearchValue(activeSearch)
+    if (!composingRef.current) setSearchValue(activeSearch)
   }, [activeSearch])
 
   function buildParams(overrides: Record<string, string>) {
@@ -65,6 +66,7 @@ export default function HymnSearchFilters({
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchValue(value)
+      if (composingRef.current) return
       if (debounceRef.current) clearTimeout(debounceRef.current)
       debounceRef.current = setTimeout(() => {
         router.push(`${basePath}?${buildParams({ search: value })}`)
@@ -114,6 +116,8 @@ export default function HymnSearchFilters({
           placeholder={t("hymn_search_placeholder")}
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}
+          onCompositionStart={() => { composingRef.current = true }}
+          onCompositionEnd={e => { composingRef.current = false; handleSearchChange(e.currentTarget.value) }}
           className="w-full h-9 pl-9 pr-3 text-sm bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-400"
         />
       </div>

@@ -27,13 +27,26 @@ export async function POST(req: NextRequest) {
   const submittedStatus = await prisma.hmApprovalStatus.findFirst({ where: { name: 'Submitted' } })
   if (!submittedStatus) return NextResponse.json({ error: 'System configuration incomplete' }, { status: 500 })
 
+  const existing = await prisma.hmHymn.findFirst({ where: { videoId: vid } })
+  if (existing) return NextResponse.json({ error: 'This video has already been submitted' }, { status: 409 })
+
   const userId = parseInt(session.user.id)
 
-  // Fetch video metadata from YouTube Data API v3
-  const video = await fetchYoutubeVideo(vid)
+  let video: Awaited<ReturnType<typeof fetchYoutubeVideo>>
+  try {
+    video = await fetchYoutubeVideo(vid)
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Invalid YouTube video'
+    return NextResponse.json({ error: msg }, { status: 400 })
+  }
 
-  // Fetch channel metadata and auto-create if not already in DB
-  const ytChannel = await fetchYoutubeChannel(video.channelId)
+  let ytChannel: Awaited<ReturnType<typeof fetchYoutubeChannel>>
+  try {
+    ytChannel = await fetchYoutubeChannel(video.channelId)
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Could not fetch YouTube channel'
+    return NextResponse.json({ error: msg }, { status: 400 })
+  }
   const channel = await prisma.hmChannel.upsert({
     where: { ytChannelId: ytChannel.ytChannelId },
     create: {
