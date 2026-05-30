@@ -1,21 +1,11 @@
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { SectionForm } from "@/components/admin/liturgy/forms/SectionForm"
 
 export default function NewSectionPage() {
   return (
-    <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Liturgy admin", href: "/liturgy/admin" },
-          { label: "Sections", href: "/liturgy/admin/sections" },
-          { label: "New section" },
-        ]}
-      />
-      <div className="flex-1 p-6">
+    <div className="flex-1 p-6">
         <div className="mx-auto max-w-2xl">
           <SectionForm />
         </div>
-      </div>
-    </>
+    </div>
   )
 }

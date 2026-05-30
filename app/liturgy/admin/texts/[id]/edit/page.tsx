@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { TextForm } from "@/components/admin/liturgy/forms/TextForm"
 
 export const dynamic = "force-dynamic"
@@ -32,19 +31,10 @@ export default async function EditTextPage({ params }: EditTextPageProps) {
   }
 
   return (
-    <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Liturgy admin", href: "/liturgy/admin" },
-          { label: "Texts", href: "/liturgy/admin/texts" },
-          { label: `Edit text #${text.id}` },
-        ]}
-      />
-      <div className="flex-1 p-6">
-        <div className="mx-auto max-w-3xl">
-          <TextForm initialData={text} />
-        </div>
+    <div className="flex-1 p-6">
+      <div className="mx-auto max-w-3xl">
+        <TextForm initialData={text} />
       </div>
-    </>
+    </div>
   )
 }

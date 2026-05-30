@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { RoleForm } from "@/components/admin/liturgy/forms/RoleForm"
 
 export const dynamic = "force-dynamic"
@@ -32,19 +31,10 @@ export default async function EditRolePage({ params }: EditRolePageProps) {
   }
 
   return (
-    <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Liturgy admin", href: "/liturgy/admin" },
-          { label: "Roles", href: "/liturgy/admin/roles" },
-          { label: `Edit: ${role.nameEnglish}` },
-        ]}
-      />
-      <div className="flex-1 p-6">
-        <div className="mx-auto max-w-2xl">
-          <RoleForm initialData={role} />
-        </div>
+    <div className="flex-1 p-6">
+      <div className="mx-auto max-w-2xl">
+        <RoleForm initialData={role} />
       </div>
-    </>
+    </div>
   )
 }

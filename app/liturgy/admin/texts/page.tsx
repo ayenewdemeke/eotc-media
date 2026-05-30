@@ -6,7 +6,6 @@ import { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal, Plus, Pencil, Trash2, ArrowUpDown } from "lucide-react"
 import { toast } from "sonner"
 
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { DataTable } from "@/components/admin/shared/DataTable"
 import { DeleteDialog } from "@/components/admin/shared/DeleteDialog"
 import { TextForm } from "@/components/admin/liturgy/forms/TextForm"
@@ -220,14 +219,7 @@ export default function TextsPage() {
   ]
 
   return (
-    <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Liturgy admin", href: "/liturgy/admin" },
-          { label: "Texts" },
-        ]}
-      />
-      <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Liturgical texts</h1>
@@ -274,6 +266,6 @@ export default function TextsPage() {
           />
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   )
 }
