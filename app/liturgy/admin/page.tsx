@@ -107,6 +107,5 @@ export default async function LiturgyAdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
   )
 }
