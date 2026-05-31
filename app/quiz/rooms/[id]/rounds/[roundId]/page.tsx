@@ -77,6 +77,7 @@ export default function RoundPage() {
   const [isReady, setIsReady] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timeUpCalledRef = useRef(false)
 
   const fetchRound = useCallback(async () => {
     const res = await fetch(`/api/quiz/rooms/${roomId}/rounds/${roundId}`)
@@ -116,7 +117,7 @@ export default function RoundPage() {
     }
   }, [fetchRound])
 
-  // Countdown timer
+  // Countdown timer — fires end API once when time runs out
   useEffect(() => {
     if (round?.status === 'active' && round.startedAt) {
       if (timerRef.current) clearInterval(timerRef.current)
@@ -125,11 +126,15 @@ export default function RoundPage() {
           const elapsed = (Date.now() - new Date(round.startedAt).getTime()) / 1000
           const remaining = Math.max(0, round.timerSeconds - elapsed)
           setTimeLeft(Math.floor(remaining))
+          if (remaining <= 0 && !timeUpCalledRef.current) {
+            timeUpCalledRef.current = true
+            fetch(`/api/quiz/rooms/${roomId}/rounds/${roundId}/end`, { method: 'POST' })
+          }
         }
       }, 1000)
       return () => { if (timerRef.current) clearInterval(timerRef.current) }
     }
-  }, [round?.status, round?.startedAt, round?.timerSeconds])
+  }, [round?.status, round?.startedAt, round?.timerSeconds, roomId, roundId])
 
   async function markReady() {
     setMarkingReady(true)
@@ -243,6 +248,14 @@ export default function RoundPage() {
             {/* ACTIVE STATE */}
             {round.status === 'active' && totalQ > 0 && (
               <div>
+                {/* Time's up banner */}
+                {timeLeft === 0 && (
+                  <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-red-500 flex-shrink-0" />
+                    <p className="text-sm font-semibold text-red-700">Time&apos;s up! Finalizing results…</p>
+                  </div>
+                )}
+
                 {/* Progress bar + timer */}
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex-1 bg-slate-100 rounded-full h-2">
