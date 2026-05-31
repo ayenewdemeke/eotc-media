@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { HymnAdminSidebar } from "@/components/admin/hymns/HymnAdminSidebar"
+import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { hasHymnAdminAccess } from "@/lib/auth-helpers"
 
 export const dynamic = "force-dynamic"
@@ -15,7 +16,10 @@ export default async function HymnAdminLayout({ children }: { children: React.Re
   return (
     <SidebarProvider>
       <HymnAdminSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset>
+        <AdminHeader />
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   )
 }

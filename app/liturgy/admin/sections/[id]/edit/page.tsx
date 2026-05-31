@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { SectionForm } from "@/components/admin/liturgy/forms/SectionForm"
 
 export const dynamic = "force-dynamic"
@@ -32,19 +31,10 @@ export default async function EditSectionPage({ params }: EditSectionPageProps) 
   }
 
   return (
-    <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Liturgy admin", href: "/liturgy/admin" },
-          { label: "Sections", href: "/liturgy/admin/sections" },
-          { label: `Edit: ${section.nameEnglish}` },
-        ]}
-      />
-      <div className="flex-1 p-6">
-        <div className="mx-auto max-w-2xl">
-          <SectionForm initialData={section} />
-        </div>
+    <div className="flex-1 p-6">
+      <div className="mx-auto max-w-2xl">
+        <SectionForm initialData={section} />
       </div>
-    </>
+    </div>
   )
 }

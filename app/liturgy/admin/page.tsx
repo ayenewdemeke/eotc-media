@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
 import { StatsCard } from "@/components/admin/shared/StatsCard"
 import { Layers, Users, FileText } from "lucide-react"
 
@@ -23,14 +22,7 @@ export default async function LiturgyAdminDashboard() {
   const stats = await getStats()
 
   return (
-    <>
-      <AdminHeader
-        breadcrumbs={[
-          { label: "Liturgy admin", href: "/liturgy/admin" },
-          { label: "Dashboard" },
-        ]}
-      />
-      <div className="flex-1 space-y-6 p-6">
+    <div className="flex-1 space-y-6 p-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
@@ -115,6 +107,5 @@ export default async function LiturgyAdminDashboard() {
           </div>
         </div>
       </div>
-    </>
   )
 }
