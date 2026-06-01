@@ -170,14 +170,17 @@ export default function RoomPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {room.members
-                      .slice()
-                      .sort((a, b) => b.totalScore - a.totalScore)
-                      .map(m => (
+                    {(() => {
+                      const sorted = room.members.slice().sort((a, b) => b.totalScore - a.totalScore)
+                      const topScore = sorted[0]?.totalScore ?? 0
+                      return sorted.map(m => (
                         <tr key={m.id} className={m.userId === userId ? "bg-blue-50/50" : ""}>
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2">
-                              {m.userId === room.hostUserId && <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
+                              {topScore > 0 && m.totalScore === topScore && <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
+                              {m.userId === room.hostUserId && (
+                                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 flex-shrink-0">Host</span>
+                              )}
                               <span className="font-medium text-slate-900">
                                 {m.user.name || "Anonymous"}
                                 {m.userId === userId && <span className="ml-1.5 text-xs text-blue-500 font-normal">(you)</span>}
@@ -187,7 +190,8 @@ export default function RoomPage() {
                           <td className="px-5 py-3 text-right font-semibold text-slate-900">{m.totalScore}</td>
                           <td className="px-5 py-3 text-right text-slate-500">{m.roundsWon}</td>
                         </tr>
-                      ))}
+                      ))
+                    })()}
                   </tbody>
                 </table>
               </div>
