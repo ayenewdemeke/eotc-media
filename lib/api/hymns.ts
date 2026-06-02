@@ -277,25 +277,133 @@ export async function getHymn(
 }
 
 export async function getRelatedHymns(
-  hymnId: number,
-  categoryIds: number[],
-  limit = 8
+  ctx: {
+    hymnId: number
+    categoryIds: number[]
+    subCategoryIds: number[]
+    languageIds: number[]
+    channelId?: number
+    singerIds: number[]
+    userId?: number
+  },
+  limit = 10
 ): Promise<HmHymn[]> {
-  const where: Record<string, unknown> = { NOT: { id: hymnId } }
-  if (categoryIds.length > 0) {
-    where.categories = { some: { categoryId: { in: categoryIds } } }
+  const { hymnId, categoryIds, subCategoryIds, languageIds, channelId, singerIds, userId } = ctx
+
+  const exclude = { id: { not: hymnId } }
+  const hymnInclude = {
+    categories: { include: { category: true } },
+    subCategories: { include: { subCategory: true } },
+    languages: { include: { language: true } },
+    singers: { include: { singer: true } },
+    channel: true,
+  } as const
+
+  const hasContentSignals = categoryIds.length > 0 || subCategoryIds.length > 0
+
+  // Fetch candidate pools and user affinity in parallel
+  const [contentPool, popularPool, userFavorites] = await Promise.all([
+    // Hymns sharing a category or subcategory with the current hymn
+    hasContentSignals
+      ? prisma.hmHymn.findMany({
+          where: {
+            ...exclude,
+            OR: [
+              ...(categoryIds.length > 0
+                ? [{ categories: { some: { categoryId: { in: categoryIds } } } }]
+                : []),
+              ...(subCategoryIds.length > 0
+                ? [{ subCategories: { some: { subCategoryId: { in: subCategoryIds } } } }]
+                : []),
+            ],
+          },
+          take: 80,
+          orderBy: { clicksCount: 'desc' },
+          include: hymnInclude,
+        })
+      : Promise.resolve([] as Awaited<ReturnType<typeof prisma.hmHymn.findMany<{ include: typeof hymnInclude }>>>),
+
+    // Top-clicked hymns for popularity/diversity fill
+    prisma.hmHymn.findMany({
+      where: exclude,
+      take: 40,
+      orderBy: { clicksCount: 'desc' },
+      include: hymnInclude,
+    }),
+
+    // User taste from recent favorites (personalisation)
+    userId
+      ? prisma.hmFavorite.findMany({
+          where: { userId },
+          take: 20,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            hymn: {
+              select: {
+                channelId: true,
+                categories: { select: { categoryId: true } },
+                subCategories: { select: { subCategoryId: true } },
+                languages: { select: { languageId: true } },
+              },
+            },
+          },
+        })
+      : Promise.resolve([] as { hymn: { channelId: number | null; categories: { categoryId: number }[]; subCategories: { subCategoryId: number }[]; languages: { languageId: number }[] } }[]),
+  ])
+
+  // Build user taste profile from their favorited hymns
+  const userCatIds = new Set<number>()
+  const userSubCatIds = new Set<number>()
+  const userLangIds = new Set<number>()
+  const userChannelIds = new Set<number>()
+  for (const fav of userFavorites) {
+    fav.hymn.categories.forEach(c => userCatIds.add(c.categoryId))
+    fav.hymn.subCategories.forEach(sc => userSubCatIds.add(sc.subCategoryId))
+    fav.hymn.languages.forEach(l => userLangIds.add(l.languageId))
+    if (fav.hymn.channelId) userChannelIds.add(fav.hymn.channelId)
   }
 
-  const raws = await prisma.hmHymn.findMany({
-    where,
-    take: limit,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      categories: { include: { category: true } },
-      singers: { include: { singer: true } },
-      channel: true,
-    },
+  // Merge pools, content candidates first (they're higher relevance)
+  const seen = new Set<number>()
+  const pool: typeof popularPool = []
+  for (const h of [...contentPool, ...popularPool]) {
+    if (!seen.has(h.id)) { seen.add(h.id); pool.push(h) }
+  }
+
+  // Reference sets from the current hymn
+  const curCatSet = new Set(categoryIds)
+  const curSubCatSet = new Set(subCategoryIds)
+  const curLangSet = new Set(languageIds)
+  const curSingerSet = new Set(singerIds)
+
+  const scored = pool.map(h => {
+    let score = 0
+
+    // Content similarity to current hymn
+    score += h.categories.filter(c => curCatSet.has(c.categoryId)).length * 4
+    score += h.subCategories.filter(sc => curSubCatSet.has(sc.subCategoryId)).length * 3
+    score += h.languages.filter(l => curLangSet.has(l.languageId)).length * 2
+    score += h.singers.filter(s => curSingerSet.has(s.singerId)).length * 2
+    if (channelId !== undefined && h.channelId === channelId) score += 1
+
+    // Popularity — log-scaled so viral hymns don't dominate
+    score += Math.log(h.clicksCount + 1) * 0.5
+
+    // Personalisation — affinity with the user's taste profile
+    if (userId) {
+      score += h.categories.filter(c => userCatIds.has(c.categoryId)).length * 1.5
+      score += h.subCategories.filter(sc => userSubCatIds.has(sc.subCategoryId)).length * 1.5
+      score += h.languages.filter(l => userLangIds.has(l.languageId)).length * 1
+      if (h.channelId && userChannelIds.has(h.channelId)) score += 0.5
+    }
+
+    // Slight recency tiebreaker (max +0.3 for a brand-new hymn, fades over a year)
+    const ageInDays = (Date.now() - new Date(h.createdAt).getTime()) / 86_400_000
+    score += Math.max(0, 1 - ageInDays / 365) * 0.3
+
+    return { hymn: h, score }
   })
 
-  return raws.map(mapHymn)
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, limit).map(s => mapHymn(s.hymn))
 }

@@ -38,8 +38,15 @@ export default async function HymnPage({ params }: PageProps) {
 
   const { hymn, isFavorited, comments } = result
 
-  const categoryIds = hymn.categories?.map(c => c.id) ?? []
-  const related = await getRelatedHymns(hymn.id, categoryIds, 8)
+  const related = await getRelatedHymns({
+    hymnId: hymn.id,
+    categoryIds: hymn.categories?.map(c => c.id) ?? [],
+    subCategoryIds: hymn.subCategories?.map(sc => sc.id) ?? [],
+    languageIds: hymn.languages?.map(l => l.id) ?? [],
+    channelId: hymn.channel?.id,
+    singerIds: hymn.singers?.map(s => s.id) ?? [],
+    userId,
+  }, 10)
 
   return (
     <div className="min-h-screen bg-white">
