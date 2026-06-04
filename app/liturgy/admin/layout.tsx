@@ -23,7 +23,7 @@ export default async function LiturgyAdminLayout({
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-theme">
       <LiturgyAdminSidebar />
       <SidebarInset>
         <AdminHeader />

@@ -14,7 +14,7 @@ export default async function SermonAdminLayout({ children }: { children: React.
   if (!hasSermonAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-theme">
       <SermonAdminSidebar />
       <SidebarInset>
         <AdminHeader />

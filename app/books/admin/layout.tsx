@@ -13,7 +13,7 @@ export default async function BookAdminLayout({ children }: { children: React.Re
   if (!hasBookAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-theme">
       <BookAdminSidebar />
       <SidebarInset>
         <AdminHeader />

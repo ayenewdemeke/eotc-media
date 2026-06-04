@@ -193,9 +193,28 @@ async function main() {
   const mainLines = fs.readFileSync(SQL_FILE, "utf-8").split("\n");
   console.log(`  ${mainLines.length.toLocaleString()} lines\n`);
 
+  const CORRECT_ROLES = [
+    { id: 1, name: "Super Admin",    code: "super_admin",    created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+    { id: 2, name: "Admin",          code: "admin",          created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+    { id: 3, name: "Liturgy Admin",  code: "liturgy_admin",  created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+    { id: 4, name: "Hymn Admin",     code: "hymn_admin",     created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+    { id: 5, name: "Sermon Admin",   code: "sermon_admin",   created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+    { id: 6, name: "Book Admin",     code: "book_admin",     created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+    { id: 7, name: "Quiz Admin",     code: "quiz_admin",     created_at: "2022-12-20 16:05:57", updated_at: "2022-12-20 16:05:57" },
+  ];
+
   for (const tableName of TABLES_TO_EXTRACT) {
     process.stdout.write(`Extracting ${tableName}...`);
-    const rows = extractTable(mainLines, tableName);
+    let rows = extractTable(mainLines, tableName);
+
+    if (tableName === "roles") {
+      rows = CORRECT_ROLES;
+    }
+
+    if (tableName === "contact_us") {
+      rows = rows.map((r: any) => ({ ...r, message: r.body, body: undefined }));
+    }
+
     const outFile = path.join(OUT_DIR, `${tableName}.json`);
     fs.writeFileSync(outFile, JSON.stringify(rows, null, 2), "utf-8");
     console.log(` ${rows.length} rows → ${path.basename(outFile)}`);

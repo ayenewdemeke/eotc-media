@@ -14,7 +14,7 @@ export default async function QuizAdminLayout({ children }: { children: React.Re
   if (!hasQuizAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-theme">
       <QuizAdminSidebar />
       <SidebarInset>
         <AdminHeader />

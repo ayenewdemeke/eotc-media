@@ -13,7 +13,7 @@ export default async function MainAdminLayout({ children }: { children: React.Re
   if (!hasMainAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-theme">
       <MainAdminSidebar />
       <SidebarInset>
         <AdminHeader />

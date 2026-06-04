@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
 
 interface DayPoint {
   date: string
@@ -96,62 +98,61 @@ export default function HymnDashboard({
   const activeClicks = clicksMap[clicksType] ?? clicksMap.total_clicks
 
   const stats = [
-    { label: "Total uploaded hymns", value: totalUploaded, accent: "border-l-red-500" },
-    { label: "Total accepted hymns", value: totalAccepted, accent: "border-l-green-500" },
-    { label: "Total clicks",         value: totalClicks,   accent: "border-l-amber-500" },
-    { label: "Total users",          value: totalUsers,    accent: "border-l-blue-500" },
+    { label: "Total uploaded hymns", value: totalUploaded, accent: "border-l-destructive" },
+    { label: "Total accepted hymns", value: totalAccepted, accent: "border-l-success" },
+    { label: "Total clicks",         value: totalClicks,   accent: "border-l-warning" },
+    { label: "Total users",          value: totalUsers,    accent: "border-l-primary" },
   ]
 
+  const selectClass =
+    "rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] cursor-pointer"
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 lg:p-6">
+      <PageHeader title="Hymn dashboard" description="Overview of hymn submissions and engagement." />
+
       {/* Stat cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         {stats.map(s => (
-          <div key={s.label} className={`bg-white rounded-lg border border-slate-200 border-l-4 ${s.accent} px-5 py-4`}>
-            <p className="text-2xl font-bold text-slate-900 tabular-nums">{s.value.toLocaleString()}</p>
-            <p className="text-xs text-slate-500 mt-1">{s.label}</p>
-          </div>
+          <Card key={s.label} className={`border-l-4 ${s.accent}`}>
+            <CardContent className="px-5 py-4">
+              <p className="text-metric tabular-nums text-foreground">{s.value.toLocaleString()}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
       {/* Trendline of hymns */}
-      <div className="bg-white rounded-lg border border-slate-200">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Trendline of hymns</h2>
-          <select
-            value={hymnsType}
-            onChange={e => setHymnsType(e.target.value)}
-            className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 bg-white focus:outline-none focus:border-blue-400 cursor-pointer"
-          >
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b">
+          <CardTitle className="text-sm">Trendline of hymns</CardTitle>
+          <select value={hymnsType} onChange={e => setHymnsType(e.target.value)} className={selectClass}>
             <option value="">Select category</option>
             <option value="uploaded_hymns">Uploaded hymns</option>
             <option value="accepted_hymns">Accepted hymns</option>
             <option value="declined_hymns">Declined hymns</option>
           </select>
-        </div>
-        <div className="px-4 py-4">
+        </CardHeader>
+        <CardContent className="px-4 py-4">
           <LineChart data={activeHymns.data} color={activeHymns.color} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Trendline of clicks */}
-      <div className="bg-white rounded-lg border border-slate-200">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-800">Trendline of clicks</h2>
-          <select
-            value={clicksType}
-            onChange={e => setClicksType(e.target.value)}
-            className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 bg-white focus:outline-none focus:border-blue-400 cursor-pointer"
-          >
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b">
+          <CardTitle className="text-sm">Trendline of clicks</CardTitle>
+          <select value={clicksType} onChange={e => setClicksType(e.target.value)} className={selectClass}>
             <option value="">Select category</option>
             <option value="total_clicks">Total clicks</option>
             <option value="daily_clicks">Daily clicks</option>
           </select>
-        </div>
-        <div className="px-4 py-4">
+        </CardHeader>
+        <CardContent className="px-4 py-4">
           <LineChart data={activeClicks.data} color={activeClicks.color} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

@@ -14,7 +14,7 @@ export default async function HymnAdminLayout({ children }: { children: React.Re
   if (!hasHymnAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="admin-theme">
       <HymnAdminSidebar />
       <SidebarInset>
         <AdminHeader />

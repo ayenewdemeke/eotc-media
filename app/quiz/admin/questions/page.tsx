@@ -4,12 +4,18 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { QzQuestion } from "@/types/models/quiz"
-import { CheckCircle, XCircle, Clock, Loader2, Search, Trash2, Eye } from "lucide-react"
+import { CheckCircle, XCircle, Loader2, Search, Trash2, Eye } from "lucide-react"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { DeleteDialog } from "@/components/admin/shared/DeleteDialog"
 
-const STATUS_STYLE: Record<string, string> = {
-  Approved: "bg-green-50 text-green-700 border-green-100",
-  Submitted: "bg-yellow-50 text-yellow-700 border-yellow-100",
-  Declined: "bg-red-50 text-red-700 border-red-100",
+const statusVariant: Record<string, "success" | "warning" | "destructive"> = {
+  Approved: "success",
+  Submitted: "warning",
+  Declined: "destructive",
 }
 
 function stripHtml(html: string): string {
@@ -26,6 +32,8 @@ export default function AdminQuestionsPage() {
   const [search, setSearch] = useState("")
   const [approving, setApproving] = useState<number | null>(null)
   const [declining, setDeclining] = useState<number | null>(null)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function load(q?: string) {
     setLoading(true)
@@ -64,92 +72,104 @@ export default function AdminQuestionsPage() {
     load(search)
   }
 
-  async function remove(id: number) {
-    if (!confirm("Delete this question permanently?")) return
-    await fetch(`/api/quiz/admin/questions/${id}/delete`, { method: "DELETE" })
+  async function confirmDelete() {
+    if (deleteId == null) return
+    setDeleting(true)
+    await fetch(`/api/quiz/admin/questions/${deleteId}/delete`, { method: "DELETE" })
+    setDeleting(false)
+    setDeleteId(null)
     load(search)
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          {statusParam ? "Pending questions" : "All questions"}
-          {!loading && <span className="ml-2 text-sm font-normal text-slate-400">({total})</span>}
-        </h1>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-          <input
-            value={search}
-            onChange={e => handleSearch(e.target.value)}
-            placeholder="Search questions…"
-            className="h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 w-64"
-          />
-        </div>
-      </div>
+    <div className="space-y-6 p-4 lg:p-6">
+      <PageHeader
+        title={statusParam ? "Pending questions" : "All questions"}
+        description={loading ? undefined : `${total.toLocaleString()} questions`}
+        actions={
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={e => handleSearch(e.target.value)}
+              placeholder="Search questions…"
+              className="w-64 pl-9"
+            />
+          </div>
+        }
+      />
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>
+        <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       ) : questions.length === 0 ? (
-        <div className="text-center py-20 text-slate-400">
+        <div className="py-20 text-center text-muted-foreground">
           <p className="font-medium">No questions found</p>
         </div>
       ) : (
         <div className="space-y-3">
           {questions.map(q => {
             const statusName = q.approvalStatus?.name ?? "Submitted"
-            const statusCls = STATUS_STYLE[statusName] ?? STATUS_STYLE.Submitted
             const text = stripHtml(q.questionText)
             const truncated = text.length > 180 ? text.slice(0, 180) + "…" : text
             const isApproving = approving === q.id
             const isDeclining = declining === q.id
 
             return (
-              <div key={q.id} className="bg-white border border-slate-200 rounded-xl p-4">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusCls}`}>
-                        {statusName}
-                      </span>
-                      {q.difficulty && (
-                        <span className="text-[10px] text-slate-400">{q.difficulty.name}</span>
-                      )}
-                      {q.categories?.map(c => (
-                        <span key={c.id} className="text-[10px] text-slate-400">{c.name}</span>
-                      ))}
-                      {q.languages?.map(l => (
-                        <span key={l.id} className="text-[10px] text-slate-400">{l.name}</span>
-                      ))}
-                      <span className="text-[10px] text-slate-400">{q.choices?.length ?? 0} choices</span>
+              <Card key={q.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <Badge variant={statusVariant[statusName] ?? "warning"}>{statusName}</Badge>
+                        {q.difficulty && (
+                          <span className="text-[10px] text-muted-foreground">{q.difficulty.name}</span>
+                        )}
+                        {q.categories?.map(c => (
+                          <span key={c.id} className="text-[10px] text-muted-foreground">{c.name}</span>
+                        ))}
+                        {q.languages?.map(l => (
+                          <span key={l.id} className="text-[10px] text-muted-foreground">{l.name}</span>
+                        ))}
+                        <span className="text-[10px] text-muted-foreground">{q.choices?.length ?? 0} choices</span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-foreground">{truncated}</p>
                     </div>
-                    <p className="text-sm text-slate-800 leading-relaxed">{truncated}</p>
-                  </div>
 
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <Link href={`/quiz/${q.id}`} target="_blank"
-                      className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md cursor-pointer transition-colors">
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                    <button onClick={() => approve(q.id)} disabled={isApproving || isDeclining}
-                      className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-md cursor-pointer transition-colors disabled:opacity-50">
-                      {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                    </button>
-                    <button onClick={() => decline(q.id)} disabled={isApproving || isDeclining}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md cursor-pointer transition-colors disabled:opacity-50">
-                      {isDeclining ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                    </button>
-                    <button onClick={() => remove(q.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md cursor-pointer transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex flex-shrink-0 items-center gap-1">
+                      <Button asChild size="icon-sm" variant="ghost" title="View">
+                        <Link href={`/quiz/${q.id}`} target="_blank">
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button size="icon-sm" variant="ghost" onClick={() => approve(q.id)} disabled={isApproving || isDeclining} title="Approve"
+                        className="hover:text-success">
+                        {isApproving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                      </Button>
+                      <Button size="icon-sm" variant="ghost" onClick={() => decline(q.id)} disabled={isApproving || isDeclining} title="Decline"
+                        className="hover:text-destructive">
+                        {isDeclining ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                      </Button>
+                      <Button size="icon-sm" variant="ghost" onClick={() => setDeleteId(q.id)} title="Delete"
+                        className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             )
           })}
         </div>
       )}
+
+      <DeleteDialog
+        open={deleteId !== null}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        onConfirm={confirmDelete}
+        isLoading={deleting}
+        title="Delete question"
+        description="Are you sure you want to delete this question? This action cannot be undone."
+      />
     </div>
   )
 }

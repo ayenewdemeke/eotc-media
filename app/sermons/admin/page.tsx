@@ -1,4 +1,16 @@
 import { prisma } from "@/lib/prisma"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { StatsCard } from "@/components/admin/shared/StatsCard"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Upload, CheckCircle2, Clock, MousePointerClick, Users } from "lucide-react"
 
 type RawPoint = { date: Date; value: bigint }
 
@@ -6,15 +18,6 @@ function sample(rows: { date: string; value: number }[], maxPoints = 300) {
   if (rows.length <= maxPoints) return rows
   const step = Math.ceil(rows.length / maxPoints)
   return rows.filter((_, i) => i === 0 || i === rows.length - 1 || i % step === 0)
-}
-
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5">
-      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-2xl font-bold text-slate-900">{typeof value === "number" ? value.toLocaleString() : value}</p>
-    </div>
-  )
 }
 
 export default async function SermonAdminDashboard() {
@@ -73,43 +76,48 @@ export default async function SermonAdminDashboard() {
   const pendingCount = totalUploaded - totalAccepted
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold text-slate-900 mb-6">Sermon dashboard</h1>
+    <div className="space-y-6 p-4 lg:p-6">
+      <PageHeader
+        title="Sermon dashboard"
+        description="Overview of sermon submissions and engagement."
+      />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total uploaded" value={totalUploaded} />
-        <StatCard label="Total accepted" value={totalAccepted} />
-        <StatCard label="Pending review" value={pendingCount} />
-        <StatCard label="Total clicks" value={totalClicks} />
-        <StatCard label="Total users" value={totalUsers} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <StatsCard title="Total uploaded" value={totalUploaded} icon={Upload} />
+        <StatsCard title="Total accepted" value={totalAccepted} icon={CheckCircle2} />
+        <StatsCard title="Pending review" value={pendingCount} icon={Clock} />
+        <StatsCard title="Total clicks" value={totalClicks} icon={MousePointerClick} />
+        <StatsCard title="Total users" value={totalUsers} icon={Users} />
       </div>
 
       {uploadedPts.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl p-5 mb-4">
-          <h2 className="text-sm font-semibold text-slate-700 mb-3">Cumulative sermons</h2>
-          <div className="overflow-x-auto">
-            <table className="text-xs text-slate-600 w-full">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left py-1 pr-4">Date</th>
-                  <th className="text-right py-1 pr-4">Uploaded</th>
-                  <th className="text-right py-1 pr-4">Accepted</th>
-                  <th className="text-right py-1">Declined</th>
-                </tr>
-              </thead>
-              <tbody>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Cumulative sermons</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-4">Date</TableHead>
+                  <TableHead className="px-4 text-right">Uploaded</TableHead>
+                  <TableHead className="px-4 text-right">Accepted</TableHead>
+                  <TableHead className="px-4 text-right">Declined</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {uploadedPts.slice(-10).map((pt, i) => (
-                  <tr key={i} className="border-b border-slate-50">
-                    <td className="py-1 pr-4">{pt.date}</td>
-                    <td className="text-right py-1 pr-4">{pt.value}</td>
-                    <td className="text-right py-1 pr-4">{acceptedPts[i]?.value ?? "—"}</td>
-                    <td className="text-right py-1">{declinedPts[i]?.value ?? "—"}</td>
-                  </tr>
+                  <TableRow key={i}>
+                    <TableCell className="px-4 font-medium">{pt.date}</TableCell>
+                    <TableCell className="px-4 text-right tabular-nums">{pt.value}</TableCell>
+                    <TableCell className="px-4 text-right tabular-nums">{acceptedPts[i]?.value ?? "—"}</TableCell>
+                    <TableCell className="px-4 text-right tabular-nums">{declinedPts[i]?.value ?? "—"}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   )
