@@ -152,6 +152,7 @@ export const translations = {
     bible_search_desc:          "Search for words or phrases across the Bible",
 
     // ── Sort options (shared) ────────────────────
+    sort_trending:      "Trending",
     sort_newest_first:  "Newest first",
     sort_oldest_first:  "Oldest first",
     sort_most_clicked:  "Most clicked",
@@ -364,6 +365,7 @@ export const translations = {
     bible_search_desc:          "በቅዱስ መጽሐፍ ቃላት ወይም ሐረጎችን ፈልጉ",
 
     // ── Sort options (shared) ────────────────────
+    sort_trending:      "ትሬንዲንግ",
     sort_newest_first:  "አዳዲሶችን አስቀድም",
     sort_oldest_first:  "የድሮዎችን አስቀድም",
     sort_most_clicked:  "በብዛት የተከፈቱትን አስቀድም",

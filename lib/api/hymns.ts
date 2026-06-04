@@ -168,33 +168,60 @@ export async function getHymns({
     ]
   }
 
-  const orderBy =
-    sort === 'date-desc'  ? { publishedAt: 'desc' as const } :
-    sort === 'date-asc'   ? { publishedAt: 'asc' as const } :
-    sort === 'clicks-asc' ? { clicksCount: 'asc' as const } :
-                            { clicksCount: 'desc' as const }  // default: most clicked
+  const hymnIncludeBase = {
+    categories: { include: { category: true } },
+    subCategories: { include: { subCategory: true } },
+    languages: { include: { language: true } },
+    singers: { include: { singer: true } },
+    channel: true,
+    ...(view === 'my-hymns' ? { approvalStatus: true } : {}),
+  } as const
 
   let raws: Awaited<ReturnType<typeof prisma.hmHymn.findMany>> = []
   let total = 0
 
   try {
-    ;[raws, total] = await Promise.all([
-      prisma.hmHymn.findMany({
+    if (!sort || sort === 'trending') {
+      // Compute click-velocity in memory: clicks / age-in-days
+      const candidates = await prisma.hmHymn.findMany({
         where,
-        orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
-        include: {
-          categories: { include: { category: true } },
-          subCategories: { include: { subCategory: true } },
-          languages: { include: { language: true } },
-          singers: { include: { singer: true } },
-          channel: true,
-          ...(view === 'my-hymns' ? { approvalStatus: true } : {}),
-        },
-      }),
-      prisma.hmHymn.count({ where }),
-    ])
+        select: { id: true, clicksCount: true, publishedAt: true, createdAt: true },
+      })
+      const now = Date.now()
+      const scored = candidates
+        .map(h => {
+          const ref = h.publishedAt ?? h.createdAt
+          const days = Math.max(1, (now - ref.getTime()) / 86_400_000)
+          return { id: h.id, score: h.clicksCount / days }
+        })
+        .sort((a, b) => b.score - a.score)
+      total = scored.length
+      const pageIds = scored.slice((page - 1) * limit, page * limit).map(s => s.id)
+      if (pageIds.length > 0) {
+        const idOrder = new Map(pageIds.map((id, idx) => [id, idx]))
+        const fetched = await prisma.hmHymn.findMany({
+          where: { id: { in: pageIds } },
+          include: hymnIncludeBase,
+        })
+        raws = fetched.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0))
+      }
+    } else {
+      const orderBy =
+        sort === 'date-desc'  ? { publishedAt: 'desc' as const } :
+        sort === 'date-asc'   ? { publishedAt: 'asc' as const } :
+        sort === 'clicks-asc' ? { clicksCount: 'asc' as const } :
+                                { clicksCount: 'desc' as const }
+      ;[raws, total] = await Promise.all([
+        prisma.hmHymn.findMany({
+          where,
+          orderBy,
+          skip: (page - 1) * limit,
+          take: limit,
+          include: hymnIncludeBase,
+        }),
+        prisma.hmHymn.count({ where }),
+      ])
+    }
   } catch {
     return { hymns: [], total: 0 }
   }
@@ -274,6 +301,24 @@ export async function getHymn(
     isFavorited: !!isFavoritedResult,
     comments,
   }
+}
+
+function weightedSample<T>(items: { item: T; score: number }[], n: number): T[] {
+  if (items.length <= n) return items.map(x => x.item)
+  const pool = [...items]
+  const result: T[] = []
+  for (let i = 0; i < n && pool.length > 0; i++) {
+    const total = pool.reduce((s, x) => s + Math.max(0, x.score) + 0.5, 0)
+    let r = Math.random() * total
+    let chosen = pool.length - 1
+    for (let j = 0; j < pool.length; j++) {
+      r -= Math.max(0, pool[j].score) + 0.5
+      if (r <= 0) { chosen = j; break }
+    }
+    result.push(pool[chosen].item)
+    pool.splice(chosen, 1)
+  }
+  return result
 }
 
 export async function getRelatedHymns(
@@ -404,6 +449,6 @@ export async function getRelatedHymns(
     return { hymn: h, score }
   })
 
-  scored.sort((a, b) => b.score - a.score)
-  return scored.slice(0, limit).map(s => mapHymn(s.hymn))
+  const sampled = weightedSample(scored.map(s => ({ item: s.hymn, score: s.score })), limit)
+  return sampled.map(mapHymn)
 }
