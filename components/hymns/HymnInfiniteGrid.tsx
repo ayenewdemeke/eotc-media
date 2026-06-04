@@ -42,7 +42,7 @@ export default function HymnInfiniteGrid({
 }: HymnInfiniteGridProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const activeSort = searchParams.get("sort") ?? "clicks-desc"
+  const activeSort = searchParams.get("sort") ?? "trending"
   const { t } = useLocale()
 
   const [hymns, setHymns] = useState<HmHymn[]>(initialHymns)
@@ -107,7 +107,7 @@ export default function HymnInfiniteGrid({
   function applySort(value: string) {
     const params = new URLSearchParams(searchParams.toString())
     params.delete("page")
-    if (value === "clicks-desc") params.delete("sort")
+    if (value === "trending") params.delete("sort")
     else params.set("sort", value)
     router.push(`/hymns?${params.toString()}`)
   }
@@ -150,6 +150,7 @@ export default function HymnInfiniteGrid({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="trending">{t("sort_trending")}</SelectItem>
               <SelectItem value="date-desc">{t("sort_newest_first")}</SelectItem>
               <SelectItem value="date-asc">{t("sort_oldest_first")}</SelectItem>
               <SelectItem value="clicks-desc">{t("sort_most_clicked")}</SelectItem>
