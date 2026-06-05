@@ -365,7 +365,7 @@ export const translations = {
     bible_search_desc:          "በቅዱስ መጽሐፍ ቃላት ወይም ሐረጎችን ፈልጉ",
 
     // ── Sort options (shared) ────────────────────
-    sort_trending:      "ትሬንዲንግ",
+    sort_trending:      "በብዛት እየተሰሙ ያሉትን አስቀድም",
     sort_newest_first:  "አዳዲሶችን አስቀድም",
     sort_oldest_first:  "የድሮዎችን አስቀድም",
     sort_most_clicked:  "በብዛት የተከፈቱትን አስቀድም",
