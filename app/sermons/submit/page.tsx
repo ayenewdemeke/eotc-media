@@ -1,11 +1,23 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { Loader2, CheckCircle, ChevronDown, X } from "lucide-react"
+import { Loader2, CheckCircle } from "lucide-react"
 import Navbar from "@/components/Navbar"
 import SermonSidebar from "@/components/sermons/SermonSidebar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { MultiSelect } from "@/components/ui/multi-select"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 interface Language { id: number; name: string }
 interface Category { id: number; name: string; languageId?: number | null }
@@ -20,92 +32,6 @@ function parseVideoId(input: string): string {
   } catch { /* not a URL — treat as raw ID */ }
   return s
 }
-
-function MultiSelect({
-  label, required, value, onChange, options, placeholder, disabled,
-}: {
-  label: string
-  required?: boolean
-  value: number[]
-  onChange: (v: number[]) => void
-  options: { id: number; name: string }[]
-  placeholder: string
-  disabled?: boolean
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener("mousedown", handler)
-    return () => document.removeEventListener("mousedown", handler)
-  }, [])
-
-  function toggle(id: number) {
-    onChange(value.includes(id) ? value.filter(x => x !== id) : [...value, id])
-  }
-
-  const selectedOptions = options.filter(o => value.includes(o.id))
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1.5">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-      <div ref={ref} className="relative">
-        <button
-          type="button"
-          onClick={() => { if (!disabled) setOpen(o => !o) }}
-          disabled={disabled}
-          className="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg bg-white text-left flex items-center justify-between disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer transition-colors hover:border-slate-300 focus:outline-none focus:border-blue-400"
-        >
-          <span className={value.length === 0 ? "text-slate-400" : "text-slate-900"}>
-            {value.length === 0 ? placeholder : `${value.length} selected`}
-          </span>
-          <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
-
-        {open && (
-          <div className="absolute z-20 top-full mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg overflow-y-auto max-h-52">
-            {options.length === 0 ? (
-              <p className="px-3 py-2.5 text-sm text-slate-400">No options available</p>
-            ) : options.map(opt => (
-              <label
-                key={opt.id}
-                className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={value.includes(opt.id)}
-                  onChange={() => toggle(opt.id)}
-                  className="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-pointer"
-                />
-                <span className="text-sm text-slate-700">{opt.name}</span>
-              </label>
-            ))}
-          </div>
-        )}
-
-        {selectedOptions.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {selectedOptions.map(opt => (
-              <span key={opt.id} className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
-                {opt.name}
-                <button type="button" onClick={() => toggle(opt.id)} className="hover:text-blue-900 flex-shrink-0">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-const inputCls = "w-full h-10 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white transition-colors"
 
 export default function SubmitSermonPage() {
   const router = useRouter()
@@ -195,19 +121,14 @@ export default function SubmitSermonPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="text-center max-w-sm px-4">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Sermon submitted!</h1>
-            <p className="text-slate-500 mb-6">Your sermon has been submitted and is pending review. Thank you!</p>
-            <button
-              onClick={() => router.push("/sermons/my-sermons")}
-              className="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-            >
-              View my sermons
-            </button>
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center pt-16">
+          <div className="max-w-sm px-4 text-center">
+            <CheckCircle className="mx-auto mb-4 h-16 w-16 text-success" />
+            <h1 className="mb-2 text-2xl font-bold">Sermon submitted!</h1>
+            <p className="mb-6 text-muted-foreground">Your sermon has been submitted and is pending review. Thank you!</p>
+            <Button onClick={() => router.push("/sermons/my-sermons")}>View my sermons</Button>
           </div>
         </div>
       </div>
@@ -215,125 +136,110 @@ export default function SubmitSermonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="mx-auto max-w-full lg:grid lg:grid-cols-[220px_1fr]">
           <SermonSidebar userId={userId} />
 
-          <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
-            <div className="max-w-3xl">
+          <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="max-w-2xl">
               <div className="mb-6">
-                <h1 className="text-xl font-semibold text-slate-900">Add new sermon</h1>
-                <p className="text-sm text-slate-400 mt-0.5">Submit a YouTube sermon for review</p>
+                <h1 className="text-xl font-semibold">Add new sermon</h1>
+                <p className="mt-0.5 text-sm text-muted-foreground">Submit a YouTube sermon for review</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* Video + Preacher */}
-                <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
-                    <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Video</h2>
-                  </div>
-                  <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                        YouTube URL <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        value={videoInput}
-                        onChange={e => setVideoInput(e.target.value)}
-                        placeholder="https://www.youtube.com/watch?v=…"
-                        className={inputCls}
-                      />
-                      {showParsedId && (
-                        <p className="text-xs text-blue-600 mt-1.5">
-                          Parsed ID: <span className="font-mono">{parsedId}</span>
-                        </p>
-                      )}
+                {/* Video */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Video</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="video-url">
+                          YouTube URL <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          id="video-url"
+                          value={videoInput}
+                          onChange={e => setVideoInput(e.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=…"
+                        />
+                        {showParsedId && (
+                          <p className="text-xs text-primary">
+                            Parsed ID: <span className="font-mono">{parsedId}</span>
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="preacher">Preacher</Label>
+                        <Input
+                          id="preacher"
+                          value={preacher}
+                          onChange={e => setPreacher(e.target.value)}
+                          placeholder="Preacher name (optional)"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Preacher</label>
-                      <input
-                        value={preacher}
-                        onChange={e => setPreacher(e.target.value)}
-                        placeholder="Preacher name (optional)"
-                        className={inputCls}
-                      />
-                    </div>
-                  </div>
-                </section>
+                  </CardContent>
+                </Card>
 
                 {/* Classification */}
-                <section className="bg-white border border-slate-200 rounded-xl shadow-sm">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
-                    <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Classification</h2>
-                  </div>
-                  <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <MultiSelect
-                      label="Language" required
-                      value={selectedLanguageIds}
-                      onChange={handleLanguageChange}
-                      options={languages}
-                      placeholder="Select language…"
-                    />
-                    <MultiSelect
-                      label="Category" required
-                      value={selectedCategoryIds}
-                      onChange={handleCategoryChange}
-                      options={visibleCategories}
-                      placeholder={selectedLanguageIds.length > 0 && hasLanguageData ? "Select category…" : hasLanguageData ? "Select language first" : "Select category…"}
-                      disabled={selectedLanguageIds.length === 0 && hasLanguageData}
-                    />
-                    <MultiSelect
-                      label="Sub-category" required
-                      value={selectedSubCategoryIds}
-                      onChange={setSelectedSubCategoryIds}
-                      options={visibleSubCategories}
-                      placeholder={selectedCategoryIds.length > 0 ? "Select sub-category…" : "Select category first"}
-                      disabled={selectedCategoryIds.length === 0}
-                    />
-                  </div>
-                </section>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Classification</CardTitle>
+                    <CardDescription className="text-xs">Select language first to filter categories</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <MultiSelect label="Language" required value={selectedLanguageIds}
+                        onChange={handleLanguageChange} options={languages} placeholder="Select language…" />
+                      <MultiSelect label="Category" required value={selectedCategoryIds}
+                        onChange={handleCategoryChange} options={visibleCategories}
+                        placeholder={selectedLanguageIds.length > 0 && hasLanguageData ? "Select category…" : hasLanguageData ? "Select language first" : "Select category…"}
+                        disabled={selectedLanguageIds.length === 0 && hasLanguageData} />
+                      <MultiSelect label="Sub-category" required value={selectedSubCategoryIds}
+                        onChange={setSelectedSubCategoryIds} options={visibleSubCategories}
+                        placeholder={selectedCategoryIds.length > 0 ? "Select sub-category…" : "Select category first"}
+                        disabled={selectedCategoryIds.length === 0} />
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Description */}
-                <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
-                    <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      Description <span className="normal-case font-normal text-slate-400">(optional)</span>
-                    </h2>
-                  </div>
-                  <div className="p-5">
-                    <textarea
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-semibold">Description</CardTitle>
+                    <CardDescription className="text-xs">Optional notes or context</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
                       value={description}
                       onChange={e => setDescription(e.target.value)}
                       rows={4}
                       placeholder="Brief description of the sermon…"
-                      className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 resize-y"
+                      className="resize-y"
                     />
-                  </div>
-                </section>
+                  </CardContent>
+                </Card>
 
                 {error && (
-                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">{error}</p>
+                  <p className="rounded-md border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+                    {error}
+                  </p>
                 )}
 
                 <div className="flex items-center justify-end gap-3 pb-4">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/sermons/my-sermons")}
-                    className="px-5 py-2 text-sm font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
+                  <Button type="button" variant="outline" onClick={() => router.push("/sermons/my-sermons")}>
                     Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
-                  >
-                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Submit sermon
-                  </button>
+                  </Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {saving ? "Submitting…" : "Submit sermon"}
+                  </Button>
                 </div>
               </form>
             </div>
