@@ -1,11 +1,21 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { SermonAdminSidebar } from "@/components/admin/sermons/SermonAdminSidebar"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { AdminShell, type AdminNavItem } from "@/components/admin/shared/AdminShell"
 import { hasSermonAdminAccess } from "@/lib/auth-helpers"
 
 export const dynamic = "force-dynamic"
+
+const BASE = "/sermons/admin"
+const nav: AdminNavItem[] = [
+  { title: "Dashboard", href: BASE, icon: "dashboard", exact: true },
+  { title: "New sermons", href: `${BASE}/sermons?status=pending`, icon: "messageSquare", status: "pending" },
+  { title: "Description suggestions", href: `${BASE}/description-suggestions`, icon: "fileText" },
+  { title: "All sermons", href: `${BASE}/sermons`, icon: "messageSquare", status: "none" },
+  { title: "Languages", href: `${BASE}/languages`, icon: "globe" },
+  { title: "Categories", href: `${BASE}/categories`, icon: "tag" },
+  { title: "Sub categories", href: `${BASE}/sub-categories`, icon: "layers" },
+  { title: "Approval status", href: `${BASE}/approval-statuses`, icon: "checkSquare" },
+]
 
 export default async function SermonAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -14,12 +24,15 @@ export default async function SermonAdminLayout({ children }: { children: React.
   if (!hasSermonAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider className="admin-theme">
-      <SermonAdminSidebar />
-      <SidebarInset>
-        <AdminHeader />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <AdminShell
+      brandTitle="Sermon admin"
+      brandSubtitle="Management panel"
+      brandIcon="messageSquare"
+      nav={nav}
+      backHref="/sermons"
+      backLabel="Back to Sermons"
+    >
+      {children}
+    </AdminShell>
   )
 }

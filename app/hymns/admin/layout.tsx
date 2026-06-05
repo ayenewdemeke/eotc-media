@@ -1,11 +1,21 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { HymnAdminSidebar } from "@/components/admin/hymns/HymnAdminSidebar"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { AdminShell, type AdminNavItem } from "@/components/admin/shared/AdminShell"
 import { hasHymnAdminAccess } from "@/lib/auth-helpers"
 
 export const dynamic = "force-dynamic"
+
+const BASE = "/hymns/admin"
+const nav: AdminNavItem[] = [
+  { title: "Dashboard", href: BASE, icon: "dashboard", exact: true },
+  { title: "New hymns", href: `${BASE}/hymns?status=pending`, icon: "mic", status: "pending" },
+  { title: "Lyrics suggestions", href: `${BASE}/lyrics-suggestions`, icon: "fileText" },
+  { title: "All hymns", href: `${BASE}/hymns`, icon: "music", status: "none" },
+  { title: "Languages", href: `${BASE}/languages`, icon: "globe" },
+  { title: "Categories", href: `${BASE}/categories`, icon: "tag" },
+  { title: "Sub categories", href: `${BASE}/sub-categories`, icon: "layers" },
+  { title: "Approval status", href: `${BASE}/approval-statuses`, icon: "checkSquare" },
+]
 
 export default async function HymnAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -14,12 +24,15 @@ export default async function HymnAdminLayout({ children }: { children: React.Re
   if (!hasHymnAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider className="admin-theme">
-      <HymnAdminSidebar />
-      <SidebarInset>
-        <AdminHeader />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <AdminShell
+      brandTitle="Hymn admin"
+      brandSubtitle="Management panel"
+      brandIcon="music"
+      nav={nav}
+      backHref="/hymns"
+      backLabel="Back to Hymns"
+    >
+      {children}
+    </AdminShell>
   )
 }
