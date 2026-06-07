@@ -183,9 +183,12 @@ export async function getHymns({
   try {
     if (!sort || sort === 'trending') {
       // Compute click-velocity in memory: clicks / age-in-days
+      // Cap at 2000 candidates to bound memory usage on constrained servers
       const candidates = await prisma.hmHymn.findMany({
         where,
         select: { id: true, clicksCount: true, publishedAt: true, createdAt: true },
+        take: 2000,
+        orderBy: { clicksCount: 'desc' },
       })
       const now = Date.now()
       const scored = candidates
