@@ -12,10 +12,21 @@ interface Props {
 
 type State = "idle" | "listening" | "processing" | "error"
 
+type SpeechRecognitionCtor = new () => SpeechRecognition
+
 const SPEECH_LANG: Record<string, string> = {
   amharic: "am-ET",
   oromifa: "om",
   english: "en-US",
+}
+
+function getSpeechRecognition(): SpeechRecognitionCtor | null {
+  if (typeof window === "undefined") return null
+  return (
+    (window as unknown as Record<string, unknown>).SpeechRecognition as SpeechRecognitionCtor | undefined ??
+    (window as unknown as Record<string, unknown>).webkitSpeechRecognition as SpeechRecognitionCtor | undefined ??
+    null
+  )
 }
 
 export default function VoiceNavigateButton({ language, version, className = "" }: Props) {
@@ -23,7 +34,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
   const [uiState, setUiState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const stateRef = useRef<State>("idle")
-  const recRef = useRef<InstanceType<typeof window.SpeechRecognition> | null>(null)
+  const recRef = useRef<SpeechRecognition | null>(null)
 
   function setState(s: State) {
     stateRef.current = s
@@ -31,9 +42,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
   }
 
   const startListening = useCallback(() => {
-    const SR = (window as Window & { SpeechRecognition?: typeof window.SpeechRecognition; webkitSpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition
-      ?? (window as Window & { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition
-
+    const SR = getSpeechRecognition()
     if (!SR) {
       setErrorMsg("Voice input is not supported in this browser. Try Chrome or Edge.")
       setState("error")
@@ -121,8 +130,10 @@ export default function VoiceNavigateButton({ language, version, className = "" 
       </button>
 
       {(isListening || isProcessing || isError) && (
-        <div className="absolute top-full right-0 mt-1.5 z-50 text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg pointer-events-none max-w-[220px] text-wrap text-right leading-snug"
-          style={{ background: isListening ? "#dc2626" : isProcessing ? "#2563eb" : "#1e293b", color: "#fff" }}>
+        <div
+          className="absolute top-full right-0 mt-1.5 z-50 text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-lg pointer-events-none max-w-[220px] text-right leading-snug"
+          style={{ background: isListening ? "#dc2626" : isProcessing ? "#2563eb" : "#1e293b", color: "#fff" }}
+        >
           {isListening  && (language === "amharic" ? "እየሰማ ነው…" : "Listening…")}
           {isProcessing && (language === "amharic" ? "እየፈለገ ነው…" : "Processing…")}
           {isError      && errorMsg}
