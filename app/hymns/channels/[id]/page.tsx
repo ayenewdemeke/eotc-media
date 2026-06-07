@@ -22,7 +22,9 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const channel = await prisma.hmChannel.findUnique({ where: { id: parseInt(id) } })
+  const channelId = parseInt(id)
+  if (isNaN(channelId)) return { title: "Channel — EOTC Media" }
+  const channel = await prisma.hmChannel.findUnique({ where: { id: channelId } })
   if (!channel) return { title: "Channel — EOTC Media" }
   return { title: `${channel.title} — Hymns | EOTC Media` }
 }
