@@ -17,7 +17,7 @@ interface SpeechRec {
   interimResults: boolean
   maxAlternatives: number
   onstart: (() => void) | null
-  onresult: ((e: { results: { 0: { transcript: string }[] }[] }) => void) | null
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
   onerror: ((e: { error: string }) => void) | null
   onend: (() => void) | null
   start(): void
@@ -67,7 +67,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
 
     rec.onstart = () => setState("listening")
 
-    rec.onresult = async (e: { results: { 0: { transcript: string }[] }[] }) => {
+    rec.onresult = async (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => {
       const transcript = e.results[0][0].transcript
       setState("processing")
       try {
