@@ -12,7 +12,18 @@ interface Props {
 
 type State = "idle" | "listening" | "processing" | "error"
 
-type SpeechRecognitionCtor = new () => SpeechRecognition
+interface SpeechRec {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  onstart: (() => void) | null
+  onresult: ((e: { results: { 0: { transcript: string }[] }[] }) => void) | null
+  onerror: ((e: { error: string }) => void) | null
+  onend: (() => void) | null
+  start(): void
+  abort(): void
+}
+type SpeechRecognitionCtor = new () => SpeechRec
 
 const SPEECH_LANG: Record<string, string> = {
   amharic: "am-ET",
@@ -34,7 +45,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
   const [uiState, setUiState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const stateRef = useRef<State>("idle")
-  const recRef = useRef<SpeechRecognition | null>(null)
+  const recRef = useRef<SpeechRec | null>(null)
 
   function setState(s: State) {
     stateRef.current = s
@@ -56,7 +67,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
 
     rec.onstart = () => setState("listening")
 
-    rec.onresult = async (e: SpeechRecognitionEvent) => {
+    rec.onresult = async (e: { results: { 0: { transcript: string }[] }[] }) => {
       const transcript = e.results[0][0].transcript
       setState("processing")
       try {
@@ -79,7 +90,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
       }
     }
 
-    rec.onerror = (e: SpeechRecognitionErrorEvent) => {
+    rec.onerror = (e: { error: string }) => {
       if (e.error === "no-speech") setErrorMsg("No speech detected. Try again.")
       else if (e.error === "not-allowed") setErrorMsg("Microphone access denied.")
       else setErrorMsg("Voice error. Please try again.")
