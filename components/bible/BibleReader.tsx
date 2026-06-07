@@ -36,6 +36,7 @@ import BookSidebar from "./BookSidebar"
 import VerseList, { VerseViewMode } from "./VerseList"
 import BibleSearchSheet from "./BibleSearchSheet"
 import CollectionDialog from "./CollectionDialog"
+import VoiceNavigateButton from "./VoiceNavigateButton"
 import { useLocale } from "@/lib/i18n/LocaleContext"
 
 // ── Highlight colours ─────────────────────────────────────────────
@@ -585,6 +586,7 @@ export default function BibleReader({
             <span className="text-slate-800 font-semibold">{currentChapter}</span>
           </nav>
           <div className="flex items-center gap-2 shrink-0">
+            <VoiceNavigateButton language={language} version={version} />
             <button
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
@@ -824,6 +826,7 @@ export default function BibleReader({
                   <SelectItem value="oromifa__v1">Oromifa</SelectItem>
                 </SelectContent>
               </Select>
+              <VoiceNavigateButton language={language} version={version} />
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex-shrink-0"
