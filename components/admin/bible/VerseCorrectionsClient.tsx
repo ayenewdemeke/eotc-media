@@ -239,32 +239,19 @@ export function VerseCorrectionsClient({
           </div>
         </div>
 
-        {/* Scan / Stop button */}
-        {scanning ? (
-          <>
-            <button
-              disabled
-              className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg opacity-60 flex items-center gap-2"
-            >
+        {/* Scan button */}
+        <button
+          onClick={handleScan}
+          disabled={!canScan}
+          className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+        >
+          {scanning ? (
+            <>
               <Loader2 className="w-4 h-4 animate-spin" />
               Scanning…
-            </button>
-            <button
-              onClick={() => { abortRef.current = true }}
-              className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
-            >
-              Stop
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={handleScan}
-            disabled={!canScan}
-            className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            Scan
-          </button>
-        )}
+            </>
+          ) : "Scan"}
+        </button>
       </div>
 
       {/* Progress */}
