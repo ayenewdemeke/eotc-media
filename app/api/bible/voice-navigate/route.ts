@@ -18,20 +18,28 @@ export async function POST(req: NextRequest) {
     .map(b => `${b.id}\t${b.englishName}${b.amharicName ? ` / ${b.amharicName}` : ''}${b.oromifaName ? ` / ${b.oromifaName}` : ''}`)
     .join('\n')
 
-  const prompt = `You are a Bible reference parser. Extract the Bible reference from the user's voice input.
+  const prompt = `You are a Bible navigator. Handle two types of requests:
+
+TYPE 1 — Direct reference: user names a specific book, chapter, or verse.
+Examples: "John 3:16", "Genesis chapter 5", "ዮሐንስ ምዕራፍ 3 ቁጥር 16", "Yohannis 3"
+
+TYPE 2 — Thematic/topical: user asks for a verse about a theme, emotion, or situation.
+Examples: "verse about patience", "something consoling during hardships", "hope in difficult times", "ስለ ፍቅር", "give me a verse that encourages me"
+
+For either type, identify the single most fitting Bible verse and return its location.
+
+Available books (id TAB names):
+${bookList}
 
 User said: "${transcript}"
 
-Available books (format: id TAB english / amharic / oromifa names):
-${bookList}
+Rules:
+- For direct references: match the spoken book name to the list above (user may speak English, Amharic, or Oromifa)
+- For thematic requests: use your knowledge of well-known Bible passages; prefer clear, widely-known verses; always include a specific verse number
+- Return ONLY valid JSON, no markdown, no explanation
 
-Instructions:
-- Match the spoken book name to the closest entry in the list above (the user may speak in English, Amharic, or Oromifa)
-- Extract the chapter number and optionally a verse number
-- Return ONLY valid JSON with no markdown, no explanation
-- If no clear Bible reference is found, return: {"error": "no reference found"}
-
-Return format: {"bookId": <number>, "chapter": <number>, "verse": <number or null>}`
+Return format: {"bookId": <number>, "chapter": <number>, "verse": <number or null>}
+If no verse can be determined: {"error": "no verse found"}`
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey)
@@ -43,7 +51,7 @@ Return format: {"bookId": <number>, "chapter": <number>, "verse": <number or nul
 
     if (parsed.error || !parsed.bookId || !parsed.chapter) {
       return NextResponse.json(
-        { error: 'Could not understand the reference. Try saying e.g. "John chapter 3" or "Genesis 5:1"' },
+        { error: 'Could not find a matching verse. Try saying a book name or a topic like "verse about hope".' },
         { status: 422 }
       )
     }
@@ -55,6 +63,6 @@ Return format: {"bookId": <number>, "chapter": <number>, "verse": <number or nul
 
     return NextResponse.json({ url, bookName: book.englishName, chapter: parsed.chapter, verse: parsed.verse ?? null })
   } catch {
-    return NextResponse.json({ error: 'Could not parse the reference. Please try again.' }, { status: 422 })
+    return NextResponse.json({ error: 'Could not parse the response. Please try again.' }, { status: 422 })
   }
 }
