@@ -91,9 +91,12 @@ export default function VoiceNavigateButton({ language, version, className = "" 
     }
 
     rec.onerror = (e: { error: string }) => {
+      if (e.error === "aborted") return // user cancelled, already handled
       if (e.error === "no-speech") setErrorMsg("No speech detected. Try again.")
       else if (e.error === "not-allowed") setErrorMsg("Microphone access denied.")
-      else setErrorMsg("Voice error. Please try again.")
+      else if (e.error === "network") setErrorMsg("Network error. Check your connection.")
+      else if (e.error === "language-not-supported") setErrorMsg("Language not supported for voice input.")
+      else setErrorMsg("Could not capture voice. Please try again.")
       setState("error")
     }
 
@@ -125,10 +128,10 @@ export default function VoiceNavigateButton({ language, version, className = "" 
         onClick={handleClick}
         title={language === "amharic" ? "በድምጽ ምዕራፍ ፈልግ" : "Navigate by voice"}
         className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors flex-shrink-0 ${
-          isListening  ? "bg-red-100 text-red-600 hover:bg-red-200 animate-pulse" :
-          isProcessing ? "bg-blue-100 text-blue-600" :
+          isListening  ? "bg-red-500 text-white hover:bg-red-600 animate-pulse" :
+          isProcessing ? "bg-blue-500 text-white" :
           isError      ? "bg-amber-100 text-amber-600 hover:bg-amber-200" :
-                         "text-slate-500 bg-slate-100 hover:bg-slate-200"
+                         "text-blue-600 bg-blue-100 hover:bg-blue-200"
         } ${className}`}
       >
         {isProcessing ? (
