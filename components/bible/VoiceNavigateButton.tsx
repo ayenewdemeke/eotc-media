@@ -94,7 +94,7 @@ export default function VoiceNavigateButton({ language, version, className = "" 
       if (e.error === "aborted") return // user cancelled, already handled
       if (e.error === "no-speech") setErrorMsg("No speech detected. Try again.")
       else if (e.error === "not-allowed") setErrorMsg("Microphone access denied.")
-      else if (e.error === "network") setErrorMsg("Network error. Check your connection.")
+      else if (e.error === "network") setErrorMsg("Speech service rate-limited or unavailable. Try again shortly.")
       else if (e.error === "language-not-supported") setErrorMsg("Language not supported for voice input.")
       else setErrorMsg("Could not capture voice. Please try again.")
       setState("error")
