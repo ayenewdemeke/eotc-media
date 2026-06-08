@@ -81,22 +81,26 @@ export default function VoiceNavigateButton({ language, version, className = "" 
           setState("idle")
           router.push(data.url)
         } else {
-          setErrorMsg(data.error ?? "Could not understand the reference")
+          setErrorMsg(`[api] ${data.error ?? "Could not understand the reference"}`)
           setState("error")
         }
-      } catch {
-        setErrorMsg("Connection error. Please try again.")
+      } catch (err) {
+        setErrorMsg(`[api] ${err instanceof Error ? err.message : "Connection error"}`)
         setState("error")
       }
     }
 
     rec.onerror = (e: { error: string }) => {
-      if (e.error === "aborted") return // user cancelled, already handled
-      if (e.error === "no-speech") setErrorMsg("No speech detected. Try again.")
-      else if (e.error === "not-allowed") setErrorMsg("Microphone access denied.")
-      else if (e.error === "network") setErrorMsg("Speech service rate-limited or unavailable. Try again shortly.")
-      else if (e.error === "language-not-supported") setErrorMsg("Language not supported for voice input.")
-      else setErrorMsg("Could not capture voice. Please try again.")
+      if (e.error === "aborted") return
+      const labels: Record<string, string> = {
+        "no-speech": "No speech detected.",
+        "not-allowed": "Microphone access denied.",
+        "network": "Speech service unavailable.",
+        "language-not-supported": "Language not supported.",
+        "audio-capture": "Microphone not found.",
+        "service-not-allowed": "Speech service not allowed.",
+      }
+      setErrorMsg(`[${e.error}] ${labels[e.error] ?? "Voice capture failed."}`)
       setState("error")
     }
 
