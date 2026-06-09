@@ -12,111 +12,88 @@ interface Props {
 
 type State = "idle" | "listening" | "processing" | "error"
 
-interface SpeechRec {
-  lang: string
-  interimResults: boolean
-  maxAlternatives: number
-  onstart: (() => void) | null
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
-  onerror: ((e: { error: string }) => void) | null
-  onend: (() => void) | null
-  start(): void
-  abort(): void
-}
-type SpeechRecognitionCtor = new () => SpeechRec
-
-const SPEECH_LANG: Record<string, string> = {
-  amharic: "am-ET",
-  oromifa: "om",
-  english: "en-US",
-}
-
-function getSpeechRecognition(): SpeechRecognitionCtor | null {
-  if (typeof window === "undefined") return null
-  return (
-    (window as unknown as Record<string, unknown>).SpeechRecognition as SpeechRecognitionCtor | undefined ??
-    (window as unknown as Record<string, unknown>).webkitSpeechRecognition as SpeechRecognitionCtor | undefined ??
-    null
-  )
-}
+const MAX_RECORDING_MS = 8000
 
 export default function VoiceNavigateButton({ language, version, className = "" }: Props) {
   const router = useRouter()
   const [uiState, setUiState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const stateRef = useRef<State>("idle")
-  const recRef = useRef<SpeechRec | null>(null)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  function setState(s: State) {
-    stateRef.current = s
-    setUiState(s)
-  }
-
-  const startListening = useCallback(() => {
-    const SR = getSpeechRecognition()
-    if (!SR) {
-      setErrorMsg("Voice input is not supported in this browser. Try Chrome or Edge.")
-      setState("error")
+  const startListening = useCallback(async () => {
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Microphone access failed"
+      setErrorMsg(
+        msg.toLowerCase().includes("denied") || msg.toLowerCase().includes("notallowed")
+          ? "Microphone access denied."
+          : `[mic] ${msg}`
+      )
+      stateRef.current = "error"
+      setUiState("error")
       return
     }
 
-    const rec = new SR()
-    rec.lang = SPEECH_LANG[language] ?? "en-US"
-    rec.interimResults = false
-    rec.maxAlternatives = 1
+    const mimeType =
+      ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"].find(
+        (t) => MediaRecorder.isTypeSupported(t)
+      ) ?? ""
+    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {})
+    const chunks: Blob[] = []
 
-    rec.onstart = () => setState("listening")
+    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data) }
 
-    rec.onresult = async (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => {
-      const transcript = e.results[0][0].transcript
-      setState("processing")
+    recorder.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop())
+      if (stateRef.current !== "listening") return
+
+      stateRef.current = "processing"
+      setUiState("processing")
+
+      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" })
       try {
-        const res = await fetch("/api/bible/voice-navigate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transcript, language, version }),
-        })
+        const fd = new FormData()
+        fd.append("audio", blob, "recording")
+        fd.append("language", language)
+        fd.append("version", version)
+
+        const res = await fetch("/api/bible/voice-navigate", { method: "POST", body: fd })
         const data = await res.json()
         if (res.ok && data.url) {
-          setState("idle")
+          stateRef.current = "idle"
+          setUiState("idle")
           router.push(data.url)
         } else {
-          setErrorMsg(`[api] ${data.error ?? "Could not understand the reference"}`)
-          setState("error")
+          setErrorMsg(data.error ?? "Could not understand the reference")
+          stateRef.current = "error"
+          setUiState("error")
         }
       } catch (err) {
-        setErrorMsg(`[api] ${err instanceof Error ? err.message : "Connection error"}`)
-        setState("error")
+        setErrorMsg(err instanceof Error ? err.message : "Connection error")
+        stateRef.current = "error"
+        setUiState("error")
       }
     }
 
-    rec.onerror = (e: { error: string }) => {
-      if (e.error === "aborted") return
-      const labels: Record<string, string> = {
-        "no-speech": "No speech detected.",
-        "not-allowed": "Microphone access denied.",
-        "network": "Speech service unavailable.",
-        "language-not-supported": "Language not supported.",
-        "audio-capture": "Microphone not found.",
-        "service-not-allowed": "Speech service not allowed.",
-      }
-      setErrorMsg(`[${e.error}] ${labels[e.error] ?? "Voice capture failed."}`)
-      setState("error")
-    }
+    recorder.start()
+    stateRef.current = "listening"
+    setUiState("listening")
+    recorderRef.current = recorder
 
-    rec.onend = () => {
-      if (stateRef.current === "listening") setState("idle")
-    }
-
-    recRef.current = rec
-    rec.start()
+    timerRef.current = setTimeout(() => {
+      if (stateRef.current === "listening") recorder.stop()
+    }, MAX_RECORDING_MS)
   }, [language, version, router])
 
   function handleClick() {
     if (uiState === "listening") {
-      recRef.current?.abort()
-      setState("idle")
-    } else {
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null }
+      recorderRef.current?.stop()
+    } else if (uiState !== "processing") {
       setErrorMsg("")
       startListening()
     }
