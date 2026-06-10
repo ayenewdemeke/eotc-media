@@ -6,7 +6,22 @@ import BookSidebar from "@/components/books/BookSidebar"
 import BookSearchFilters from "@/components/books/BookSearchFilters"
 import BookInfiniteGrid from "@/components/books/BookInfiniteGrid"
 
-export const metadata: Metadata = { title: "Books | EOTC Media" }
+export const metadata: Metadata = {
+  title: "Spiritual Books — Ethiopian Orthodox Library | መንፈሳዊ መጻሕፍት",
+  description:
+    "Read Amharic spiritual books by early church fathers and contemporary Ethiopian Orthodox Tewahedo teachers. " +
+    "በቀደሙ የቤተ ክርስቲያን አባቶችና በአሁኑ ዘመን መምህራን የተጻፉ መንፈሳዊ መጻሕፍት በአማርኛ።",
+  keywords: [
+    "Amharic spiritual books", "Ethiopian Orthodox books", "church fathers books", "Orthodox Tewahedo books",
+    "መንፈሳዊ መጻሕፍት", "የቤተ ክርስቲያን መጻሕፍት", "የአባቶች መጻሕፍት", "የኦርቶዶክስ መጻሕፍት",
+  ],
+  alternates: { canonical: "/books" },
+  openGraph: {
+    title: "Spiritual Books — Ethiopian Orthodox Library | መንፈሳዊ መጻሕፍት",
+    description: "Read Amharic spiritual books by church fathers and EOTC teachers. መንፈሳዊ መጻሕፍት በአማርኛ።",
+    url: "/books",
+  },
+}
 
 interface PageProps {
   searchParams: Promise<{ language?: string; category?: string; subCategory?: string; sort?: string; search?: string }>

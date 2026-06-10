@@ -27,17 +27,45 @@ function getBookDisplayName(
   return book.englishName
 }
 
+const LANGUAGE_LABELS: Record<string, { en: string; am: string }> = {
+  amharic: { en: "Amharic", am: "በአማርኛ" },
+  oromifa: { en: "Afaan Oromo", am: "በኦሮምኛ" },
+  tigrigna: { en: "Tigrigna", am: "በትግርኛ" },
+  english: { en: "English", am: "በእንግሊዝኛ" },
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { language, book, chapter } = await params
+  const { language, version, book, chapter } = await params
   const bookId = parseInt(book)
   const chapterNum = parseInt(chapter)
   if (isNaN(bookId) || isNaN(chapterNum)) return {}
   const currentBook = await getBook(bookId)
   if (!currentBook) return {}
   const bookName = getBookDisplayName(currentBook, language)
+  const langLabel = LANGUAGE_LABELS[language] ?? LANGUAGE_LABELS.english
+  const amharicName = currentBook.amharicName ?? currentBook.englishName
+  const title = `${bookName} ${chapterNum} — ${langLabel.en} Bible | መጽሐፍ ቅዱስ`
+  const description =
+    `Read ${currentBook.englishName} chapter ${chapterNum} in the ${langLabel.en} Bible with voice search on EOTC Media. ` +
+    `${amharicName} ምዕራፍ ${chapterNum} — መጽሐፍ ቅዱስ ${langLabel.am} በድምጽ ፍለጋ ያንብቡ።`
   return {
-    title: `${bookName} ${chapterNum} — Holy Bible | EOTC Media`,
-    description: `Read ${bookName} chapter ${chapterNum} in the Holy Bible on EOTC Media.`,
+    title,
+    description,
+    keywords: [
+      `${currentBook.englishName} ${chapterNum}`,
+      `${langLabel.en} Bible`,
+      "Bible voice search",
+      "መጽሐፍ ቅዱስ",
+      `${amharicName} ${chapterNum}`,
+      "መጽሐፍ ቅዱስ በድምጽ ፍለጋ",
+    ],
+    alternates: { canonical: `/bible/${language}/${version}/${bookId}/${chapterNum}` },
+    openGraph: {
+      title,
+      description,
+      url: `/bible/${language}/${version}/${bookId}/${chapterNum}`,
+      type: "article",
+    },
   }
 }
 

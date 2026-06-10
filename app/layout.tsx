@@ -4,6 +4,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Providers } from "@/app/providers";
 import FeedbackWidget from "@/components/FeedbackWidget";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_KEYWORDS, jsonLd } from "@/lib/seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,8 +23,44 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "EOTC Media - Ethiopian Orthodox Church Media Resources",
-  description: "Bible, Books, Hymns, Sermons, and Quiz - Ethiopian Orthodox Tewahedo Church Media",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "EOTC Media — Amharic Bible, Mezmur, Sermons & Spiritual Books | መጽሐፍ ቅዱስ፣ መዝሙር፣ ስብከት",
+    template: "%s | EOTC Media",
+  },
+  description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: "EOTC Media — Amharic Bible, Mezmur, Sermons & Spiritual Books",
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+    alternateLocale: ["am_ET"],
+    images: [{ url: "/icons/icon-512x512.png", width: 512, height: 512, alt: "EOTC Media" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "EOTC Media — Amharic Bible, Mezmur, Sermons & Spiritual Books",
+    description: SITE_DESCRIPTION,
+    images: ["/icons/icon-512x512.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   icons: {
     icon: [
       { url: "/icons/icon.png" },
@@ -64,6 +101,39 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLd({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: SITE_NAME,
+              alternateName: "Ethiopian Orthodox Tewahedo Church Media | የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ሚዲያ",
+              url: SITE_URL,
+              logo: `${SITE_URL}/icons/icon-512x512.png`,
+              description: SITE_DESCRIPTION,
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: jsonLd({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: SITE_NAME,
+              alternateName: "ኢኦተቤ ሚዲያ",
+              url: SITE_URL,
+              description: SITE_DESCRIPTION,
+              inLanguage: ["en", "am", "om", "ti"],
+              potentialAction: {
+                "@type": "SearchAction",
+                target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/hymns?search={search_term_string}` },
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
         <Providers>
           {children}
           <FeedbackWidget />
