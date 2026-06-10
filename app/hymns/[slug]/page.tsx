@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { auth } from "@/auth"
 import { getHymn, getRelatedHymns } from "@/lib/api/hymns"
+import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import HymnPlayer from "@/components/hymns/HymnPlayer"
 import LyricsPanel from "@/components/hymns/LyricsPanel"
@@ -21,9 +22,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const userId = session?.user?.id ? parseInt(session.user.id) : undefined
   const result = await getHymn(slug, userId)
   if (!result) return {}
+  const { hymn } = result
+  const singers = hymn.singers?.map(s => s.name).join(", ")
+  const description =
+    hymn.description ??
+    `Listen to the Ethiopian Orthodox Tewahedo mezmur "${hymn.title}"${singers ? ` by ${singers}` : ""} with lyrics on EOTC Media. ` +
+    `"${hymn.title}" መዝሙር ከግጥሙ ጋር ያዳምጡ።`
+  const thumbnail = hymn.thumbnailMaxres || hymn.thumbnailStandard || hymn.thumbnailHigh
   return {
-    title: `${result.hymn.title} — Hymns | EOTC Media`,
-    description: result.hymn.description ?? `Watch and listen to ${result.hymn.title} on EOTC Media.`,
+    title: `${hymn.title} — Mezmur | መዝሙር`,
+    description,
+    keywords: [
+      hymn.title, "mezmur", "EOTC mezmur", "Ethiopian Orthodox hymn", "መዝሙር", "ኦርቶዶክስ መዝሙር",
+      ...(hymn.singers?.map(s => s.name) ?? []),
+    ],
+    alternates: { canonical: `/hymns/${encodeURIComponent(hymn.slug)}` },
+    openGraph: {
+      title: `${hymn.title} — Mezmur | መዝሙር`,
+      description,
+      url: `/hymns/${encodeURIComponent(hymn.slug)}`,
+      type: "video.other",
+      images: thumbnail ? [{ url: thumbnail, alt: hymn.title }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${hymn.title} — Mezmur`,
+      description,
+      images: thumbnail ? [thumbnail] : undefined,
+    },
   }
 }
 
@@ -50,6 +76,40 @@ export default async function HymnPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            name: hymn.title,
+            description: hymn.description ?? `Ethiopian Orthodox Tewahedo mezmur "${hymn.title}" with lyrics.`,
+            thumbnailUrl: [hymn.thumbnailMaxres, hymn.thumbnailStandard, hymn.thumbnailHigh].filter(Boolean),
+            uploadDate: (hymn.publishedAt ?? hymn.createdAt).toISOString(),
+            embedUrl: `https://www.youtube.com/embed/${hymn.videoId}`,
+            url: absoluteUrl(`/hymns/${encodeURIComponent(hymn.slug)}`),
+            inLanguage: "am",
+            genre: "Religious music",
+            ...(hymn.singers?.length
+              ? { byArtist: hymn.singers.map(s => ({ "@type": "Person", name: s.name })) }
+              : {}),
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+              { "@type": "ListItem", position: 2, name: "Mezmur (Hymns)", item: absoluteUrl("/hymns") },
+              { "@type": "ListItem", position: 3, name: hymn.title, item: absoluteUrl(`/hymns/${encodeURIComponent(hymn.slug)}`) },
+            ],
+          }),
+        }}
+      />
       <Navbar />
       <div className="pt-16">
         <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-11 pt-4 pb-8">

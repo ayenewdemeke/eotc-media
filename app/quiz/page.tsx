@@ -6,8 +6,21 @@ import QuizSidebar from "@/components/quiz/QuizSidebar"
 import QuizBatchClient from "@/components/quiz/QuizBatchClient"
 
 export const metadata: Metadata = {
-  title: "Quiz — EOTC Media",
-  description: "Test your knowledge of Ethiopian Orthodox Tewahedo Church faith with quiz questions.",
+  title: "Amharic Bible Quiz — Test Your Knowledge | የመጽሐፍ ቅዱስ ጥያቄዎች",
+  description:
+    "Test your knowledge of the Bible and the Ethiopian Orthodox Tewahedo faith with Amharic quiz questions — " +
+    "practice alone or compete in quiz rooms. " +
+    "የመጽሐፍ ቅዱስ እና የኦርቶዶክስ ተዋሕዶ እምነት ጥያቄዎች በአማርኛ — ብቻዎን ይለማመዱ ወይም በውድድር ይሳተፉ።",
+  keywords: [
+    "Amharic Bible quiz", "Ethiopian Orthodox quiz", "Bible trivia Amharic", "EOTC quiz",
+    "የመጽሐፍ ቅዱስ ጥያቄዎች", "የመጽሐፍ ቅዱስ ጥያቄና መልስ", "መንፈሳዊ ጥያቄዎች",
+  ],
+  alternates: { canonical: "/quiz" },
+  openGraph: {
+    title: "Amharic Bible Quiz — Test Your Knowledge | የመጽሐፍ ቅዱስ ጥያቄዎች",
+    description: "Bible and EOTC faith quiz questions in Amharic. የመጽሐፍ ቅዱስ ጥያቄዎች በአማርኛ።",
+    url: "/quiz",
+  },
 }
 
 export default async function QuizPage() {

@@ -1,7 +1,7 @@
 {
-  "name": "EOTC Media - Ethiopian Orthodox Church Media Resources",
+  "name": "EOTC Media - Amharic Bible, Mezmur, Sermons, Books & Quiz",
   "short_name": "EOTC Media",
-  "description": "Bible, Books, Hymns, Sermons, and Quiz - Ethiopian Orthodox Tewahedo Church Media",
+  "description": "Amharic, Oromifa and Tigrigna Bible with voice search, Ethiopian Orthodox Tewahedo mezmurs, sermons, spiritual books, liturgy and Bible quiz. መጽሐፍ ቅዱስ፣ መዝሙሮች፣ ስብከቶች፣ መንፈሳዊ መጻሕፍት፣ ቅዳሴ እና የመጽሐፍ ቅዱስ ጥያቄዎች።",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

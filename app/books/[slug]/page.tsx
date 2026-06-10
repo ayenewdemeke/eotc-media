@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { auth } from "@/auth"
 import { getBook } from "@/lib/api/books"
+import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import BookSidebar from "@/components/books/BookSidebar"
 import BookDetailClient from "@/components/books/BookDetailClient"
@@ -15,7 +16,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const slug = decodeURIComponent(rawSlug)
   const book = await getBook(slug)
   if (!book) return { title: "Book Not Found" }
-  return { title: `${book.name} | EOTC Media` }
+  const description =
+    book.description ??
+    `Read the spiritual book "${book.name}" by ${book.author} on EOTC Media. ` +
+    `"${book.name}" መንፈሳዊ መጽሐፍ በ${book.author} ያንብቡ።`
+  return {
+    title: `${book.name} — Spiritual Book | መንፈሳዊ መጽሐፍ`,
+    description,
+    keywords: [
+      book.name, book.author, "Amharic spiritual book", "Ethiopian Orthodox book",
+      "መንፈሳዊ መጽሐፍ", "የቤተ ክርስቲያን መጽሐፍ",
+    ],
+    alternates: { canonical: `/books/${encodeURIComponent(slug)}` },
+    openGraph: {
+      title: `${book.name} — Spiritual Book | መንፈሳዊ መጽሐፍ`,
+      description,
+      url: `/books/${encodeURIComponent(slug)}`,
+      type: "book",
+    },
+  }
 }
 
 export default async function BookPage({ params }: PageProps) {
@@ -29,6 +48,34 @@ export default async function BookPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "Book",
+            name: book.name,
+            author: { "@type": "Person", name: book.author },
+            description: book.description ?? undefined,
+            url: absoluteUrl(`/books/${encodeURIComponent(slug)}`),
+            inLanguage: "am",
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+              { "@type": "ListItem", position: 2, name: "Spiritual Books", item: absoluteUrl("/books") },
+              { "@type": "ListItem", position: 3, name: book.name, item: absoluteUrl(`/books/${encodeURIComponent(slug)}`) },
+            ],
+          }),
+        }}
+      />
       <Navbar />
       <div className="pt-16">
         <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">

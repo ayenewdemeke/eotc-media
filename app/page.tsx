@@ -1,12 +1,20 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { auth } from "@/auth";
+import { SITE_DESCRIPTION } from "@/lib/seo";
 import { BookOpen, BookMarked, Music, MessageSquare, Mic, ArrowRight } from "lucide-react";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: { absolute: "EOTC Media — Amharic Bible, Mezmur, Sermons & Spiritual Books | መጽሐፍ ቅዱስ፣ መዝሙር፣ ስብከት" },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const session = await auth();

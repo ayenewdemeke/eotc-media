@@ -9,7 +9,23 @@ import SermonInfiniteGrid from "@/components/sermons/SermonInfiniteGrid"
 import SermonCard from "@/components/sermons/SermonCard"
 import { Star } from "lucide-react"
 
-export const metadata: Metadata = { title: "Sermons | EOTC Media" }
+export const metadata: Metadata = {
+  title: "Sermons — Ethiopian Orthodox Tewahedo Teachings | ስብከቶች",
+  description:
+    "Watch and listen to Ethiopian Orthodox Tewahedo Church sermons and spiritual teachings in Amharic, " +
+    "organized by preacher, category and language. " +
+    "የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ስብከቶች እና ትምህርቶች — በሰባኪ፣ በምድብ እና በቋንቋ ተደራጅተው።",
+  keywords: [
+    "Ethiopian Orthodox sermons", "Amharic sermons", "EOTC teachings", "Orthodox Tewahedo sermon",
+    "ስብከት", "ስብከቶች", "የኦርቶዶክስ ስብከት", "መንፈሳዊ ትምህርት",
+  ],
+  alternates: { canonical: "/sermons" },
+  openGraph: {
+    title: "Sermons — Ethiopian Orthodox Tewahedo Teachings | ስብከቶች",
+    description: "Watch EOTC sermons and spiritual teachings. የኦርቶዶክስ ተዋሕዶ ስብከቶች እና ትምህርቶች።",
+    url: "/sermons",
+  },
+}
 
 const PAGE_SIZE = 24
 

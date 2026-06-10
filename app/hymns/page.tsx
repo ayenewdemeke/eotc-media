@@ -10,8 +10,21 @@ import HymnCard from "@/components/hymns/HymnCard"
 import { Star } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Hymns — EOTC Media",
-  description: "Browse Ethiopian Orthodox Tewahedo Church hymns and spiritual songs.",
+  title: "Mezmur — Ethiopian Orthodox Tewahedo Hymns | መዝሙሮች",
+  description:
+    "Listen to Ethiopian Orthodox Tewahedo Church (EOTC) mezmurs and spiritual songs in Amharic, " +
+    "organized by singer, category and language with lyrics. " +
+    "የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን መዝሙሮች ከግጥሞቻቸው ጋር — በዘማሪ፣ በምድብ እና በቋንቋ ተደራጅተው።",
+  keywords: [
+    "EOTC mezmur", "Ethiopian Orthodox mezmur", "Amharic mezmur", "Orthodox Tewahedo hymns",
+    "mezmur lyrics", "መዝሙር", "መዝሙሮች", "ኦርቶዶክስ መዝሙር", "የመዝሙር ግጥሞች", "መንፈሳዊ መዝሙራት",
+  ],
+  alternates: { canonical: "/hymns" },
+  openGraph: {
+    title: "Mezmur — Ethiopian Orthodox Tewahedo Hymns | መዝሙሮች",
+    description: "Listen to EOTC mezmurs and spiritual songs with lyrics. የኦርቶዶክስ ተዋሕዶ መዝሙሮች ከግጥሞቻቸው ጋር።",
+    url: "/hymns",
+  },
 }
 
 const PAGE_SIZE = 24

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { auth } from "@/auth"
 import { getSermon, getRelatedSermons } from "@/lib/api/sermons"
+import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import SermonPlayer from "@/components/sermons/SermonPlayer"
 import SermonFavoriteButton from "@/components/sermons/SermonFavoriteButton"
@@ -18,9 +19,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const userId = session?.user?.id ? parseInt(session.user.id) : undefined
   const result = await getSermon(slug, userId)
   if (!result) return {}
+  const { sermon } = result
+  const preachers = sermon.preachers?.map(p => p.name).join(", ")
+  const description =
+    sermon.description ??
+    `Watch the Ethiopian Orthodox Tewahedo sermon "${sermon.title}"${preachers ? ` by ${preachers}` : ""} on EOTC Media. ` +
+    `"${sermon.title}" ስብከት ይመልከቱ።`
+  const thumbnail = sermon.thumbnailMaxres || sermon.thumbnailStandard || sermon.thumbnailHigh
   return {
-    title: `${result.sermon.title} — Sermons | EOTC Media`,
-    description: result.sermon.description ?? `Watch and listen to ${result.sermon.title} on EOTC Media.`,
+    title: `${sermon.title} — Sermon | ስብከት`,
+    description,
+    keywords: [
+      sermon.title, "Ethiopian Orthodox sermon", "Amharic sermon", "EOTC teaching", "ስብከት", "መንፈሳዊ ትምህርት",
+      ...(sermon.preachers?.map(p => p.name) ?? []),
+    ],
+    alternates: { canonical: `/sermons/${encodeURIComponent(sermon.slug)}` },
+    openGraph: {
+      title: `${sermon.title} — Sermon | ስብከት`,
+      description,
+      url: `/sermons/${encodeURIComponent(sermon.slug)}`,
+      type: "video.other",
+      images: thumbnail ? [{ url: thumbnail, alt: sermon.title }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${sermon.title} — Sermon`,
+      description,
+      images: thumbnail ? [thumbnail] : undefined,
+    },
   }
 }
 
@@ -40,6 +66,37 @@ export default async function SermonPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            name: sermon.title,
+            description: sermon.description ?? `Ethiopian Orthodox Tewahedo sermon "${sermon.title}".`,
+            thumbnailUrl: [sermon.thumbnailMaxres, sermon.thumbnailStandard, sermon.thumbnailHigh].filter(Boolean),
+            uploadDate: (sermon.publishedAt ?? sermon.createdAt).toISOString(),
+            embedUrl: `https://www.youtube.com/embed/${sermon.videoId}`,
+            url: absoluteUrl(`/sermons/${encodeURIComponent(sermon.slug)}`),
+            inLanguage: "am",
+            genre: "Religious",
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl("/") },
+              { "@type": "ListItem", position: 2, name: "Sermons", item: absoluteUrl("/sermons") },
+              { "@type": "ListItem", position: 3, name: sermon.title, item: absoluteUrl(`/sermons/${encodeURIComponent(sermon.slug)}`) },
+            ],
+          }),
+        }}
+      />
       <Navbar />
       <div className="pt-16">
         <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-11 pt-4 pb-8">
