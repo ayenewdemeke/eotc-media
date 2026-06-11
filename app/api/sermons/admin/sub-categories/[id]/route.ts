@@ -25,6 +25,8 @@ export async function DELETE(
   const session = await auth()
   if (!hasSermonAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
+  const inUse = await prisma.smSermonSubCategory.count({ where: { subCategoryId: parseInt(id) } })
+  if (inUse > 0) return NextResponse.json({ error: `Cannot delete: ${inUse} sermon${inUse === 1 ? '' : 's'} still use this sub-category.` }, { status: 409 })
   await prisma.smSubCategory.delete({ where: { id: parseInt(id) } })
   return NextResponse.json({ ok: true })
 }

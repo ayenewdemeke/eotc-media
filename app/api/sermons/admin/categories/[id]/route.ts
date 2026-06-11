@@ -27,6 +27,12 @@ export async function DELETE(
   const session = await auth()
   if (!hasSermonAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
+  const [sermonsInUse, subCategoriesInUse] = await Promise.all([
+    prisma.smCategorySermon.count({ where: { categoryId: parseInt(id) } }),
+    prisma.smSubCategory.count({ where: { categoryId: parseInt(id) } }),
+  ])
+  if (sermonsInUse > 0) return NextResponse.json({ error: `Cannot delete: ${sermonsInUse} sermon${sermonsInUse === 1 ? '' : 's'} still use this category.` }, { status: 409 })
+  if (subCategoriesInUse > 0) return NextResponse.json({ error: `Cannot delete: ${subCategoriesInUse} sub-categor${subCategoriesInUse === 1 ? 'y' : 'ies'} still belong to this category.` }, { status: 409 })
   await prisma.smCategory.delete({ where: { id: parseInt(id) } })
   return NextResponse.json({ ok: true })
 }

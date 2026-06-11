@@ -424,9 +424,7 @@ model CbBookLanguage {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   book     CbBook     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  language CbLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
-
-  @@map("cb_book_language")
+  language CbLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
 }
 
 model CbBookCategory {
@@ -437,9 +435,7 @@ model CbBookCategory {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   book     CbBook     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  category CbCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@map("cb_book_category")
+  category CbCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 }
 
 model CbBookSubCategory {
@@ -450,9 +446,7 @@ model CbBookSubCategory {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   book        CbBook        @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  subCategory CbSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
-
-  @@map("cb_book_sub_category")
+  subCategory CbSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
 }
 
 model CbAuthorBook {
@@ -462,10 +456,8 @@ model CbAuthorBook {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  author CbAuthor @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author CbAuthor @relation(fields: [authorId], references: [id], onDelete: Restrict)
   book   CbBook   @relation(fields: [bookId], references: [id], onDelete: Cascade)
-
-  @@map("cb_author_book")
 }
 
 model CbLike {
@@ -654,9 +646,7 @@ model HmHymnLanguage {
   updatedAt  DateTime @updatedAt @map("updated_at")
 
   hymn     HmHymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
-  language HmLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
-
-  @@map("hm_hymn_language")
+  language HmLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
 }
 
 model HmCategoryHymn {
@@ -666,10 +656,8 @@ model HmCategoryHymn {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  category HmCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category HmCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   hymn     HmHymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
-
-  @@map("hm_category_hymn")
 }
 
 model HmHymnSubCategory {
@@ -680,9 +668,7 @@ model HmHymnSubCategory {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   hymn        HmHymn        @relation(fields: [hymnId], references: [id], onDelete: Cascade)
-  subCategory HmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
-
-  @@map("hm_hymn_sub_category")
+  subCategory HmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
 }
 
 model HmHymnSinger {
@@ -693,9 +679,7 @@ model HmHymnSinger {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   hymn   HmHymn   @relation(fields: [hymnId], references: [id], onDelete: Cascade)
-  singer HmSinger @relation(fields: [singerId], references: [id], onDelete: Cascade)
-
-  @@map("hm_hymn_singer")
+  singer HmSinger @relation(fields: [singerId], references: [id], onDelete: Restrict)
 }
 
 model HmFavorite {
@@ -879,10 +863,8 @@ model SmLanguageSermon {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  language SmLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  language SmLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
   sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
-
-  @@map("sm_language_sermon")
 }
 
 model SmCategorySermon {
@@ -892,10 +874,8 @@ model SmCategorySermon {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  category SmCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category SmCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
-
-  @@map("sm_category_sermon")
 }
 
 model SmSermonSubCategory {
@@ -906,9 +886,7 @@ model SmSermonSubCategory {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   sermon      SmSermon      @relation(fields: [sermonId], references: [id], onDelete: Cascade)
-  subCategory SmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
-
-  @@map("sm_sermon_sub_category")
+  subCategory SmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
 }
 
 model SmPreacherSermon {
@@ -918,10 +896,8 @@ model SmPreacherSermon {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  preacher SmPreacher @relation(fields: [preacherId], references: [id], onDelete: Cascade)
+  preacher SmPreacher @relation(fields: [preacherId], references: [id], onDelete: Restrict)
   sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
-
-  @@map("sm_preacher_sermon")
 }
 
 model SmFavorite {
@@ -1058,10 +1034,8 @@ model QzLanguageQuestion {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  language QzLanguage @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  language QzLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
   question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@map("qz_language_question")
 }
 
 model QzCategoryQuestion {
@@ -1071,10 +1045,8 @@ model QzCategoryQuestion {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  category QzCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category QzCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@map("qz_category_question")
 }
 
 model QzQuestionSubCategory {
@@ -1085,9 +1057,7 @@ model QzQuestionSubCategory {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   question    QzQuestion    @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  subCategory QzSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
-
-  @@map("qz_question_sub_category")
+  subCategory QzSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
 }
 
 model QzRoom {

@@ -7,6 +7,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const session = await auth()
   if (!hasBookAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
+  const inUse = await prisma.cbBook.count({ where: { approvalStatusId: parseInt(id) } })
+  if (inUse > 0) return NextResponse.json({ error: `Cannot delete: ${inUse} book${inUse === 1 ? '' : 's'} still use this status.` }, { status: 409 })
   await prisma.cbApprovalStatus.delete({ where: { id: parseInt(id) } })
   return NextResponse.json({ ok: true })
 }

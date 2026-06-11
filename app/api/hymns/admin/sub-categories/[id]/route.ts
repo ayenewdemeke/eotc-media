@@ -19,6 +19,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const session = await auth()
   if (!hasHymnAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
+  const inUse = await prisma.hmHymnSubCategory.count({ where: { subCategoryId: parseInt(id) } })
+  if (inUse > 0) return NextResponse.json({ error: `Cannot delete: ${inUse} hymn${inUse === 1 ? '' : 's'} still use this sub-category.` }, { status: 409 })
   await prisma.hmSubCategory.delete({ where: { id: parseInt(id) } })
   return NextResponse.json({ success: true })
 }
