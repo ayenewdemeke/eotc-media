@@ -23,6 +23,8 @@ export async function DELETE(
   const session = await auth()
   if (!hasSermonAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
+  const inUse = await prisma.smPreacherSermon.count({ where: { preacherId: parseInt(id) } })
+  if (inUse > 0) return NextResponse.json({ error: `Cannot delete: ${inUse} sermon${inUse === 1 ? '' : 's'} still use this preacher.` }, { status: 409 })
   await prisma.smPreacher.delete({ where: { id: parseInt(id) } })
   return NextResponse.json({ ok: true })
 }
