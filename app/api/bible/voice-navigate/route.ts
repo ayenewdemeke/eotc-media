@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+let genAI: GoogleGenerativeAI | null = null
+let cachedBooks: { id: number; englishName: string; amharicName: string | null; oromifaName: string | null }[] | null = null
+let cachedBookList: string | null = null
+
 export async function POST(req: NextRequest) {
   let language: string | undefined
   let version: string | undefined
@@ -28,11 +32,16 @@ export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
 
-  const books = await prisma.blBook.findMany({ orderBy: { id: 'asc' } })
+  if (!genAI) genAI = new GoogleGenerativeAI(apiKey)
 
-  const bookList = books
-    .map(b => `${b.id}\t${b.englishName}${b.amharicName ? ` / ${b.amharicName}` : ''}${b.oromifaName ? ` / ${b.oromifaName}` : ''}`)
-    .join('\n')
+  if (!cachedBooks) {
+    cachedBooks = await prisma.blBook.findMany({ orderBy: { id: 'asc' } })
+    cachedBookList = cachedBooks
+      .map(b => `${b.id}\t${b.englishName}${b.amharicName ? ` / ${b.amharicName}` : ''}${b.oromifaName ? ` / ${b.oromifaName}` : ''}`)
+      .join('\n')
+  }
+  const books = cachedBooks
+  const bookList = cachedBookList!
 
   const prompt = `You are a Bible navigator. Listen to the audio and handle two request types:
 
@@ -56,7 +65,6 @@ Return format: {"bookId": <number>, "chapter": <number>, "verse": <number or nul
 If nothing intelligible or no verse found: {"error": "no verse found"}`
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
     const result = await model.generateContent([
       { inlineData: { mimeType: audioMimeType, data: audioBase64 } },
