@@ -425,6 +425,8 @@ model CbBookLanguage {
 
   book     CbBook     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   language CbLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
+
+  @@map("cb_book_language")
 }
 
 model CbBookCategory {
@@ -436,6 +438,8 @@ model CbBookCategory {
 
   book     CbBook     @relation(fields: [bookId], references: [id], onDelete: Cascade)
   category CbCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@map("cb_book_category")
 }
 
 model CbBookSubCategory {
@@ -447,6 +451,8 @@ model CbBookSubCategory {
 
   book        CbBook        @relation(fields: [bookId], references: [id], onDelete: Cascade)
   subCategory CbSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
+
+  @@map("cb_book_sub_category")
 }
 
 model CbAuthorBook {
@@ -458,6 +464,8 @@ model CbAuthorBook {
 
   author CbAuthor @relation(fields: [authorId], references: [id], onDelete: Restrict)
   book   CbBook   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("cb_author_book")
 }
 
 model CbLike {
@@ -647,6 +655,8 @@ model HmHymnLanguage {
 
   hymn     HmHymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
   language HmLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
+
+  @@map("hm_hymn_language")
 }
 
 model HmCategoryHymn {
@@ -658,6 +668,8 @@ model HmCategoryHymn {
 
   category HmCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   hymn     HmHymn     @relation(fields: [hymnId], references: [id], onDelete: Cascade)
+
+  @@map("hm_category_hymn")
 }
 
 model HmHymnSubCategory {
@@ -669,6 +681,8 @@ model HmHymnSubCategory {
 
   hymn        HmHymn        @relation(fields: [hymnId], references: [id], onDelete: Cascade)
   subCategory HmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
+
+  @@map("hm_hymn_sub_category")
 }
 
 model HmHymnSinger {
@@ -680,6 +694,8 @@ model HmHymnSinger {
 
   hymn   HmHymn   @relation(fields: [hymnId], references: [id], onDelete: Cascade)
   singer HmSinger @relation(fields: [singerId], references: [id], onDelete: Restrict)
+
+  @@map("hm_hymn_singer")
 }
 
 model HmFavorite {
@@ -865,6 +881,8 @@ model SmLanguageSermon {
 
   language SmLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
   sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@map("sm_language_sermon")
 }
 
 model SmCategorySermon {
@@ -876,6 +894,8 @@ model SmCategorySermon {
 
   category SmCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@map("sm_category_sermon")
 }
 
 model SmSermonSubCategory {
@@ -887,6 +907,8 @@ model SmSermonSubCategory {
 
   sermon      SmSermon      @relation(fields: [sermonId], references: [id], onDelete: Cascade)
   subCategory SmSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
+
+  @@map("sm_sermon_sub_category")
 }
 
 model SmPreacherSermon {
@@ -898,6 +920,8 @@ model SmPreacherSermon {
 
   preacher SmPreacher @relation(fields: [preacherId], references: [id], onDelete: Restrict)
   sermon   SmSermon   @relation(fields: [sermonId], references: [id], onDelete: Cascade)
+
+  @@map("sm_preacher_sermon")
 }
 
 model SmFavorite {
@@ -1036,6 +1060,8 @@ model QzLanguageQuestion {
 
   language QzLanguage @relation(fields: [languageId], references: [id], onDelete: Restrict)
   question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("qz_language_question")
 }
 
 model QzCategoryQuestion {
@@ -1047,6 +1073,8 @@ model QzCategoryQuestion {
 
   category QzCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   question QzQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("qz_category_question")
 }
 
 model QzQuestionSubCategory {
@@ -1058,6 +1086,8 @@ model QzQuestionSubCategory {
 
   question    QzQuestion    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   subCategory QzSubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Restrict)
+
+  @@map("qz_question_sub_category")
 }
 
 model QzRoom {
