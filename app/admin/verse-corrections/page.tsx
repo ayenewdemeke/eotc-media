@@ -7,9 +7,5 @@ export default async function VerseCorrectionsPage() {
     prisma.blTranslation.findMany({ orderBy: { name: "asc" } }),
   ])
 
-  return (
-    <div className="p-6">
-      <VerseCorrectionsClient books={books} translations={translations} />
-    </div>
-  )
+  return <VerseCorrectionsClient books={books} translations={translations} />
 }

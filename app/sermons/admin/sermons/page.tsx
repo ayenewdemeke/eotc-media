@@ -2,9 +2,27 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import SermonApproveDeclineButtons from "@/components/admin/sermons/SermonApproveDeclineButtons"
 import SermonAdminActions from "@/components/admin/sermons/SermonAdminActions"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 interface PageProps {
   searchParams: Promise<{ status?: string; page?: string }>
+}
+
+const statusVariant: Record<string, "success" | "warning" | "destructive" | "secondary"> = {
+  Accepted: "success",
+  Submitted: "warning",
+  Declined: "destructive",
 }
 
 function Pagination({ page, totalPages, status }: { page: number; totalPages: number; status?: string }) {
@@ -25,28 +43,31 @@ function Pagination({ page, totalPages, status }: { page: number; totalPages: nu
     prev = p
   }
 
+  const linkClass = "px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+
   return (
-    <div className="flex items-center justify-center gap-1 flex-wrap">
+    <div className="flex flex-wrap items-center justify-center gap-1">
       {page > 1 && (
-        <Link href={href(page - 1)} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">← Prev</Link>
+        <Link href={href(page - 1)} className={linkClass}>← Prev</Link>
       )}
       {withEllipsis.map((p, i) =>
         p === "…" ? (
-          <span key={`e${i}`} className="px-2 py-1.5 text-sm text-slate-400">…</span>
+          <span key={`e${i}`} className="px-2 py-1.5 text-sm text-muted-foreground">…</span>
         ) : (
           <Link
             key={p}
             href={href(p as number)}
-            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-              p === page ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 hover:bg-slate-50"
-            }`}
+            className={cn(
+              linkClass,
+              p === page && "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground"
+            )}
           >
             {p}
           </Link>
         )
       )}
       {page < totalPages && (
-        <Link href={href(page + 1)} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">Next →</Link>
+        <Link href={href(page + 1)} className={linkClass}>Next →</Link>
       )}
     </div>
   )
@@ -86,92 +107,80 @@ export default async function AdminSermonsPage({ searchParams }: PageProps) {
   const isPending = status === "pending"
   const pageTitle = isPending ? "New sermons" : "All sermons"
 
-  const statusBadge: Record<string, string> = {
-    Accepted: "bg-green-100 text-green-700",
-    Submitted: "bg-amber-100 text-amber-700",
-    Declined: "bg-red-100 text-red-700",
-  }
-
   return (
-    <div className="p-6 min-w-0">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">{pageTitle}</h1>
-          <p className="text-sm text-slate-400 mt-0.5">{total.toLocaleString()} sermons</p>
-        </div>
-      </div>
+    <div className="min-w-0 space-y-4 p-4 lg:p-6">
+      <PageHeader title={pageTitle} description={`${total.toLocaleString()} sermons`} />
 
       <Pagination page={page} totalPages={totalPages} status={status} />
 
-      <div className="bg-white rounded-lg border border-slate-200 overflow-x-auto my-4">
-        <table className="w-full text-sm whitespace-nowrap">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50">
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">#</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Language</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Subcategory</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Title</th>
-              <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
-              {/* action columns */}
-              <th className="px-4 py-2.5" />
-              {isPending && (
-                <>
-                  <th className="px-4 py-2.5" />
-                  <th className="px-4 py-2.5" />
-                  <th className="px-4 py-2.5" />
-                </>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {sermons.length === 0 && (
-              <tr>
-                <td colSpan={isPending ? 10 : 7} className="py-14 text-center text-slate-400 text-sm">
-                  No sermons found
-                </td>
-              </tr>
-            )}
-            {sermons.map((sermon, i) => (
-              <tr key={sermon.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-2.5 text-slate-400 text-xs">{(page - 1) * PAGE_SIZE + i + 1}</td>
-                <td className="px-4 py-2.5 text-slate-600 text-xs">{sermon.languages.map(l => l.language.name).join(", ") || "—"}</td>
-                <td className="px-4 py-2.5 text-slate-600 text-xs">{sermon.categories.map(c => c.category.name).join(", ") || "—"}</td>
-                <td className="px-4 py-2.5 text-slate-600 text-xs">{sermon.subCategories.map(s => s.subCategory.name).join(", ") || "—"}</td>
-                <td className="px-4 py-2.5 font-medium text-slate-900">
-                  {sermon.title.length > 40 ? sermon.title.slice(0, 40) + "…" : sermon.title}
-                </td>
-                <td className="px-4 py-2.5">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[sermon.approvalStatus.name] ?? "bg-slate-100 text-slate-600"}`}>
-                    {sermon.approvalStatus.name}
-                  </span>
-                </td>
-                {isPending ? (
+      <Card>
+        <CardContent className="p-0">
+          <Table className="whitespace-nowrap">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="px-4">#</TableHead>
+                <TableHead className="px-4">Language</TableHead>
+                <TableHead className="px-4">Category</TableHead>
+                <TableHead className="px-4">Subcategory</TableHead>
+                <TableHead className="px-4">Title</TableHead>
+                <TableHead className="px-4">Status</TableHead>
+                <TableHead className="px-4" />
+                {isPending && (
                   <>
-                    {/* view on YouTube */}
-                    <td className="px-4 py-2.5">
-                      <a
-                        href={`https://www.youtube.com/watch?v=${sermon.videoId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-slate-500 hover:underline"
-                      >
-                        view
-                      </a>
-                    </td>
-                    {/* new preacher | accept | decline — renders 3 tds */}
-                    <SermonApproveDeclineButtons sermonId={sermon.id} sermonTitle={sermon.title} />
+                    <TableHead className="px-4" />
+                    <TableHead className="px-4" />
+                    <TableHead className="px-4" />
                   </>
-                ) : (
-                  <td className="px-4 py-2.5">
-                    <SermonAdminActions sermonId={sermon.id} slug={sermon.slug} />
-                  </td>
                 )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sermons.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={isPending ? 10 : 7} className="py-14 text-center text-muted-foreground">
+                    No sermons found
+                  </TableCell>
+                </TableRow>
+              )}
+              {sermons.map((sermon, i) => (
+                <TableRow key={sermon.id}>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{(page - 1) * PAGE_SIZE + i + 1}</TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{sermon.languages.map(l => l.language.name).join(", ") || "—"}</TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{sermon.categories.map(c => c.category.name).join(", ") || "—"}</TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{sermon.subCategories.map(s => s.subCategory.name).join(", ") || "—"}</TableCell>
+                  <TableCell className="px-4 font-medium">
+                    {sermon.title.length > 40 ? sermon.title.slice(0, 40) + "…" : sermon.title}
+                  </TableCell>
+                  <TableCell className="px-4">
+                    <Badge variant={statusVariant[sermon.approvalStatus.name] ?? "secondary"}>
+                      {sermon.approvalStatus.name}
+                    </Badge>
+                  </TableCell>
+                  {isPending ? (
+                    <>
+                      <TableCell className="px-4">
+                        <a
+                          href={`https://www.youtube.com/watch?v=${sermon.videoId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-muted-foreground hover:underline"
+                        >
+                          view
+                        </a>
+                      </TableCell>
+                      <SermonApproveDeclineButtons sermonId={sermon.id} sermonTitle={sermon.title} />
+                    </>
+                  ) : (
+                    <TableCell className="px-4">
+                      <SermonAdminActions sermonId={sermon.id} slug={sermon.slug} />
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       <Pagination page={page} totalPages={totalPages} status={status} />
     </div>
