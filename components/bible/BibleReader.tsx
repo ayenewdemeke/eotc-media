@@ -579,37 +579,30 @@ export default function BibleReader({
 
       {/* ═══ MOBILE TOP BAR ══════════════════════════════════════════ */}
       <div className="sticky top-16 z-30 lg:hidden bg-white/95 backdrop-blur-sm border-b border-slate-100/80">
-        <div className="px-4 h-11 flex items-center justify-between gap-3">
-          <nav className="flex items-center gap-1.5 text-sm min-w-0">
-            <span className="text-slate-600 font-medium truncate max-w-[120px]">{currentBookName}</span>
-            <span className="text-slate-300 select-none">/</span>
-            <span className="text-slate-800 font-semibold">{currentChapter}</span>
-          </nav>
-          <div className="flex items-center gap-2 shrink-0">
-            <VoiceNavigateButton language={language} version={version} />
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-            >
-              <Search className="w-3.5 h-3.5" />
-            </button>
-            <Select
-              value={`${language}__${version}`}
-              onValueChange={value => {
-                const [l, v] = value.split("__")
-                router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
-              }}
-            >
-              <SelectTrigger className="h-8 text-xs w-[116px] bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-lg">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
-                <SelectItem value="english__kjv">English KJV</SelectItem>
-                <SelectItem value="oromifa__v1">Oromifa</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="px-4 h-11 flex items-center justify-end gap-2 shrink-0">
+          <VoiceNavigateButton language={language} version={version} />
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+          >
+            <Search className="w-3.5 h-3.5" />
+          </button>
+          <Select
+            value={`${language}__${version}`}
+            onValueChange={value => {
+              const [l, v] = value.split("__")
+              router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
+            }}
+          >
+            <SelectTrigger className="h-8 text-xs w-[116px] bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-lg">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
+              <SelectItem value="english__kjv">English KJV</SelectItem>
+              <SelectItem value="oromifa__v1">Oromifa</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
