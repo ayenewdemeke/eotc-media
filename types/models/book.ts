@@ -6,6 +6,7 @@ export interface CbLanguage {
 export interface CbCategory {
   id: number
   name: string
+  languageId?: number | null
 }
 
 export interface CbSubCategory {

@@ -7,8 +7,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const session = await auth()
   if (!hasBookAdminAccess(session)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   const { id } = await params
-  const { name } = await req.json()
-  const cat = await prisma.cbCategory.update({ where: { id: parseInt(id) }, data: { name: name.trim(), updatedAt: new Date() } })
+  const { name, languageId } = await req.json()
+  const cat = await prisma.cbCategory.update({
+    where: { id: parseInt(id) },
+    data: {
+      name: name.trim(),
+      languageId: languageId !== undefined ? (languageId ? parseInt(String(languageId)) : null) : undefined,
+      updatedAt: new Date(),
+    },
+  })
   return NextResponse.json(cat)
 }
 

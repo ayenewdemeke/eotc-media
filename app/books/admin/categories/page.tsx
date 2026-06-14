@@ -3,23 +3,33 @@
 import { useEffect, useState } from "react"
 import { Plus, Edit, Trash2 } from "lucide-react"
 
-interface Category { id: number; name: string }
+interface Language { id: number; name: string }
+interface Category { id: number; name: string; languageId?: number | null }
 
 export default function AdminBookCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
+  const [languages, setLanguages] = useState<Language[]>([])
   const [loading, setLoading] = useState(true)
   const [editId, setEditId] = useState<number | null>(null)
   const [editName, setEditName] = useState("")
+  const [editLanguageId, setEditLanguageId] = useState<string>("")
   const [newName, setNewName] = useState("")
+  const [newLanguageId, setNewLanguageId] = useState<string>("")
   const [saving, setSaving] = useState(false)
 
   async function load() {
-    const res = await fetch("/api/books/admin/categories")
-    if (res.ok) setCategories(await res.json())
+    const [catsRes, langsRes] = await Promise.all([
+      fetch("/api/books/admin/categories"),
+      fetch("/api/books/admin/languages"),
+    ])
+    if (catsRes.ok) setCategories(await catsRes.json())
+    if (langsRes.ok) setLanguages(await langsRes.json())
     setLoading(false)
   }
 
   useEffect(() => { load() }, [])
+
+  const languageName = (id?: number | null) => languages.find(l => l.id === id)?.name ?? "—"
 
   async function create() {
     if (!newName.trim()) return
@@ -27,9 +37,10 @@ export default function AdminBookCategoriesPage() {
     await fetch("/api/books/admin/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName.trim() }),
+      body: JSON.stringify({ name: newName.trim(), languageId: newLanguageId || null }),
     })
     setNewName("")
+    setNewLanguageId("")
     setSaving(false)
     load()
   }
@@ -40,7 +51,7 @@ export default function AdminBookCategoriesPage() {
     await fetch(`/api/books/admin/categories/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editName.trim() }),
+      body: JSON.stringify({ name: editName.trim(), languageId: editLanguageId || null }),
     })
     setEditId(null)
     setSaving(false)
@@ -49,15 +60,23 @@ export default function AdminBookCategoriesPage() {
 
   async function remove(id: number) {
     if (!confirm("Delete this category?")) return
-    await fetch(`/api/books/admin/categories/${id}`, { method: "DELETE" })
+    const res = await fetch(`/api/books/admin/categories/${id}`, { method: "DELETE" })
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      alert(d.error ?? "Could not delete category.")
+      return
+    }
     load()
   }
 
+  const selectCls = "h-9 px-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white"
+
   return (
     <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Categories</h1>
+      <h1 className="text-2xl font-bold text-slate-900 mb-1">Categories</h1>
+      <p className="text-sm text-slate-400 mb-6">Assign each category to a language so it appears under that language in the filters and upload form.</p>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <input
           value={newName}
           onChange={e => setNewName(e.target.value)}
@@ -65,10 +84,14 @@ export default function AdminBookCategoriesPage() {
           placeholder="New category name…"
           className="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400"
         />
+        <select value={newLanguageId} onChange={e => setNewLanguageId(e.target.value)} className={selectCls}>
+          <option value="">No language</option>
+          {languages.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+        </select>
         <button
           onClick={create}
           disabled={saving || !newName.trim()}
-          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           Add
@@ -83,6 +106,7 @@ export default function AdminBookCategoriesPage() {
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Language</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -103,6 +127,16 @@ export default function AdminBookCategoriesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
+                    {editId === cat.id ? (
+                      <select value={editLanguageId} onChange={e => setEditLanguageId(e.target.value)} className="h-8 px-2 text-sm border border-blue-400 rounded outline-none bg-white">
+                        <option value="">No language</option>
+                        {languages.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                      </select>
+                    ) : (
+                      <span className="text-slate-500">{languageName(cat.languageId)}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex gap-2 justify-end">
                       {editId === cat.id ? (
                         <>
@@ -111,7 +145,7 @@ export default function AdminBookCategoriesPage() {
                         </>
                       ) : (
                         <>
-                          <button onClick={() => { setEditId(cat.id); setEditName(cat.name) }} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md cursor-pointer">
+                          <button onClick={() => { setEditId(cat.id); setEditName(cat.name); setEditLanguageId(cat.languageId ? String(cat.languageId) : "") }} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md cursor-pointer">
                             <Edit className="w-4 h-4" />
                           </button>
                           <button onClick={() => remove(cat.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md cursor-pointer">
@@ -124,7 +158,7 @@ export default function AdminBookCategoriesPage() {
                 </tr>
               ))}
               {categories.length === 0 && (
-                <tr><td colSpan={2} className="px-4 py-8 text-center text-slate-400 text-sm">No categories yet</td></tr>
+                <tr><td colSpan={3} className="px-4 py-8 text-center text-slate-400 text-sm">No categories yet</td></tr>
               )}
             </tbody>
           </table>

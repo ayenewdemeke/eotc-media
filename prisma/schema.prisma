@@ -338,17 +338,20 @@ model CbLanguage {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  books CbBookLanguage[]
+  books      CbBookLanguage[]
+  categories CbCategory[]
 
   @@map("cb_languages")
 }
 
 model CbCategory {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         Int      @id @default(autoincrement())
+  languageId Int?     @map("language_id")
+  name       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
+  language      CbLanguage?      @relation(fields: [languageId], references: [id])
   subCategories CbSubCategory[]
   books         CbBookCategory[]
 

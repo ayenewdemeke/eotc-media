@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { hasBookAdminAccess } from '@/lib/auth-helpers'
+import { sortLanguages } from '@/lib/language-order'
 
 export async function GET() {
-  const languages = await prisma.cbLanguage.findMany({ orderBy: { name: 'asc' } })
-  return NextResponse.json(languages)
+  const languages = await prisma.cbLanguage.findMany()
+  return NextResponse.json(sortLanguages(languages))
 }
 
 export async function POST(req: NextRequest) {

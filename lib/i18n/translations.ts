@@ -159,6 +159,7 @@ export const translations = {
     sort_least_clicked: "Least clicked",
     sort_name_az:       "Name (A–Z)",
     sort_name_za:       "Name (Z–A)",
+    sort_most_liked:    "Most popular",
     sort_most_hymns:    "Most hymns",
     sort_fewest_hymns:  "Fewest hymns",
 
@@ -372,6 +373,7 @@ export const translations = {
     sort_least_clicked: "ጥቂት የተከፈቱትን አስቀድም",
     sort_name_az:       "ስም (ሀ–ፐ)",
     sort_name_za:       "ስም (ፐ–ሀ)",
+    sort_most_liked:    "በብዛት የተወደዱትን አስቀድም",
     sort_most_hymns:    "ብዙ መዝሙሮች",
     sort_fewest_hymns:  "ጥቂት መዝሙሮች",
 

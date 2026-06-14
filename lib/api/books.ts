@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { CbBook } from '@/types/models/book'
+import { sortLanguages } from '@/lib/language-order'
 
 function mapBook(b: Record<string, unknown>): CbBook {
   return {
@@ -25,26 +26,32 @@ function mapBook(b: Record<string, unknown>): CbBook {
 }
 
 export async function getBooksFilterData() {
-  const [languages, categories, subCategories] = await Promise.all([
-    prisma.cbLanguage.findMany({ orderBy: { name: 'asc' } }),
+  const [languagesRaw, categories, subCategories] = await Promise.all([
+    prisma.cbLanguage.findMany(),
     prisma.cbCategory.findMany({ orderBy: { name: 'asc' } }),
     prisma.cbSubCategory.findMany({ orderBy: { name: 'asc' } }),
   ])
 
-  // Build categoriesByLanguage from existing book associations
+  const languages = sortLanguages(languagesRaw)
+
+  // Build categoriesByLanguage from a union of (a) existing book associations
+  // and (b) the structural language assigned to a category. (a) keeps the
+  // public filter working for categories that already have books; (b) surfaces
+  // newly created categories the admin has assigned to a language even before
+  // any book uses them.
   const rows = await prisma.$queryRaw<Array<{ category_id: number; language_id: number }>>`
     SELECT DISTINCT bc.category_id, bl.language_id
     FROM cb_book_category bc
     INNER JOIN cb_book_language bl ON bc.book_id = bl.book_id
   `
   const categoriesByLanguage: Record<string, number[]> = {}
-  for (const row of rows) {
-    const key = String(row.language_id)
+  const add = (languageId: number, categoryId: number) => {
+    const key = String(languageId)
     if (!categoriesByLanguage[key]) categoriesByLanguage[key] = []
-    if (!categoriesByLanguage[key].includes(row.category_id)) {
-      categoriesByLanguage[key].push(row.category_id)
-    }
+    if (!categoriesByLanguage[key].includes(categoryId)) categoriesByLanguage[key].push(categoryId)
   }
+  for (const row of rows) add(row.language_id, row.category_id)
+  for (const cat of categories) if (cat.languageId) add(cat.languageId, cat.id)
 
   return { languages, categories, subCategories, categoriesByLanguage }
 }
@@ -96,8 +103,10 @@ export async function getBooks(params: GetBooksParams = {}) {
   if (subCategoryId) where.subCategories = { some: { subCategoryId } }
   if (search) where.name = { contains: search, mode: 'insensitive' }
 
-  const orderBy = sort === 'oldest'
-    ? { createdAt: 'asc' as const }
+  const orderBy =
+    sort === 'oldest' ? { createdAt: 'asc' as const }
+    : sort === 'title' ? { name: 'asc' as const }
+    : sort === 'popular' ? { likes: { _count: 'desc' as const } }
     : { createdAt: 'desc' as const }
 
   const [books, total] = await Promise.all([
@@ -156,4 +165,34 @@ export async function getBook(slug: string, userId?: number) {
       user: c.user,
     })),
   }
+}
+
+// Books that share a category (or failing that, an author) with the given book.
+// Used for the "Related books" section on a book's detail page.
+export async function getRelatedBooks(book: CbBook, limit = 6): Promise<CbBook[]> {
+  const categoryIds = book.categories?.map(c => c.id) ?? []
+  const authorIds = book.authors?.map(a => a.id) ?? []
+
+  const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Accepted' } })
+
+  const orClauses: Record<string, unknown>[] = []
+  if (categoryIds.length) orClauses.push({ categories: { some: { categoryId: { in: categoryIds } } } })
+  if (authorIds.length) orClauses.push({ authors: { some: { authorId: { in: authorIds } } } })
+  if (orClauses.length === 0) return []
+
+  const related = await prisma.cbBook.findMany({
+    where: {
+      id: { not: book.id },
+      ...(approved ? { approvalStatusId: approved.id } : {}),
+      OR: orClauses,
+    },
+    take: limit,
+    orderBy: { likes: { _count: 'desc' } },
+    include: {
+      languages: { include: { language: true } },
+      likes: true,
+    },
+  })
+
+  return related.map(b => mapBook(b as unknown as Record<string, unknown>))
 }
