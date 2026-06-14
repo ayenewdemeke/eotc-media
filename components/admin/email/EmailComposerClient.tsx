@@ -23,7 +23,7 @@ export default function EmailComposerClient() {
 
   // Send state
   const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ sent: number; failed: number; total: number } | null>(null)
+  const [result, setResult] = useState<{ sent: number; failed: number; total: number; error?: string } | null>(null)
   const [error, setError] = useState("")
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -223,7 +223,7 @@ export default function EmailComposerClient() {
         </div>
 
         {/* Result / error feedback */}
-        {result && (
+        {result && result.sent > 0 && (
           <div className="flex items-start gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-xl">
             <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
             <div>
@@ -232,6 +232,12 @@ export default function EmailComposerClient() {
                 {result.sent} sent · {result.failed} failed · {result.total} total recipients
               </p>
             </div>
+          </div>
+        )}
+        {result && result.sent === 0 && (
+          <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <p className="font-semibold mb-0.5">Failed to send ({result.failed} failed · {result.total} total recipients)</p>
+            {result.error && <p className="text-xs opacity-80">{result.error}</p>}
           </div>
         )}
         {error && (
