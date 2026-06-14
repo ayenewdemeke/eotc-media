@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  LayoutDashboard, Users, MessageSquare, Star, Home, BookOpen,
+  LayoutDashboard, Users, MessageSquare, Star, Home, BookOpen, Mail,
 } from "lucide-react"
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
@@ -19,6 +19,7 @@ const menuItems = [
   { title: "Feedbacks", href: `${BASE}/feedbacks`, icon: MessageSquare },
   { title: "Featured Items", href: `${BASE}/featured`, icon: Star },
   { title: "Verse Corrections", href: `${BASE}/verse-corrections`, icon: BookOpen },
+  { title: "Email Members", href: `${BASE}/email`, icon: Mail },
 ]
 
 export function MainAdminSidebar() {
