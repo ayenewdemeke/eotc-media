@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { Play, Loader2 } from "lucide-react"
+import { Play } from "lucide-react"
 import { whenYTReady } from "@/lib/youtube-iframe-api"
 
 interface HymnPlayerProps {
@@ -14,7 +14,6 @@ interface HymnPlayerProps {
 
 export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlayerProps) {
   const [playing, setPlaying] = useState(false)
-  const [loading, setLoading] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null)
   const mountRef = useRef<HTMLDivElement>(null)
@@ -34,12 +33,6 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
           onReady: () => { playerRef.current = player },
-          onStateChange: (e: { data: number }) => {
-            if (e.data === 1) { // YT.PlayerState.PLAYING
-              setPlaying(true)
-              setLoading(false)
-            }
-          },
         },
       })
     })
@@ -52,7 +45,7 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
 
   function handlePlay() {
     fetch(`/api/hymns/${slug}/click`, { method: "POST" }).catch(() => {})
-    setLoading(true)
+    setPlaying(true)
     playerRef.current?.playVideo()
   }
 
@@ -61,11 +54,11 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
       {/* YT player mount point — always in the DOM so the player pre-loads */}
       <div ref={mountRef} className="w-full h-full" />
 
-      {/* Thumbnail overlay — stays until video is actually playing */}
+      {/* Thumbnail overlay — removed immediately on click */}
       {!playing && (
         <div
           className="absolute inset-0 group cursor-pointer"
-          onClick={!loading ? handlePlay : undefined}
+          onClick={handlePlay}
         >
           <Image
             src={thumbSrc}
@@ -79,10 +72,7 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors duration-200" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-white/20 group-hover:bg-white/30 backdrop-blur-md border border-white/40 transition-all duration-200">
-              {loading
-                ? <Loader2 className="w-7 h-7 text-white animate-spin" />
-                : <Play className="w-7 h-7 text-white ml-1 drop-shadow" fill="currentColor" />
-              }
+              <Play className="w-7 h-7 text-white ml-1 drop-shadow" fill="currentColor" />
             </div>
           </div>
         </div>

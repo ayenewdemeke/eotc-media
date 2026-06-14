@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { auth } from "@/auth"
-import { getBook } from "@/lib/api/books"
+import { getBook, getRelatedBooks } from "@/lib/api/books"
 import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import BookSidebar from "@/components/books/BookSidebar"
 import BookDetailClient from "@/components/books/BookDetailClient"
+import BookCard from "@/components/books/BookCard"
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -46,6 +47,8 @@ export default async function BookPage({ params }: PageProps) {
   const book = await getBook(slug, userId)
   if (!book) notFound()
 
+  const relatedBooks = await getRelatedBooks(book)
+
   return (
     <div className="min-h-screen bg-white">
       <script
@@ -82,6 +85,17 @@ export default async function BookPage({ params }: PageProps) {
           <BookSidebar userId={userId} />
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6 max-w-4xl">
             <BookDetailClient book={book} userId={userId} />
+
+            {relatedBooks.length > 0 && (
+              <section className="mt-10">
+                <h2 className="text-base font-semibold text-slate-900 mb-4">Related books</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {relatedBooks.map(rb => (
+                    <BookCard key={rb.id} book={rb} />
+                  ))}
+                </div>
+              </section>
+            )}
           </main>
         </div>
       </div>

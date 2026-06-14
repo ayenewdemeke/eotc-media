@@ -12,6 +12,7 @@ const nav: AdminNavItem[] = [
   { title: "Feedbacks", href: `${BASE}/feedbacks`, icon: "messageSquare" },
   { title: "Featured Items", href: `${BASE}/featured`, icon: "star" },
   { title: "Verse Corrections", href: `${BASE}/verse-corrections`, icon: "bookOpen" },
+  { title: "Email Members", href: `${BASE}/email`, icon: "mail" },
 ]
 
 export default async function MainAdminLayout({ children }: { children: React.ReactNode }) {

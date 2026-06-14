@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import {
   LayoutDashboard, Music, Mic, FileText, Globe, Tag, Layers, CheckSquare,
   MessageSquare, BookMarked, BookOpen, User, Users, HelpCircle, Award,
-  BookType, Star, Home, Menu, X, Bell, Search, ChevronLeft, ChevronDown,
+  BookType, Star, Home, Mail, Menu, X, Bell, Search, ChevronLeft, ChevronDown,
   LogOut, type LucideIcon,
 } from "lucide-react"
 
@@ -20,7 +20,7 @@ const ICONS: Record<string, LucideIcon> = {
   globe: Globe, tag: Tag, layers: Layers, checkSquare: CheckSquare,
   messageSquare: MessageSquare, bookMarked: BookMarked, bookOpen: BookOpen,
   user: User, users: Users, helpCircle: HelpCircle, award: Award,
-  bookType: BookType, star: Star, home: Home,
+  bookType: BookType, star: Star, home: Home, mail: Mail,
 }
 
 export interface AdminNavItem {

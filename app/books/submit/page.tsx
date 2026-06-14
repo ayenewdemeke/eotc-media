@@ -8,7 +8,7 @@ import Navbar from "@/components/Navbar"
 import BookSidebar from "@/components/books/BookSidebar"
 
 interface Language { id: number; name: string }
-interface Category { id: number; name: string }
+interface Category { id: number; name: string; languageId?: number | null }
 interface SubCategory { id: number; name: string; categoryId: number }
 
 function MultiSelect({
@@ -111,9 +111,19 @@ export default function SubmitBookPage() {
     })
   }, [])
 
+  const visibleCategories = selectedLanguageIds.length > 0
+    ? allCategories.filter(c => c.languageId != null && selectedLanguageIds.includes(c.languageId))
+    : []
+
   const visibleSubCategories = selectedCategoryIds.length > 0
     ? allSubCategories.filter(sc => selectedCategoryIds.includes(sc.categoryId))
     : []
+
+  function handleLanguageChange(ids: number[]) {
+    setSelectedLanguageIds(ids)
+    setSelectedCategoryIds([])
+    setSelectedSubCategoryIds([])
+  }
 
   function handleCategoryChange(ids: number[]) {
     setSelectedCategoryIds(ids)
@@ -213,8 +223,11 @@ export default function SubmitBookPage() {
                     <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Classification</h2>
                   </div>
                   <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <MultiSelect label="Language" required value={selectedLanguageIds} onChange={setSelectedLanguageIds} options={languages} placeholder="Select language…" />
-                    <MultiSelect label="Category" required value={selectedCategoryIds} onChange={handleCategoryChange} options={allCategories} placeholder="Select category…" />
+                    <MultiSelect label="Language" required value={selectedLanguageIds} onChange={handleLanguageChange} options={languages} placeholder="Select language…" />
+                    <MultiSelect label="Category" required value={selectedCategoryIds} onChange={handleCategoryChange}
+                      options={visibleCategories}
+                      placeholder={selectedLanguageIds.length > 0 ? "Select category…" : "Select language first"}
+                      disabled={selectedLanguageIds.length === 0} />
                     <MultiSelect label="Sub-category" required value={selectedSubCategoryIds} onChange={setSelectedSubCategoryIds}
                       options={visibleSubCategories}
                       placeholder={selectedCategoryIds.length > 0 ? "Select sub-category…" : "Select category first"}

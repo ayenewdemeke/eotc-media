@@ -8,13 +8,14 @@ interface Props {
   language: string
   version: string
   className?: string
+  variant?: "icon" | "pill"
 }
 
 type State = "idle" | "listening" | "processing" | "error"
 
 const MAX_RECORDING_MS = 8000
 
-export default function VoiceNavigateButton({ language, version, className = "" }: Props) {
+export default function VoiceNavigateButton({ language, version, className = "", variant = "icon" }: Props) {
   const router = useRouter()
   const [uiState, setUiState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
@@ -102,6 +103,34 @@ export default function VoiceNavigateButton({ language, version, className = "" 
   const isListening = uiState === "listening"
   const isProcessing = uiState === "processing"
   const isError = uiState === "error"
+
+  if (variant === "pill") {
+    const label =
+      isListening  ? (language === "amharic" ? "እየሰማ ነው…" : "Listening…") :
+      isProcessing ? (language === "amharic" ? "እየፈለገ ነው…" : "Processing…") :
+      isError      ? errorMsg :
+                     (language === "amharic" ? "ምዕራፍ ለማግኘት ተናገሩ" : "Say a chapter…")
+    return (
+      <button
+        onClick={handleClick}
+        className={`flex-1 flex items-center gap-2 h-9 px-3 rounded-xl text-sm font-semibold transition-all min-w-0 ${
+          isListening  ? "bg-red-500 text-white animate-pulse" :
+          isProcessing ? "bg-blue-500 text-white" :
+          isError      ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                         "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+        } ${className}`}
+      >
+        {isProcessing ? (
+          <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+        ) : isListening ? (
+          <MicOff className="w-4 h-4 flex-shrink-0" />
+        ) : (
+          <Mic className="w-4 h-4 flex-shrink-0" />
+        )}
+        <span className="truncate">{label}</span>
+      </button>
+    )
+  }
 
   return (
     <div className="relative">

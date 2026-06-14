@@ -35,6 +35,7 @@ export default function BookSearchFilters({
   const activeLanguage = searchParams.get("language") ?? ""
   const activeCategory = searchParams.get("category") ?? ""
   const activeSubCategory = searchParams.get("subCategory") ?? ""
+  const activeSort = searchParams.get("sort") ?? ""
   const activeSearch = searchParams.get("search") ?? ""
 
   const [searchValue, setSearchValue] = useState(activeSearch)
@@ -96,7 +97,7 @@ export default function BookSearchFilters({
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:contents">
+      <div className="grid grid-cols-2 gap-2 sm:contents">
         <Select value={sel(activeLanguage)} onValueChange={raw => apply("language", raw)}>
           <SelectTrigger className={`${triggerCls} w-full sm:w-[145px]`}>
             <SelectValue />
@@ -130,6 +131,18 @@ export default function BookSearchFilters({
             {visibleSubCategories.map(sc => (
               <SelectItem key={sc.id} value={String(sc.id)}>{sc.name}</SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={activeSort || "newest"} onValueChange={raw => applyFilter("sort", raw === "newest" ? "" : raw)}>
+          <SelectTrigger className={`${triggerCls} w-full sm:w-[160px]`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">{t("sort_newest_first")}</SelectItem>
+            <SelectItem value="oldest">{t("sort_oldest_first")}</SelectItem>
+            <SelectItem value="popular">{t("sort_most_liked")}</SelectItem>
+            <SelectItem value="title">{t("sort_name_az")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
