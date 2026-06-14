@@ -109,14 +109,14 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
   // ── Shared modal shell ────────────────────────────────────────────
   function modalShell(title: string, body: React.ReactNode, footer: React.ReactNode) {
     return createPortal(
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
+      <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-20">
         <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md border border-slate-200">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h4 className="text-base font-medium text-slate-800">{title}</h4>
+        <div className="relative w-full max-w-md rounded-lg border bg-popover text-popover-foreground shadow-xl">
+          <div className="border-b px-5 py-4">
+            <h4 className="text-base font-medium">{title}</h4>
           </div>
           <div className="px-5 py-4">{body}</div>
-          <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
             {footer}
           </div>
         </div>
@@ -128,29 +128,31 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
   // ── Shared buttons ────────────────────────────────────────────────
   const closeBtn = (
     <button type="button" onClick={closeModal}
-      className="px-4 py-1.5 text-sm border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition-colors cursor-pointer">
+      className="cursor-pointer rounded border border-input px-4 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
       Close
     </button>
   )
+
+  const inputClass = "w-full rounded border border-input bg-background px-3 py-1.5 text-sm outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
 
   return (
     <>
       {/* ── Three inline table cells ── */}
       <td className="px-4 py-2.5">
         <button onClick={() => openModal("new-preacher")}
-          className="text-xs text-slate-500 hover:text-slate-900 hover:underline cursor-pointer whitespace-nowrap">
+          className="cursor-pointer whitespace-nowrap text-xs text-muted-foreground hover:text-foreground hover:underline">
           new preacher
         </button>
       </td>
       <td className="px-4 py-2.5">
         <button onClick={() => openModal("accept")}
-          className="text-xs text-blue-600 hover:underline cursor-pointer">
+          className="cursor-pointer text-xs text-primary hover:underline">
           accept
         </button>
       </td>
       <td className="px-4 py-2.5">
         <button onClick={() => openModal("decline")}
-          className="text-xs text-red-500 hover:underline cursor-pointer">
+          className="cursor-pointer text-xs text-destructive hover:underline">
           decline
         </button>
       </td>
@@ -159,24 +161,24 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
       {modal === "accept" && modalShell(
         "Accept sermon",
         <>
-          <p className="text-sm text-slate-600 mb-4">
+          <p className="mb-4 text-sm text-muted-foreground">
             Make sure you want to accept this sermon. Also please select the correct preacher(s)
             below — this will greatly help in searching sermons. You can add a new preacher by
             clicking the <em>new preacher</em> link if they are not in the list.
           </p>
-          <label className="text-sm font-medium text-slate-700">
-            Preacher(s) <span className="text-red-500">*</span>
+          <label className="text-sm font-medium text-foreground">
+            Preacher(s) <span className="text-destructive">*</span>
           </label>
           {preachersLoading && (
-            <div className="flex items-center gap-2 text-sm text-slate-400 py-3">
+            <div className="flex items-center gap-2 py-3 text-sm text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" /> Loading preachers…
             </div>
           )}
-          {preachersError && <p className="text-sm text-red-500 py-2">{preachersError}</p>}
+          {preachersError && <p className="py-2 text-sm text-destructive">{preachersError}</p>}
           {!preachersLoading && !preachersError && (
             <div className="mt-2">
               {selectedIds.length > 0 && (
-                <p className="text-xs text-slate-500 mb-1.5">
+                <p className="mb-1.5 text-xs text-muted-foreground">
                   {selectedIds.length} selected:{" "}
                   {selectedIds.map(id => preachers.find(p => p.id === id)?.name).filter(Boolean).join(", ")}
                 </p>
@@ -187,14 +189,14 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search preachers…"
-                className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-blue-400 mb-1"
+                className={`${inputClass} mb-1`}
               />
-              <div className="border border-slate-200 rounded max-h-44 overflow-y-auto">
+              <div className="max-h-44 overflow-y-auto rounded border">
                 {filtered.length === 0
-                  ? <p className="text-sm text-slate-400 px-3 py-2">No results</p>
+                  ? <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
                   : filtered.map(p => (
                     <label key={p.id}
-                      className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer text-sm select-none">
+                      className="flex cursor-pointer select-none items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground">
                       <input type="checkbox" checked={selectedIds.includes(p.id)}
                         onChange={() => togglePreacher(p.id)} className="cursor-pointer" />
                       {p.name}
@@ -204,13 +206,13 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
               </div>
             </div>
           )}
-          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
         </>,
         <>
           {closeBtn}
           <button type="button" onClick={handleAccept}
             disabled={loading || preachersLoading}
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            className="flex cursor-pointer items-center gap-1.5 rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50">
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Accept
           </button>
@@ -220,14 +222,14 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
       {/* ── Decline modal ── */}
       {modal === "decline" && modalShell(
         "Decline acceptance",
-        <p className="text-sm text-slate-600 py-3">
+        <p className="py-3 text-sm text-muted-foreground">
           Are you sure you want to decline accepting this sermon?
         </p>,
         <>
           {closeBtn}
           <button type="button" onClick={handleDecline}
             disabled={loading}
-            className="px-4 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            className="flex cursor-pointer items-center gap-1.5 rounded bg-destructive px-4 py-1.5 text-sm text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50">
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Decline
           </button>
@@ -238,7 +240,7 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
       {modal === "new-preacher" && modalShell(
         "Add New Preacher",
         <>
-          <label htmlFor={`preacher-name-${sermonId}`} className="text-sm text-slate-700 block mb-1">
+          <label htmlFor={`preacher-name-${sermonId}`} className="mb-1 block text-sm text-foreground">
             Preacher name
           </label>
           <input
@@ -249,16 +251,16 @@ export default function SermonApproveDeclineButtons({ sermonId, sermonTitle }: P
             onChange={e => setNewPreacherName(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleAddPreacher()}
             placeholder="Name"
-            className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-blue-400"
+            className={inputClass}
           />
-          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
         </>,
         <>
           {closeBtn}
           <button type="button" onClick={handleAddPreacher}
             disabled={loading}
             style={{ minWidth: 80 }}
-            className="px-5 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            className="flex cursor-pointer items-center gap-1.5 rounded bg-primary px-5 py-1.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50">
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Add
           </button>

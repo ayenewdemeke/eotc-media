@@ -1,11 +1,19 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { MainAdminSidebar } from "@/components/admin/main/MainAdminSidebar"
-import { AdminHeader } from "@/components/admin/shared/AdminHeader"
+import { AdminShell, type AdminNavItem } from "@/components/admin/shared/AdminShell"
 import { hasMainAdminAccess } from "@/lib/auth-helpers"
 
 export const dynamic = "force-dynamic"
+
+const BASE = "/admin"
+const nav: AdminNavItem[] = [
+  { title: "Dashboard", href: `${BASE}/dashboard`, icon: "dashboard" },
+  { title: "Users", href: `${BASE}/users`, icon: "users" },
+  { title: "Feedbacks", href: `${BASE}/feedbacks`, icon: "messageSquare" },
+  { title: "Featured Items", href: `${BASE}/featured`, icon: "star" },
+  { title: "Verse Corrections", href: `${BASE}/verse-corrections`, icon: "bookOpen" },
+  { title: "Email Members", href: `${BASE}/email`, icon: "mail" },
+]
 
 export default async function MainAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -13,12 +21,15 @@ export default async function MainAdminLayout({ children }: { children: React.Re
   if (!hasMainAdminAccess(session)) redirect("/")
 
   return (
-    <SidebarProvider>
-      <MainAdminSidebar />
-      <SidebarInset>
-        <AdminHeader />
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <AdminShell
+      brandTitle="Main admin"
+      brandSubtitle="Site management"
+      brandIcon="dashboard"
+      nav={nav}
+      backHref="/"
+      backLabel="Back to Home"
+    >
+      {children}
+    </AdminShell>
   )
 }

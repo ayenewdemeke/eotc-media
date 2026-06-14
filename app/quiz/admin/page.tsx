@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { HelpCircle, Clock, CheckCircle, XCircle, Globe, Tag, Award } from "lucide-react"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { StatsCard } from "@/components/admin/shared/StatsCard"
+import { Card, CardContent } from "@/components/ui/card"
 
 interface Stats {
   total: number
@@ -33,7 +36,6 @@ export default function QuizAdminDashboard() {
         declined: 0,
       })
 
-      // Fetch each status count
       Promise.all([
         submittedId ? fetch(`/api/quiz/admin/questions?status=${submittedId}`).then(r => r.json()) : Promise.resolve({ total: 0 }),
         approvedId ? fetch(`/api/quiz/admin/questions?status=${approvedId}`).then(r => r.json()) : Promise.resolve({ total: 0 }),
@@ -50,10 +52,10 @@ export default function QuizAdminDashboard() {
   }, [])
 
   const cards = [
-    { label: "Total questions", value: stats?.total ?? "—", icon: HelpCircle, color: "text-blue-600", bg: "bg-blue-50", href: "/quiz/admin/questions" },
-    { label: "Pending review", value: stats?.pending ?? "—", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50", href: "/quiz/admin/questions?status=pending" },
-    { label: "Approved", value: stats?.approved ?? "—", icon: CheckCircle, color: "text-green-600", bg: "bg-green-50", href: "/quiz/admin/questions" },
-    { label: "Declined", value: stats?.declined ?? "—", icon: XCircle, color: "text-red-600", bg: "bg-red-50", href: "/quiz/admin/questions" },
+    { label: "Total questions", value: stats?.total ?? "—", icon: HelpCircle, href: "/quiz/admin/questions" },
+    { label: "Pending review", value: stats?.pending ?? "—", icon: Clock, href: "/quiz/admin/questions?status=pending" },
+    { label: "Approved", value: stats?.approved ?? "—", icon: CheckCircle, href: "/quiz/admin/questions" },
+    { label: "Declined", value: stats?.declined ?? "—", icon: XCircle, href: "/quiz/admin/questions" },
   ]
 
   const quickLinks = [
@@ -63,31 +65,31 @@ export default function QuizAdminDashboard() {
   ]
 
   return (
-    <div className="p-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Quiz admin dashboard</h1>
+    <div className="space-y-6 p-4 lg:p-6">
+      <PageHeader title="Quiz admin dashboard" description="Overview of quiz questions and quick links." />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {cards.map(card => (
-          <Link key={card.label} href={card.href}
-            className="bg-white border border-slate-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-sm transition-all">
-            <div className={`w-9 h-9 rounded-lg ${card.bg} flex items-center justify-center mb-3`}>
-              <card.icon className={`w-4 h-4 ${card.color}`} />
-            </div>
-            <div className="text-2xl font-bold text-slate-900">{String(card.value)}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{card.label}</div>
+          <Link key={card.label} href={card.href} className="transition-transform hover:-translate-y-0.5">
+            <StatsCard title={card.label} value={card.value} icon={card.icon} />
           </Link>
         ))}
       </div>
 
-      <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Quick links</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {quickLinks.map(link => (
-          <Link key={link.label} href={link.href}
-            className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition-all">
-            <link.icon className="w-4 h-4 text-slate-400" />
-            <span className="text-sm font-medium text-slate-700">{link.label}</span>
-          </Link>
-        ))}
+      <div className="space-y-3">
+        <h2 className="text-label">Quick links</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {quickLinks.map(link => (
+            <Link key={link.label} href={link.href}>
+              <Card className="transition-colors hover:border-primary/40">
+                <CardContent className="flex items-center gap-3 p-4">
+                  <link.icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">{link.label}</span>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )

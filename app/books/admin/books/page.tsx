@@ -1,6 +1,17 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import BookApproveDeclineButtons from "@/components/admin/books/BookApproveDeclineButtons"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { cn } from "@/lib/utils"
 
 const PAGE_SIZE = 20
 
@@ -48,67 +59,77 @@ export default async function AdminBooksPage({ searchParams }: PageProps) {
     return `/books/admin/books?${params}`
   }
 
-  return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">{isPending ? "New books" : "All books"}</h1>
-        <div className="flex gap-2">
-          <Link href="/books/admin/books" className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${!isPending ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
-            All
-          </Link>
-          <Link href="/books/admin/books?status=pending" className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${isPending ? "bg-blue-600 text-white border-blue-600" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
-            Pending
-          </Link>
-        </div>
-      </div>
+  const toggleClass = (active: boolean) =>
+    cn(
+      "rounded-md border px-3 py-1.5 text-sm transition-colors",
+      active
+        ? "bg-primary text-primary-foreground border-primary"
+        : "border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+    )
+  const linkClass = "px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">#</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Language</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Category</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Author</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+  return (
+    <div className="space-y-4 p-4 lg:p-6">
+      <PageHeader
+        title={isPending ? "New books" : "All books"}
+        description={`${total.toLocaleString()} books`}
+        actions={
+          <div className="flex gap-2">
+            <Link href="/books/admin/books" className={toggleClass(!isPending)}>All</Link>
+            <Link href="/books/admin/books?status=pending" className={toggleClass(isPending)}>Pending</Link>
+          </div>
+        }
+      />
+
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="px-4">#</TableHead>
+                <TableHead className="px-4">Language</TableHead>
+                <TableHead className="px-4">Category</TableHead>
+                <TableHead className="px-4">Name</TableHead>
+                <TableHead className="px-4">Author</TableHead>
+                <TableHead className="px-4">Status</TableHead>
+                <TableHead className="px-4" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {books.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-400 text-sm">No books</td></tr>
+                <TableRow>
+                  <TableCell colSpan={7} className="px-4 py-10 text-center text-muted-foreground">No books</TableCell>
+                </TableRow>
               )}
               {books.map((book, i) => (
-                <tr key={book.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 text-slate-400 text-xs">{(page - 1) * PAGE_SIZE + i + 1}</td>
-                  <td className="px-4 py-3 text-xs text-slate-600">{book.languages.map(l => l.language.name).join(", ") || "—"}</td>
-                  <td className="px-4 py-3 text-xs text-slate-600">{book.categories.map(c => c.category.name).join(", ") || "—"}</td>
-                  <td className="px-4 py-3 font-medium text-slate-900 max-w-[180px] truncate">
-                    <Link href={`/books/${book.slug}`} target="_blank" className="hover:text-blue-600">{book.name}</Link>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                <TableRow key={book.id}>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{(page - 1) * PAGE_SIZE + i + 1}</TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{book.languages.map(l => l.language.name).join(", ") || "—"}</TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{book.categories.map(c => c.category.name).join(", ") || "—"}</TableCell>
+                  <TableCell className="max-w-[180px] truncate px-4 font-medium">
+                    <Link href={`/books/${book.slug}`} target="_blank" className="hover:text-primary">{book.name}</Link>
+                  </TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">
                     {book.authors.length > 0 ? book.authors.map(a => a.author.name).join(", ") : book.author}
-                  </td>
-                  <td className="px-4 py-3">
+                  </TableCell>
+                  <TableCell className="px-4">
                     <BookApproveDeclineButtons bookId={book.id} currentStatus={book.approvalStatus?.name ?? ""} />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link href={`/books/admin/books/${book.id}/edit`} className="text-xs text-slate-500 hover:text-slate-800 border border-slate-200 px-2 py-1 rounded hover:bg-slate-50">Edit</Link>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableCell className="px-4">
+                    <Link href={`/books/admin/books/${book.id}/edit`} className="rounded-md border border-input px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground">Edit</Link>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center gap-2 mt-4">
-          {page > 1 && <Link href={buildUrl(page - 1)} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">← Prev</Link>}
-          <span className="text-sm text-slate-500">{page} / {totalPages}</span>
-          {page < totalPages && <Link href={buildUrl(page + 1)} className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">Next →</Link>}
+        <div className="flex items-center gap-2">
+          {page > 1 && <Link href={buildUrl(page - 1)} className={linkClass}>← Prev</Link>}
+          <span className="text-sm text-muted-foreground">{page} / {totalPages}</span>
+          {page < totalPages && <Link href={buildUrl(page + 1)} className={linkClass}>Next →</Link>}
         </div>
       )}
     </div>

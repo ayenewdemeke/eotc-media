@@ -36,11 +36,16 @@ export async function formatLyricsWithGemini(rawText: string): Promise<string> {
   const prompt = `You are given raw subtitle text extracted from a religious hymn video. Format it as clean, properly structured lyrics HTML.
 
 Rules:
-- Use <p> tags for each verse or stanza
-- Use <br> for line breaks within a verse
-- Remove timestamps, duplicate lines, and subtitle artifacts
-- Preserve the original language (do not translate)
-- Do not add any explanation, just output the HTML
+
+Contextual Correction: Use your knowledge of the hymn and the language (Amharic or English) to correct subtitle artifacts, misspellings, or nonsensical phrases while maintaining the original meaning.
+
+Structure: Use <p> tags for each verse or stanza and <br> for line breaks within a verse.
+
+Cleanup: Remove timestamps, duplicate lines, and technical artifacts.
+
+Preservation: Keep the original language; do not translate.
+
+Output: Do not add any explanation or preamble. Output only the HTML.
 
 Raw subtitle text:
 ${rawText}`

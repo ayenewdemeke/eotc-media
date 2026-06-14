@@ -1,23 +1,17 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import { useEditor, EditorContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import Underline from "@tiptap/extension-underline"
-import Placeholder from "@tiptap/extension-placeholder"
-import {
-  Loader2, CheckCircle, Bold, Italic, Underline as UnderlineIcon,
-  List, Undo2, Redo2, ChevronDown, X,
-} from "lucide-react"
+import { Loader2, CheckCircle } from "lucide-react"
 import Navbar from "@/components/Navbar"
 import HymnSidebar from "@/components/hymns/HymnSidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
+import { MultiSelect } from "@/components/ui/multi-select"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import {
   Card,
   CardContent,
@@ -39,169 +33,6 @@ function parseVideoId(input: string): string {
   } catch { /* raw ID */ }
   return s
 }
-
-// ── TipTap lyrics editor ──────────────────────────────────────────────────────
-
-function LyricsEditor({ onChange }: { onChange: (html: string) => void }) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ heading: false, blockquote: false, codeBlock: false, code: false }),
-      Underline,
-      Placeholder.configure({ placeholder: "Paste or type hymn lyrics here…" }),
-    ],
-    onUpdate: ({ editor }) => onChange(editor.isEmpty ? "" : editor.getHTML()),
-    editorProps: {
-      attributes: { class: "px-3 py-2.5 text-sm text-foreground leading-relaxed min-h-[200px] outline-none" },
-    },
-  })
-
-  if (!editor) return null
-
-  return (
-    <div className="rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring overflow-hidden">
-      {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-input bg-muted/40 flex-wrap">
-        <Button
-          type="button" variant="ghost" size="icon"
-          className="h-7 w-7"
-          title="Bold (Ctrl+B)"
-          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleBold().run() }}
-          data-active={editor.isActive("bold") || undefined}
-        >
-          <Bold className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          type="button" variant="ghost" size="icon"
-          className="h-7 w-7"
-          title="Italic (Ctrl+I)"
-          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleItalic().run() }}
-          data-active={editor.isActive("italic") || undefined}
-        >
-          <Italic className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          type="button" variant="ghost" size="icon"
-          className="h-7 w-7"
-          title="Underline (Ctrl+U)"
-          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleUnderline().run() }}
-          data-active={editor.isActive("underline") || undefined}
-        >
-          <UnderlineIcon className="h-3.5 w-3.5" />
-        </Button>
-        <Separator orientation="vertical" className="h-4 mx-1" />
-        <Button
-          type="button" variant="ghost" size="icon"
-          className="h-7 w-7"
-          title="Bullet list"
-          onMouseDown={e => { e.preventDefault(); editor.chain().focus().toggleBulletList().run() }}
-          data-active={editor.isActive("bulletList") || undefined}
-        >
-          <List className="h-3.5 w-3.5" />
-        </Button>
-        <div className="ml-auto flex items-center gap-0.5">
-          <Button
-            type="button" variant="ghost" size="icon"
-            className="h-7 w-7"
-            title="Undo"
-            onMouseDown={e => { e.preventDefault(); editor.chain().focus().undo().run() }}
-            disabled={!editor.can().undo()}
-          >
-            <Undo2 className="h-3.5 w-3.5" />
-          </Button>
-          <Button
-            type="button" variant="ghost" size="icon"
-            className="h-7 w-7"
-            title="Redo"
-            onMouseDown={e => { e.preventDefault(); editor.chain().focus().redo().run() }}
-            disabled={!editor.can().redo()}
-          >
-            <Redo2 className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
-      <EditorContent editor={editor} />
-    </div>
-  )
-}
-
-// ── Multi-select ──────────────────────────────────────────────────────────────
-
-function MultiSelect({
-  label, required, value, onChange, options, placeholder, disabled,
-}: {
-  label: string
-  required?: boolean
-  value: number[]
-  onChange: (v: number[]) => void
-  options: { id: number; name: string }[]
-  placeholder: string
-  disabled?: boolean
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener("mousedown", handler)
-    return () => document.removeEventListener("mousedown", handler)
-  }, [])
-
-  function toggle(id: number) {
-    onChange(value.includes(id) ? value.filter(x => x !== id) : [...value, id])
-  }
-
-  const selected = options.filter(o => value.includes(o.id))
-
-  return (
-    <div className="space-y-1.5">
-      <Label>
-        {label}{required && <span className="text-destructive ml-0.5">*</span>}
-      </Label>
-      <div ref={ref} className="relative">
-        <button
-          type="button"
-          onClick={() => { if (!disabled) setOpen(o => !o) }}
-          disabled={disabled}
-          className="flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <span className={value.length === 0 ? "text-muted-foreground" : ""}>
-            {value.length === 0 ? placeholder : `${value.length} selected`}
-          </span>
-          <ChevronDown className={`h-4 w-4 opacity-50 transition-transform ${open ? "rotate-180" : ""}`} />
-        </button>
-        {open && (
-          <div className="absolute z-20 top-full mt-1 w-full rounded-md border border-input bg-popover shadow-md overflow-y-auto max-h-52">
-            {options.length === 0 ? (
-              <p className="px-3 py-2.5 text-sm text-muted-foreground">No options available</p>
-            ) : options.map(opt => (
-              <label key={opt.id} className="flex items-center gap-2.5 px-3 py-2 hover:bg-accent cursor-pointer">
-                <input type="checkbox" checked={value.includes(opt.id)} onChange={() => toggle(opt.id)}
-                  className="h-4 w-4 rounded border-input" />
-                <span className="text-sm">{opt.name}</span>
-              </label>
-            ))}
-          </div>
-        )}
-        {selected.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {selected.map(opt => (
-              <span key={opt.id} className="inline-flex items-center gap-1 rounded-full border border-input bg-muted px-2.5 py-0.5 text-xs font-medium">
-                {opt.name}
-                <button type="button" onClick={() => toggle(opt.id)} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function SubmitHymnPage() {
   const router = useRouter()
@@ -294,13 +125,13 @@ export default function SubmitHymnPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="text-center max-w-sm px-4">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Hymn submitted!</h1>
-            <p className="text-muted-foreground mb-6">Your hymn has been submitted and is pending review. Thank you!</p>
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center pt-16">
+          <div className="max-w-sm px-4 text-center">
+            <CheckCircle className="mx-auto mb-4 h-16 w-16 text-success" />
+            <h1 className="mb-2 text-2xl font-bold">Hymn submitted!</h1>
+            <p className="mb-6 text-muted-foreground">Your hymn has been submitted and is pending review. Thank you!</p>
             <Button onClick={() => router.push("/hymns/my-hymns")}>View my hymns</Button>
           </div>
         </div>
@@ -311,18 +142,18 @@ export default function SubmitHymnPage() {
   // ── Form ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
+        <div className="mx-auto max-w-full lg:grid lg:grid-cols-[220px_1fr]">
           <HymnSidebar userId={userId} />
 
-          <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
+          <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-8">
             <div className="max-w-2xl">
 
               <div className="mb-6">
                 <h1 className="text-xl font-semibold">Add new hymn</h1>
-                <p className="text-sm text-muted-foreground mt-0.5">Submit a YouTube hymn for review</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">Submit a YouTube hymn for review</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -333,7 +164,7 @@ export default function SubmitHymnPage() {
                     <CardTitle className="text-sm font-semibold">Video</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-1.5">
                         <Label htmlFor="video-url">
                           YouTube URL <span className="text-destructive">*</span>
@@ -345,7 +176,7 @@ export default function SubmitHymnPage() {
                           placeholder="https://www.youtube.com/watch?v=…"
                         />
                         {showParsedId && (
-                          <p className="text-xs text-blue-600">
+                          <p className="text-xs text-primary">
                             Parsed ID: <span className="font-mono">{parsedId}</span>
                           </p>
                         )}
@@ -370,7 +201,7 @@ export default function SubmitHymnPage() {
                     <CardDescription className="text-xs">Select language first to filter categories</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                       <MultiSelect label="Language" required value={selectedLanguageIds}
                         onChange={handleLanguageChange} options={languages} placeholder="Select…" />
                       <MultiSelect label="Category" required value={selectedCategoryIds}
@@ -389,10 +220,10 @@ export default function SubmitHymnPage() {
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-semibold">Lyrics</CardTitle>
-                    <CardDescription className="text-xs">Optional but highly appreciated</CardDescription>
+                    <CardDescription className="text-xs">Optional but highly appreciated. Pasted formatting is preserved.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <LyricsEditor onChange={setLyrics} />
+                    <RichTextEditor value={lyrics} onChange={setLyrics} placeholder="Paste or type hymn lyrics here…" />
                   </CardContent>
                 </Card>
 
@@ -413,7 +244,7 @@ export default function SubmitHymnPage() {
                 </Card>
 
                 {error && (
-                  <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-4 py-2.5">
+                  <p className="rounded-md border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
                     {error}
                   </p>
                 )}

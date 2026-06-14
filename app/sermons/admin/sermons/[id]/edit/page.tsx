@@ -3,9 +3,27 @@
 import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 interface SelectOption { id: number; name: string }
 interface SubCategory { id: number; name: string; categoryId: number }
+
+const selectClass =
+  "w-full h-9 rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+
+function chipClass(active: boolean, variant: "primary" | "secondary" = "primary") {
+  if (active)
+    return variant === "primary"
+      ? "bg-primary text-primary-foreground border-primary"
+      : "bg-secondary text-secondary-foreground border-transparent"
+  return "text-muted-foreground border-input hover:bg-accent hover:text-accent-foreground"
+}
 
 export default function EditSermonPage() {
   const router = useRouter()
@@ -106,131 +124,132 @@ export default function EditSermonPage() {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center gap-2 text-slate-500">
-        <Loader2 className="w-4 h-4 animate-spin" />
+      <div className="flex items-center gap-2 p-6 text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />
         Loading…
       </div>
     )
   }
 
   return (
-    <div className="p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Edit sermon</h1>
+    <div className="space-y-6 p-4 lg:p-6">
+      <PageHeader title="Edit sermon" description="Update sermon details and taxonomy." />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Thumbnail preview */}
-        {thumbnailHigh && (
-          <div className="flex gap-3 items-start">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={thumbnailHigh} alt="thumbnail" width={160} height={90} className="rounded-lg border border-slate-200" />
-            <p className="text-xs text-slate-500 mt-1">Video ID: <span className="font-mono text-slate-700">{videoId}</span></p>
-          </div>
-        )}
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Thumbnail preview */}
+            {thumbnailHigh && (
+              <div className="flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={thumbnailHigh} alt="thumbnail" width={160} height={90} className="rounded-lg border" />
+                <p className="mt-1 text-xs text-muted-foreground">Video ID: <span className="font-mono text-foreground">{videoId}</span></p>
+              </div>
+            )}
 
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Title *</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} required className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Preacher (text)</label>
-            <input value={preacher} onChange={e => setPreacher(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Published date</label>
-            <input type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval status</label>
-            <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
-              {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Channel</label>
-            <select value={channelId} onChange={e => setChannelId(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
-              <option value="">— No channel —</option>
-              {channels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Categories</label>
-          <div className="flex flex-wrap gap-2">
-            {categories.map(cat => (
-              <button key={cat.id} type="button" onClick={() => toggleId(selectedCategoryIds, setSelectedCategoryIds, cat.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedCategoryIds.includes(cat.id) ? "bg-blue-600 text-white border-blue-600" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}>
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {filteredSubCategories.length > 0 && (
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Sub-categories</label>
-            <div className="flex flex-wrap gap-2">
-              {filteredSubCategories.map(sc => (
-                <button key={sc.id} type="button" onClick={() => toggleId(selectedSubCategoryIds, setSelectedSubCategoryIds, sc.id)}
-                  className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedSubCategoryIds.includes(sc.id) ? "bg-blue-600 text-white border-blue-600" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}>
-                  {sc.name}
-                </button>
-              ))}
+            <div className="space-y-1.5">
+              <Label>Title *</Label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} required />
             </div>
-          </div>
-        )}
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Languages</label>
-          <div className="flex flex-wrap gap-2">
-            {languages.map(lang => (
-              <button key={lang.id} type="button" onClick={() => toggleId(selectedLanguageIds, setSelectedLanguageIds, lang.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedLanguageIds.includes(lang.id) ? "bg-blue-600 text-white border-blue-600" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}>
-                {lang.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {preachers.length > 0 && (
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Linked preacher profiles</label>
-            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-              {preachers.map(p => (
-                <button key={p.id} type="button" onClick={() => toggleId(selectedPreacherIds, setSelectedPreacherIds, p.id)}
-                  className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedPreacherIds.includes(p.id) ? "bg-slate-700 text-white border-slate-700" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}>
-                  {p.name}
-                </button>
-              ))}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Preacher (text)</Label>
+                <Input value={preacher} onChange={e => setPreacher(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Published date</Label>
+                <Input type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} />
+              </div>
             </div>
-          </div>
-        )}
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={5} className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 resize-y" />
-        </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Approval status</Label>
+                <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className={selectClass}>
+                  {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Channel</Label>
+                <select value={channelId} onChange={e => setChannelId(e.target.value)} className={selectClass}>
+                  <option value="">— No channel —</option>
+                  {channels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+            </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+            <div className="space-y-2">
+              <Label>Categories</Label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(cat => (
+                  <button key={cat.id} type="button" onClick={() => toggleId(selectedCategoryIds, setSelectedCategoryIds, cat.id)}
+                    className={cn("cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-all", chipClass(selectedCategoryIds.includes(cat.id)))}>
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="flex gap-3">
-          <button type="submit" disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save changes
-          </button>
-          <button type="button" onClick={() => router.back()}
-            className="px-6 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-            Cancel
-          </button>
-        </div>
-      </form>
+            {filteredSubCategories.length > 0 && (
+              <div className="space-y-2">
+                <Label>Sub-categories</Label>
+                <div className="flex flex-wrap gap-2">
+                  {filteredSubCategories.map(sc => (
+                    <button key={sc.id} type="button" onClick={() => toggleId(selectedSubCategoryIds, setSelectedSubCategoryIds, sc.id)}
+                      className={cn("cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-all", chipClass(selectedSubCategoryIds.includes(sc.id)))}>
+                      {sc.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Languages</Label>
+              <div className="flex flex-wrap gap-2">
+                {languages.map(lang => (
+                  <button key={lang.id} type="button" onClick={() => toggleId(selectedLanguageIds, setSelectedLanguageIds, lang.id)}
+                    className={cn("cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-all", chipClass(selectedLanguageIds.includes(lang.id)))}>
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {preachers.length > 0 && (
+              <div className="space-y-2">
+                <Label>Linked preacher profiles</Label>
+                <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+                  {preachers.map(p => (
+                    <button key={p.id} type="button" onClick={() => toggleId(selectedPreacherIds, setSelectedPreacherIds, p.id)}
+                      className={cn("cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-all", chipClass(selectedPreacherIds.includes(p.id), "secondary"))}>
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label>Description</Label>
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={5} className="resize-y" />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <div className="flex gap-3">
+              <Button type="submit" disabled={saving}>
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save changes
+              </Button>
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

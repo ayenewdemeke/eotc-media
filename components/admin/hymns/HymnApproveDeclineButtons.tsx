@@ -109,14 +109,14 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
   // ── Shared modal shell ────────────────────────────────────────────
   function modalShell(title: string, body: React.ReactNode, footer: React.ReactNode) {
     return createPortal(
-      <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
+      <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-20">
         <div className="absolute inset-0 bg-black/40" onClick={closeModal} />
-        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md border border-slate-200">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <h4 className="text-base font-medium text-slate-800">{title}</h4>
+        <div className="relative w-full max-w-md rounded-lg border bg-popover text-popover-foreground shadow-xl">
+          <div className="border-b px-5 py-4">
+            <h4 className="text-base font-medium">{title}</h4>
           </div>
           <div className="px-5 py-4">{body}</div>
-          <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2">
+          <div className="flex items-center justify-end gap-2 border-t px-5 py-3">
             {footer}
           </div>
         </div>
@@ -128,29 +128,31 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
   // ── Shared buttons ────────────────────────────────────────────────
   const closeBtn = (
     <button type="button" onClick={closeModal}
-      className="px-4 py-1.5 text-sm border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition-colors cursor-pointer">
+      className="cursor-pointer rounded border border-input px-4 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
       Close
     </button>
   )
+
+  const inputClass = "w-full rounded border border-input bg-background px-3 py-1.5 text-sm outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
 
   return (
     <>
       {/* ── Three inline table cells ── */}
       <td className="px-4 py-2.5">
         <button onClick={() => openModal("new-singer")}
-          className="text-xs text-slate-500 hover:text-slate-900 hover:underline cursor-pointer whitespace-nowrap">
+          className="cursor-pointer whitespace-nowrap text-xs text-muted-foreground hover:text-foreground hover:underline">
           new singer
         </button>
       </td>
       <td className="px-4 py-2.5">
         <button onClick={() => openModal("accept")}
-          className="text-xs text-blue-600 hover:underline cursor-pointer">
+          className="cursor-pointer text-xs text-primary hover:underline">
           accept
         </button>
       </td>
       <td className="px-4 py-2.5">
         <button onClick={() => openModal("decline")}
-          className="text-xs text-red-500 hover:underline cursor-pointer">
+          className="cursor-pointer text-xs text-destructive hover:underline">
           decline
         </button>
       </td>
@@ -159,24 +161,24 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
       {modal === "accept" && modalShell(
         "Accept hymn",
         <>
-          <p className="text-sm text-slate-600 mb-4">
+          <p className="mb-4 text-sm text-muted-foreground">
             Make sure you want to accept this hymn. Also please select the correct singer(s)
             below — this will greatly help in searching hymns. You can add a new singer by
             clicking the <em>new singer</em> link if they are not in the list.
           </p>
-          <label className="text-sm font-medium text-slate-700">
-            Singer/s <span className="text-red-500">*</span>
+          <label className="text-sm font-medium text-foreground">
+            Singer/s <span className="text-destructive">*</span>
           </label>
           {singersLoading && (
-            <div className="flex items-center gap-2 text-sm text-slate-400 py-3">
+            <div className="flex items-center gap-2 py-3 text-sm text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin" /> Loading singers…
             </div>
           )}
-          {singersError && <p className="text-sm text-red-500 py-2">{singersError}</p>}
+          {singersError && <p className="py-2 text-sm text-destructive">{singersError}</p>}
           {!singersLoading && !singersError && (
             <div className="mt-2">
               {selectedIds.length > 0 && (
-                <p className="text-xs text-slate-500 mb-1.5">
+                <p className="mb-1.5 text-xs text-muted-foreground">
                   {selectedIds.length} selected:{" "}
                   {selectedIds.map(id => singers.find(s => s.id === id)?.name).filter(Boolean).join(", ")}
                 </p>
@@ -187,14 +189,14 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search singers…"
-                className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-blue-400 mb-1"
+                className={`${inputClass} mb-1`}
               />
-              <div className="border border-slate-200 rounded max-h-44 overflow-y-auto">
+              <div className="max-h-44 overflow-y-auto rounded border">
                 {filtered.length === 0
-                  ? <p className="text-sm text-slate-400 px-3 py-2">No results</p>
+                  ? <p className="px-3 py-2 text-sm text-muted-foreground">No results</p>
                   : filtered.map(s => (
                     <label key={s.id}
-                      className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-50 cursor-pointer text-sm select-none">
+                      className="flex cursor-pointer select-none items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground">
                       <input type="checkbox" checked={selectedIds.includes(s.id)}
                         onChange={() => toggleSinger(s.id)} className="cursor-pointer" />
                       {s.name}
@@ -204,13 +206,13 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
               </div>
             </div>
           )}
-          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
         </>,
         <>
           {closeBtn}
           <button type="button" onClick={handleAccept}
             disabled={loading || singersLoading}
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            className="flex cursor-pointer items-center gap-1.5 rounded bg-primary px-4 py-1.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50">
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Accept
           </button>
@@ -220,14 +222,14 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
       {/* ── Decline modal ── */}
       {modal === "decline" && modalShell(
         "Decline acceptance",
-        <p className="text-sm text-slate-600 py-3">
+        <p className="py-3 text-sm text-muted-foreground">
           Are you sure you want to decline accepting this hymn?
         </p>,
         <>
           {closeBtn}
           <button type="button" onClick={handleDecline}
             disabled={loading}
-            className="px-4 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            className="flex cursor-pointer items-center gap-1.5 rounded bg-destructive px-4 py-1.5 text-sm text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50">
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Decline
           </button>
@@ -238,7 +240,7 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
       {modal === "new-singer" && modalShell(
         "Add New Singer",
         <>
-          <label htmlFor={`singer-name-${hymnId}`} className="text-sm text-slate-700 block mb-1">
+          <label htmlFor={`singer-name-${hymnId}`} className="mb-1 block text-sm text-foreground">
             Singer name
           </label>
           <input
@@ -249,16 +251,16 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
             onChange={e => setNewSingerName(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleAddSinger()}
             placeholder="Name"
-            className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded outline-none focus:border-blue-400"
+            className={inputClass}
           />
-          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
+          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
         </>,
         <>
           {closeBtn}
           <button type="button" onClick={handleAddSinger}
             disabled={loading}
             style={{ minWidth: 80 }}
-            className="px-5 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex items-center gap-1.5">
+            className="flex cursor-pointer items-center gap-1.5 rounded bg-primary px-5 py-1.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50">
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             Add
           </button>

@@ -23,21 +23,21 @@ export default function HymnAdminActions({ hymnId, slug }: Props) {
       <Link
         href={`/hymns/${slug}`}
         target="_blank"
-        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
+        className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         title="View"
       >
         <Eye className="w-4 h-4" />
       </Link>
       <Link
         href={`/hymns/admin/hymns/${hymnId}/edit`}
-        className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
+        className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         title="Edit"
       >
         <Edit className="w-4 h-4" />
       </Link>
       <button
         onClick={handleDelete}
-        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+        className="cursor-pointer rounded p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
         title="Delete"
       >
         <Trash2 className="w-4 h-4" />

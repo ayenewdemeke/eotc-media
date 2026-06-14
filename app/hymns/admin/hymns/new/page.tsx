@@ -4,9 +4,27 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Youtube } from "lucide-react"
 import Image from "next/image"
+import { PageHeader } from "@/components/admin/shared/PageHeader"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 interface SelectOption { id: number; name: string }
 interface SubCategory { id: number; name: string; categoryId: number }
+
+const selectClass =
+  "w-full h-9 rounded-md border border-input bg-background px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+
+function chipClass(active: boolean, variant: "primary" | "secondary" = "primary") {
+  if (active)
+    return variant === "primary"
+      ? "bg-primary text-primary-foreground border-primary"
+      : "bg-secondary text-secondary-foreground border-transparent"
+  return "text-muted-foreground border-input hover:bg-accent hover:text-accent-foreground"
+}
 
 export default function NewHymnPage() {
   const router = useRouter()
@@ -58,7 +76,6 @@ export default function NewHymnPage() {
       setChannels(chans)
       setApprovalStatuses(statuses)
       setLanguages(langs)
-      // Default to first approval status
       if (statuses.length) setApprovalStatusId(String(statuses[0].id))
     })
   }, [])
@@ -88,7 +105,7 @@ export default function NewHymnPage() {
   }
 
   function generateSlug(t: string): string {
-    return t.trim().replace(/\s+/g, '-').replace(/[^\w\u1200-\u137F-]/g, '').slice(0, 120) + '-' + Date.now().toString(36)
+    return t.trim().replace(/\s+/g, '-').replace(/[^\wሀ-፿-]/g, '').slice(0, 120) + '-' + Date.now().toString(36)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -135,182 +152,150 @@ export default function NewHymnPage() {
     ? subCategories.filter(sc => selectedCategoryIds.includes(sc.categoryId))
     : subCategories
 
-  return (
-    <div className="p-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Add hymn</h1>
+  const chip = "cursor-pointer rounded-full border px-3 py-1 text-xs font-medium transition-all"
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* YouTube URL */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">YouTube URL *</label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
-              <input
-                value={youtubeUrl}
-                onChange={e => setYoutubeUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400"
-              />
+  return (
+    <div className="space-y-6 p-4 lg:p-6">
+      <PageHeader title="Add hymn" description="Import a hymn from YouTube and set its taxonomy." />
+
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* YouTube URL */}
+            <div className="space-y-1.5">
+              <Label>YouTube URL *</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Youtube className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-destructive" />
+                  <Input
+                    value={youtubeUrl}
+                    onChange={e => setYoutubeUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="pl-9"
+                  />
+                </div>
+                <Button type="button" variant="destructive" onClick={fetchYoutube} disabled={fetching || !youtubeUrl.trim()}>
+                  {fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Fetch"}
+                </Button>
+              </div>
+              {fetchError && <p className="text-xs text-destructive">{fetchError}</p>}
+              {thumbnailHigh && (
+                <div className="mt-3 flex items-start gap-3">
+                  <Image src={thumbnailHigh} alt="thumbnail" width={160} height={90} className="rounded-lg border" unoptimized />
+                  <div className="text-xs text-muted-foreground">
+                    <p>Video ID: <span className="font-mono text-foreground">{videoId}</span></p>
+                  </div>
+                </div>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={fetchYoutube}
-              disabled={fetching || !youtubeUrl.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors cursor-pointer"
-            >
-              {fetching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Fetch"}
-            </button>
-          </div>
-          {fetchError && <p className="text-xs text-red-600 mt-1">{fetchError}</p>}
-          {thumbnailHigh && (
-            <div className="mt-3 flex gap-3 items-start">
-              <Image src={thumbnailHigh} alt="thumbnail" width={160} height={90} className="rounded-lg border border-slate-200" unoptimized />
-              <div className="text-xs text-slate-500">
-                <p>Video ID: <span className="font-mono text-slate-700">{videoId}</span></p>
+
+            <div className="space-y-1.5">
+              <Label>Title *</Label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Hymn title" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Singer (text)</Label>
+                <Input value={singer} onChange={e => setSinger(e.target.value)} placeholder="Singer name…" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Published date</Label>
+                <Input type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} />
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Title *</label>
-          <input
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="Hymn title"
-            className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400"
-          />
-        </div>
-
-        {/* Singer text + Status + Channel */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Singer (text)</label>
-            <input value={singer} onChange={e => setSinger(e.target.value)} placeholder="Singer name…" className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Published date</label>
-            <input type="date" value={publishedAt} onChange={e => setPublishedAt(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Approval status *</label>
-            <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
-              <option value="">Select…</option>
-              {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Channel *</label>
-            <select value={channelId} onChange={e => setChannelId(e.target.value)} className="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white">
-              <option value="">Select…</option>
-              {channels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Multi-select: categories */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Categories</label>
-          <div className="flex flex-wrap gap-2">
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => toggleId(selectedCategoryIds, setSelectedCategoryIds, cat.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedCategoryIds.includes(cat.id) ? "bg-blue-600 text-white border-blue-600" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Sub-categories */}
-        {filteredSubCategories.length > 0 && (
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Sub-categories</label>
-            <div className="flex flex-wrap gap-2">
-              {filteredSubCategories.map(sc => (
-                <button
-                  key={sc.id}
-                  type="button"
-                  onClick={() => toggleId(selectedSubCategoryIds, setSelectedSubCategoryIds, sc.id)}
-                  className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedSubCategoryIds.includes(sc.id) ? "bg-blue-600 text-white border-blue-600" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}
-                >
-                  {sc.name}
-                </button>
-              ))}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Approval status *</Label>
+                <select value={approvalStatusId} onChange={e => setApprovalStatusId(e.target.value)} className={selectClass}>
+                  <option value="">Select…</option>
+                  {approvalStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Channel *</Label>
+                <select value={channelId} onChange={e => setChannelId(e.target.value)} className={selectClass}>
+                  <option value="">Select…</option>
+                  {channels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Languages */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Languages</label>
-          <div className="flex flex-wrap gap-2">
-            {languages.map(lang => (
-              <button
-                key={lang.id}
-                type="button"
-                onClick={() => toggleId(selectedLanguageIds, setSelectedLanguageIds, lang.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedLanguageIds.includes(lang.id) ? "bg-blue-600 text-white border-blue-600" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}
-              >
-                {lang.name}
-              </button>
-            ))}
-          </div>
-        </div>
+            <div className="space-y-2">
+              <Label>Categories</Label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(cat => (
+                  <button key={cat.id} type="button" onClick={() => toggleId(selectedCategoryIds, setSelectedCategoryIds, cat.id)}
+                    className={cn(chip, chipClass(selectedCategoryIds.includes(cat.id)))}>
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Singers (linked) */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Linked singers</label>
-          <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-            {singers.map(s => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => toggleId(selectedSingerIds, setSelectedSingerIds, s.id)}
-                className={`px-3 py-1 text-xs font-medium rounded-full border transition-all cursor-pointer ${selectedSingerIds.includes(s.id) ? "bg-slate-700 text-white border-slate-700" : "text-slate-600 border-slate-200 hover:border-slate-300"}`}
-              >
-                {s.name}
-              </button>
-            ))}
-          </div>
-        </div>
+            {filteredSubCategories.length > 0 && (
+              <div className="space-y-2">
+                <Label>Sub-categories</Label>
+                <div className="flex flex-wrap gap-2">
+                  {filteredSubCategories.map(sc => (
+                    <button key={sc.id} type="button" onClick={() => toggleId(selectedSubCategoryIds, setSelectedSubCategoryIds, sc.id)}
+                      className={cn(chip, chipClass(selectedSubCategoryIds.includes(sc.id)))}>
+                      {sc.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Brief description…" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 resize-none" />
-        </div>
+            <div className="space-y-2">
+              <Label>Languages</Label>
+              <div className="flex flex-wrap gap-2">
+                {languages.map(lang => (
+                  <button key={lang.id} type="button" onClick={() => toggleId(selectedLanguageIds, setSelectedLanguageIds, lang.id)}
+                    className={cn(chip, chipClass(selectedLanguageIds.includes(lang.id)))}>
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Lyrics */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Lyrics</label>
-          <textarea value={lyrics} onChange={e => setLyrics(e.target.value)} rows={10} placeholder="Paste lyrics here…" className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 resize-y font-mono" />
-        </div>
+            <div className="space-y-2">
+              <Label>Linked singers</Label>
+              <div className="flex max-h-32 flex-wrap gap-2 overflow-y-auto">
+                {singers.map(s => (
+                  <button key={s.id} type="button" onClick={() => toggleId(selectedSingerIds, setSelectedSingerIds, s.id)}
+                    className={cn(chip, chipClass(selectedSingerIds.includes(s.id), "secondary"))}>
+                    {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+            <div className="space-y-1.5">
+              <Label>Description</Label>
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Brief description…" />
+            </div>
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
-          >
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save hymn
-          </button>
-          <button type="button" onClick={() => router.back()} className="px-6 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-            Cancel
-          </button>
-        </div>
-      </form>
+            <div className="space-y-1.5">
+              <Label>Lyrics</Label>
+              <Textarea value={lyrics} onChange={e => setLyrics(e.target.value)} rows={10} placeholder="Paste lyrics here…" className="resize-y font-mono" />
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <div className="flex gap-3">
+              <Button type="submit" disabled={saving}>
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                Save hymn
+              </Button>
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }
