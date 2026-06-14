@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
 
   let sent = 0
   let failed = 0
+  let firstError: string | null = null
 
   for (const user of recipients) {
     try {
@@ -44,10 +45,13 @@ export async function POST(req: NextRequest) {
         html,
       })
       sent++
-    } catch {
+    } catch (err) {
       failed++
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[email] failed to send to ${user.email}:`, msg)
+      if (!firstError) firstError = msg
     }
   }
 
-  return NextResponse.json({ sent, failed, total: recipients.length })
+  return NextResponse.json({ sent, failed, total: recipients.length, error: firstError })
 }
