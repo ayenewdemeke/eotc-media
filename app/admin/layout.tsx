@@ -10,9 +10,9 @@ const nav: AdminNavItem[] = [
   { title: "Dashboard", href: `${BASE}/dashboard`, icon: "dashboard" },
   { title: "Users", href: `${BASE}/users`, icon: "users" },
   { title: "Feedbacks", href: `${BASE}/feedbacks`, icon: "messageSquare" },
-  { title: "Featured Items", href: `${BASE}/featured`, icon: "star" },
-  { title: "Verse Corrections", href: `${BASE}/verse-corrections`, icon: "bookOpen" },
-  { title: "Email Members", href: `${BASE}/email`, icon: "mail" },
+  { title: "Featured items", href: `${BASE}/featured`, icon: "star" },
+  { title: "Verse corrections", href: `${BASE}/verse-corrections`, icon: "bookOpen" },
+  { title: "Email members", href: `${BASE}/email`, icon: "mail" },
 ]
 
 export default async function MainAdminLayout({ children }: { children: React.ReactNode }) {

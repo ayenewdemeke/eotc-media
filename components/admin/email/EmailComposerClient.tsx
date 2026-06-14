@@ -95,7 +95,7 @@ export default function EmailComposerClient() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Email Members</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Email members</h1>
         <p className="text-sm text-gray-500 mt-1">Compose and send emails to your app members in Amharic and English.</p>
       </div>
 
