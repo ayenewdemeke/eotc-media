@@ -1,13 +1,7 @@
 "use client"
 
 import { useState, useRef, useMemo, useEffect } from "react"
-import {
-  Play,
-  Pause,
-  Music,
-  BookOpenText,
-  Check,
-} from "lucide-react"
+import { Play, Pause, Music, BookOpenText, Check, Info } from "lucide-react"
 import { useLocale } from "@/lib/i18n/LocaleContext"
 
 // ── Types ──────────────────────────────────────────────
@@ -68,69 +62,26 @@ const AUDIO_LABELS: Record<AudioType, string> = {
   araray: "Araray",
 }
 
-// ── Role styles — modern, vibrant ──────────────────────
+// ── Role styles ────────────────────────────────────────
 
-const ROLE_STYLES: Record<
-  string,
-  { bg: string; text: string; border: string; dotBg: string }
-> = {
-  priest: {
-    bg: "bg-gradient-to-br from-red-50 to-rose-50",
-    text: "text-red-700",
-    border: "border-l-red-400",
-    dotBg: "bg-red-400",
-  },
-  deacon: {
-    bg: "bg-gradient-to-br from-blue-50 to-indigo-50",
-    text: "text-blue-700",
-    border: "border-l-blue-400",
-    dotBg: "bg-blue-400",
-  },
-  people: {
-    bg: "bg-gradient-to-br from-emerald-50 to-teal-50",
-    text: "text-emerald-700",
-    border: "border-l-emerald-400",
-    dotBg: "bg-emerald-400",
-  },
-  choir: {
-    bg: "bg-gradient-to-br from-blue-50 to-blue-100",
-    text: "text-blue-700",
-    border: "border-l-blue-400",
-    dotBg: "bg-blue-400",
-  },
-  assistant_priest: {
-    bg: "bg-gradient-to-br from-orange-50 to-amber-50",
-    text: "text-orange-700",
-    border: "border-l-orange-400",
-    dotBg: "bg-orange-400",
-  },
-  assistant_deacon: {
-    bg: "bg-gradient-to-br from-cyan-50 to-sky-50",
-    text: "text-cyan-700",
-    border: "border-l-cyan-400",
-    dotBg: "bg-cyan-400",
-  },
+const ROLE_STYLES: Record<string, { accent: string; pill: string }> = {
+  priest:           { accent: "bg-rose-400",    pill: "bg-rose-50 text-rose-700 ring-rose-100" },
+  deacon:           { accent: "bg-blue-500",    pill: "bg-blue-50 text-blue-700 ring-blue-100" },
+  people:           { accent: "bg-emerald-500", pill: "bg-emerald-50 text-emerald-700 ring-emerald-100" },
+  choir:            { accent: "bg-violet-400",  pill: "bg-violet-50 text-violet-700 ring-violet-100" },
+  assistant_priest: { accent: "bg-orange-400",  pill: "bg-orange-50 text-orange-700 ring-orange-100" },
+  assistant_deacon: { accent: "bg-cyan-500",    pill: "bg-cyan-50 text-cyan-700 ring-cyan-100" },
 }
 
-const DEFAULT_ROLE_STYLE = {
-  bg: "bg-gradient-to-br from-gray-50 to-slate-50",
-  text: "text-gray-700",
-  border: "border-l-gray-400",
-  dotBg: "bg-gray-400",
-}
+const DEFAULT_ROLE_STYLE = { accent: "bg-slate-300", pill: "bg-slate-100 text-slate-600 ring-slate-100" }
 
 // ── Helper: get available audio for a text ─────────────
 
-function getAvailableAudio(
-  text: LiturgicalText
-): { type: AudioType; path: string }[] {
+function getAvailableAudio(text: LiturgicalText): { type: AudioType; path: string }[] {
   const result: { type: AudioType; path: string }[] = []
-  if (text.audioGeezFilePath)
-    result.push({ type: "geez", path: text.audioGeezFilePath })
-  if (text.audioEzilFilePath)
-    result.push({ type: "ezil", path: text.audioEzilFilePath })
-  if (text.audioArarayFilePath)
-    result.push({ type: "araray", path: text.audioArarayFilePath })
+  if (text.audioGeezFilePath)  result.push({ type: "geez",   path: text.audioGeezFilePath })
+  if (text.audioEzilFilePath)  result.push({ type: "ezil",   path: text.audioEzilFilePath })
+  if (text.audioArarayFilePath) result.push({ type: "araray", path: text.audioArarayFilePath })
   return result
 }
 
@@ -171,10 +122,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
     function handleClickOutside(event: MouseEvent) {
       const clickedButton = languageOptionsRef.current?.contains(event.target as Node)
       const clickedDropdown = languageDropdownRef.current?.contains(event.target as Node)
-
-      if (!clickedButton && !clickedDropdown) {
-        setShowLanguageOptions(false)
-      }
+      if (!clickedButton && !clickedDropdown) setShowLanguageOptions(false)
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
@@ -186,13 +134,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
       const activeTab = sectionTabsRef.current.querySelector(
         `[data-section-id="${activeSectionId}"]`
       ) as HTMLElement
-      if (activeTab) {
-        activeTab.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        })
-      }
+      if (activeTab) activeTab.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
     }
   }, [activeSectionId])
 
@@ -230,30 +172,21 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
   const getRoleName = (role: Role) =>
     roleLanguage === "amharic" ? role.nameAmharic : role.nameEnglish
 
-  const getRoleStyle = (roleKey: string) =>
-    ROLE_STYLES[roleKey] || DEFAULT_ROLE_STYLE
+  const getRoleStyle = (roleKey: string) => ROLE_STYLES[roleKey] || DEFAULT_ROLE_STYLE
 
-  const toggleLanguage = (lang: keyof LanguageVisibility) => {
-    setLanguageVisibility((prev) => ({
-      ...prev,
-      [lang]: !prev[lang],
-    }))
-  }
+  const toggleLanguage = (lang: keyof LanguageVisibility) =>
+    setLanguageVisibility((prev) => ({ ...prev, [lang]: !prev[lang] }))
 
   // ── Empty state ──────────────────────────────────────
 
   if (sections.length === 0) {
     return (
-      <div className="min-h-[85vh] flex flex-col items-center justify-center px-6 bg-gradient-to-b from-gray-50 to-white">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center mb-6 shadow-lg">
-          <BookOpenText className="h-10 w-10 text-blue-500" />
+      <div className="min-h-[85vh] flex flex-col items-center justify-center px-6">
+        <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+          <BookOpenText className="h-8 w-8 text-slate-400" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          {t("liturgy_no_content")}
-        </h2>
-        <p className="text-sm text-gray-500 text-center max-w-md">
-          {t("liturgy_no_content_msg")}
-        </p>
+        <h2 className="text-lg font-semibold text-slate-800 mb-1.5">{t("liturgy_no_content")}</h2>
+        <p className="text-sm text-slate-400 text-center max-w-sm">{t("liturgy_no_content_msg")}</p>
       </div>
     )
   }
@@ -261,15 +194,20 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
   // ── Render ───────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       <audio ref={audioRef} onEnded={() => setPlayingAudioId(null)} />
 
-      {/* ─── Sticky Tabs Bar ─── */}
-      <div className="sticky top-16 z-20 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex items-center">
-          {/* Scrollable Section Tabs */}
-          <div ref={sectionTabsRef} className="flex-1 overflow-x-auto scrollbar-hide -ml-4 sm:-ml-6 pl-2 sm:pl-4">
-            <div className="flex items-center min-w-max">
+      {/* ─── Sticky toolbar ─── */}
+      <div className="sticky top-16 z-20 bg-white border-b border-slate-100">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 flex items-center gap-2">
+
+          {/* Scrollable section tabs — pill style */}
+          <div
+            ref={sectionTabsRef}
+            className="flex-1 overflow-x-auto scrollbar-hide"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <div className="flex items-center gap-1 py-2.5 min-w-max">
               {sections.map((section) => {
                 const isActive = activeSectionId === section.id
                 return (
@@ -277,16 +215,13 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
                     key={section.id}
                     data-section-id={section.id}
                     onClick={() => handleSectionChange(section.id)}
-                    className={`relative px-3 sm:px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 text-[13px] font-medium rounded-full whitespace-nowrap transition-all cursor-pointer ${
                       isActive
-                        ? "text-blue-600"
-                        : "text-gray-600 hover:text-gray-900"
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
                     }`}
                   >
                     {locale === "am" ? section.nameAmharic : section.nameEnglish}
-                    {isActive && (
-                      <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full" />
-                    )}
                   </button>
                 )
               })}
@@ -294,48 +229,48 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-2 flex-shrink-0 pl-2">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {/* Language selector */}
             <div className="relative">
               <button
                 ref={languageOptionsRef}
                 onClick={() => setShowLanguageOptions(!showLanguageOptions)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 cursor-pointer transition-all shadow-sm"
+                className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-[12px] font-medium text-slate-600 hover:bg-slate-100 border border-slate-200 cursor-pointer transition-colors"
               >
                 <BookOpenText className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">{t("liturgy_language_btn")}</span>
-                <svg className={`w-3 h-3 transition-transform ${showLanguageOptions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className={`w-3 h-3 text-slate-400 transition-transform ${showLanguageOptions ? "rotate-180" : ""}`}
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               {showLanguageOptions && (
-                <div ref={languageDropdownRef} className="absolute right-0 top-full mt-1 w-60 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-[100]">
-                  <div className="px-3 py-1.5 border-b border-gray-100">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      {t("liturgy_select_langs")}
-                    </p>
-                  </div>
+                <div
+                  ref={languageDropdownRef}
+                  className="absolute right-0 top-full mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-1.5 z-[100]"
+                >
+                  <p className="px-3 pt-1 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                    {t("liturgy_select_langs")}
+                  </p>
                   {[
-                    { key: 'geez' as const, label: 'ግዕዝ (Ge\'ez)' },
-                    { key: 'amharic' as const, label: 'አማርኛ (Amharic)' },
-                    { key: 'transliteration' as const, label: 'English transliteration' },
-                    { key: 'translation' as const, label: 'English translation' },
+                    { key: "geez" as const,            label: "ግዕዝ (Ge'ez)" },
+                    { key: "amharic" as const,         label: "አማርኛ (Amharic)" },
+                    { key: "transliteration" as const, label: "Transliteration" },
+                    { key: "translation" as const,     label: "English translation" },
                   ].map(({ key, label }) => (
                     <button
                       key={key}
                       onClick={() => toggleLanguage(key)}
-                      className="flex items-center gap-3 w-full px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 w-full px-3 py-2 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
-                        languageVisibility[key]
-                          ? 'bg-blue-600 border-blue-600'
-                          : 'border-gray-300'
+                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        languageVisibility[key] ? "bg-slate-900 border-slate-900" : "border-slate-200"
                       }`}>
-                        {languageVisibility[key] && (
-                          <Check className="h-3 w-3 text-white" />
-                        )}
+                        {languageVisibility[key] && <Check className="h-2.5 w-2.5 text-white" />}
                       </div>
-                      <span className="text-sm text-gray-700">{label}</span>
+                      <span className="text-[13px] text-slate-700">{label}</span>
                     </button>
                   ))}
                 </div>
@@ -344,16 +279,16 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
 
             {/* Audio type selector */}
             {hasMultipleAudioTypes && (
-              <div className="flex items-center gap-0.5 bg-blue-50 border border-blue-200/50 rounded-lg p-0.5">
-                <Music className="h-3 w-3 text-blue-600 ml-1" />
+              <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5">
+                <Music className="h-3 w-3 text-slate-500 ml-1.5" />
                 {(["geez", "ezil", "araray"] as AudioType[]).map((type) => (
                   <button
                     key={type}
                     onClick={() => setGlobalAudioType(type)}
                     className={`px-2 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-all ${
                       globalAudioType === type
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "text-blue-700 hover:bg-blue-100"
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
                     }`}
                   >
                     {AUDIO_LABELS[type]}
@@ -365,11 +300,10 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
         </div>
       </div>
 
-      {/* ─── Content Area ─── */}
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
-        {/* Liturgical Texts */}
+      {/* ─── Content ─── */}
+      <div className="max-w-3xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
         {activeSection && activeSection.texts.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4">
+          <div className="space-y-3">
             {activeSection.texts.map((text) => {
               const style = getRoleStyle(text.role.roleKey)
               const audioPath = getAudioForText(text)
@@ -379,82 +313,69 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
               return (
                 <div
                   key={text.id}
-                  className="relative"
+                  className="relative rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden"
                 >
-                  <div
-                    className={`relative border-l-[3px] ${style.border} rounded-2xl bg-white shadow-md transition-all duration-200 overflow-hidden`}
-                  >
+                  {/* Colored left accent */}
+                  <div className={`absolute inset-y-0 left-0 w-[3px] ${style.accent}`} />
 
-                    <div className="relative p-4 sm:p-6">
-                      {/* Role badge + audio row */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${style.dotBg} animate-pulse`} />
-                          <span
-                            className={`text-xs font-bold ${style.text} uppercase tracking-wider`}
-                          >
-                            {getRoleName(text.role)}
-                          </span>
-                        </div>
+                  <div className="pl-5 sm:pl-7 pr-4 sm:pr-6 py-4 sm:py-5">
 
-                        {audioPath && (
-                          <button
-                            onClick={() => playAudio(audioPath, text.id)}
-                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95 shadow-md ${
-                              isPlaying
-                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-500/25"
-                                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                            }`}
-                          >
-                            {isPlaying ? (
-                              <>
-                                <Pause className="h-3.5 w-3.5" />
-                                <span>Playing</span>
-                              </>
-                            ) : (
-                              <>
-                                <Play className="h-3.5 w-3.5" />
-                                <span>Play</span>
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
+                    {/* Role + audio row */}
+                    <div className="flex items-center justify-between gap-3 mb-3.5">
+                      <span className={`inline-flex items-center text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full ring-1 ring-inset ${style.pill}`}>
+                        {getRoleName(text.role)}
+                      </span>
 
-                      {/* Text content */}
-                      <div className="space-y-3 font-[family-name:var(--font-inter)]">
-                        {languageVisibility.geez && text.textGeez && (
-                          <p className="text-lg sm:text-xl leading-relaxed text-gray-900 font-semibold tracking-wide">
-                            {text.textGeez}
-                          </p>
-                        )}
-                        {languageVisibility.amharic && text.textAmharic && (
-                          <p className="text-base sm:text-lg leading-relaxed text-gray-800 tracking-wide">
-                            {text.textAmharic}
-                          </p>
-                        )}
-                        {languageVisibility.transliteration &&
-                          text.textEnglishTransliteration && (
-                            <p className="text-base sm:text-lg leading-relaxed text-gray-800">
-                              {text.textEnglishTransliteration}
-                            </p>
-                          )}
-                        {languageVisibility.translation && text.textEnglishTranslation && (
-                          <p className="text-base sm:text-lg leading-relaxed text-gray-800">
-                            {text.textEnglishTranslation}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Remark */}
-                      {text.remark && (
-                        <div className="mt-4 px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-l-3 border-amber-400 rounded-xl">
-                          <p className="text-sm text-amber-900 leading-relaxed">
-                            <span className="font-bold">{t("liturgy_note")}</span> {text.remark}
-                          </p>
-                        </div>
+                      {audioPath && (
+                        <button
+                          onClick={() => playAudio(audioPath, text.id)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all cursor-pointer active:scale-95 ${
+                            isPlaying
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                        >
+                          {isPlaying
+                            ? <><Pause className="h-3 w-3" /><span>Pause</span></>
+                            : <><Play  className="h-3 w-3" /><span>Play</span></>
+                          }
+                        </button>
                       )}
                     </div>
+
+                    {/* Text content */}
+                    <div className="space-y-3">
+                      {languageVisibility.geez && text.textGeez && (
+                        <p className="text-[17px] sm:text-[19px] leading-[1.85] text-slate-900 font-semibold tracking-wide">
+                          {text.textGeez}
+                        </p>
+                      )}
+                      {languageVisibility.amharic && text.textAmharic && (
+                        <p className="text-[15px] sm:text-[16px] leading-relaxed text-slate-700">
+                          {text.textAmharic}
+                        </p>
+                      )}
+                      {languageVisibility.transliteration && text.textEnglishTransliteration && (
+                        <p className="text-[13px] sm:text-[14px] leading-relaxed text-slate-400 italic">
+                          {text.textEnglishTransliteration}
+                        </p>
+                      )}
+                      {languageVisibility.translation && text.textEnglishTranslation && (
+                        <p className="text-[13px] sm:text-[14px] leading-relaxed text-slate-500">
+                          {text.textEnglishTranslation}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Remark */}
+                    {text.remark && (
+                      <div className="mt-4 flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-3">
+                        <Info className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-[1px]" />
+                        <p className="text-[13px] text-amber-800 leading-relaxed">
+                          <span className="font-semibold">{t("liturgy_note")}</span>{" "}{text.remark}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -462,23 +383,18 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
           </div>
         ) : activeSection ? (
           <div className="py-24 text-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto mb-5 shadow-lg">
-              <BookOpenText className="h-10 w-10 text-gray-400" />
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+              <BookOpenText className="h-7 w-7 text-slate-400" />
             </div>
-            <p className="text-base text-gray-500 font-medium">
-              {t("liturgy_no_section")}
-            </p>
+            <p className="text-sm text-slate-400 font-medium">{t("liturgy_no_section")}</p>
           </div>
         ) : (
           <div className="py-24 text-center">
-            <p className="text-sm text-gray-500">
-              Select a section to begin reading
-            </p>
+            <p className="text-sm text-slate-400">Select a section to begin reading</p>
           </div>
         )}
 
-        {/* Bottom padding for mobile scroll */}
-        <div className="h-20" />
+        <div className="h-16" />
       </div>
     </div>
   )
