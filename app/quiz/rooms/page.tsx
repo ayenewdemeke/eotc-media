@@ -131,7 +131,7 @@ export default function QuizRoomsPage() {
             <p className="text-slate-500 mb-4">Please sign in to access Group rooms.</p>
             <button onClick={() => router.push("/auth/login")}
               className="px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
-              Sign In
+              Sign in
             </button>
           </div>
         </div>
@@ -143,10 +143,10 @@ export default function QuizRoomsPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
       {showCreate && (
-        <Modal title="Create Room" onClose={() => { setShowCreate(false); setError(""); setCreateName("") }}>
+        <Modal title="Create room" onClose={() => { setShowCreate(false); setError(""); setCreateName("") }}>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Room Name (optional)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Room name (optional)</label>
               <input
                 autoFocus value={createName} onChange={e => setCreateName(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && createRoom()}
@@ -163,17 +163,17 @@ export default function QuizRoomsPage() {
               <button onClick={createRoom} disabled={saving}
                 className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                Create Room
+                Create room
               </button>
             </div>
           </div>
         </Modal>
       )}
       {showJoin && (
-        <Modal title="Join Room" onClose={() => { setShowJoin(false); setError(""); setJoinCode("") }}>
+        <Modal title="Join room" onClose={() => { setShowJoin(false); setError(""); setJoinCode("") }}>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Room Code</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Room code</label>
               <input
                 autoFocus value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())}
                 onKeyDown={e => e.key === "Enter" && joinRoom()}
@@ -190,7 +190,7 @@ export default function QuizRoomsPage() {
               <button onClick={joinRoom} disabled={saving || !joinCode.trim()}
                 className="flex items-center gap-2 px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 cursor-pointer transition-colors">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                Join Room
+                Join room
               </button>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function QuizRoomsPage() {
                 <button onClick={() => { setShowCreate(true); setError("") }}
                   className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
                   <Plus className="w-4 h-4" />
-                  Create Room
+                  Create room
                 </button>
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function QuizRoomsPage() {
                   const isHost = room.hostUserId === userId
                   const latestRound = room.rounds[0]
                   const statusBadge = latestRound?.status === 'active'
-                    ? <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">In Round</span>
+                    ? <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">In round</span>
                     : latestRound?.status === 'waiting'
                     ? <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Waiting</span>
                     : <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-medium">Idle</span>
