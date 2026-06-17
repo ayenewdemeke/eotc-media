@@ -122,7 +122,7 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
                 <TableHead className="px-4">Language</TableHead>
                 <TableHead className="px-4">Category</TableHead>
                 <TableHead className="px-4">Subcategory</TableHead>
-                <TableHead className="px-4">Title</TableHead>
+                <TableHead className="px-4" />
                 <TableHead className="px-4">Singer</TableHead>
                 <TableHead className="px-4">Status</TableHead>
                 <TableHead className="px-4" />

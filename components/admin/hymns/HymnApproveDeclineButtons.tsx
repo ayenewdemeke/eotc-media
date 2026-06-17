@@ -8,6 +8,9 @@ import { Loader2 } from "lucide-react"
 interface Singer { id: number; name: string }
 interface Props { hymnId: number; hymnTitle: string }
 
+// Persists the last singer selection across rows within the same page session
+let persistedSingerIds: number[] = []
+
 type ModalType = "accept" | "decline" | "new-singer" | null
 
 export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) {
@@ -31,6 +34,7 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
   const nameRef = useRef<HTMLInputElement>(null)
 
   function openModal(m: ModalType) {
+    if (m === "accept") setSelectedIds([...persistedSingerIds])
     setModal(m)
     setError("")
   }
@@ -63,7 +67,11 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
   }, [modal])
 
   function toggleSinger(id: number) {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+    setSelectedIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      persistedSingerIds = next
+      return next
+    })
   }
 
   async function handleAccept() {
