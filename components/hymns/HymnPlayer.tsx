@@ -17,6 +17,7 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null)
   const mountRef = useRef<HTMLDivElement>(null)
+  const pendingPlay = useRef(false)
 
   const thumbSrc = thumbnail || `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
 
@@ -32,7 +33,13 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
         videoId,
         playerVars: { rel: 0, modestbranding: 1, playsinline: 1 },
         events: {
-          onReady: () => { playerRef.current = player },
+          onReady: () => {
+            playerRef.current = player
+            if (pendingPlay.current) {
+              pendingPlay.current = false
+              player.playVideo()
+            }
+          },
         },
       })
     })
@@ -46,7 +53,11 @@ export default function HymnPlayer({ videoId, slug, thumbnail, title }: HymnPlay
   function handlePlay() {
     fetch(`/api/hymns/${slug}/click`, { method: "POST" }).catch(() => {})
     setPlaying(true)
-    playerRef.current?.playVideo()
+    if (playerRef.current) {
+      playerRef.current.playVideo()
+    } else {
+      pendingPlay.current = true
+    }
   }
 
   return (
