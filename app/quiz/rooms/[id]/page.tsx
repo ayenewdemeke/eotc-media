@@ -137,14 +137,14 @@ export default function RoomPage() {
                 <button onClick={startRound} disabled={startingRound}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex-shrink-0">
                   {startingRound ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  Start Round
+                  Start round
                 </button>
               )}
               {activeRound && (
                 <button onClick={() => router.push(`/quiz/rooms/${roomId}/rounds/${activeRound.id}`)}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors cursor-pointer flex-shrink-0">
                   <ChevronRight className="w-4 h-4" />
-                  Go to Round {activeRound.roundNumber}
+                  Go to round {activeRound.roundNumber}
                 </button>
               )}
             </div>

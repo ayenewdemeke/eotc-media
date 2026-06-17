@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
 
   const { subjectAm, subjectEn, bodyAm, bodyEn, userIds } = await req.json()
 
-  if (!subjectAm?.trim() || !subjectEn?.trim() || !bodyAm?.trim() || !bodyEn?.trim()) {
+  const hasText = (s: string) => s?.replace(/<[^>]*>/g, "").trim().length > 0
+  if (!subjectAm?.trim() || !subjectEn?.trim() || !hasText(bodyAm) || !hasText(bodyEn)) {
     return NextResponse.json({ error: "All four fields (Amharic/English subject and body) are required." }, { status: 400 })
   }
 

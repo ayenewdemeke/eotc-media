@@ -1,11 +1,16 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
-import { Send, Users, User, Search, X, CheckCircle, Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { Send, Users, User, Search, X, CheckCircle, Loader2 } from "lucide-react"
+import RichTextEditor from "@/components/admin/shared/RichTextEditor"
 
 interface Member { id: number; name: string; email: string }
 
 type Mode = "all" | "specific"
+
+function hasText(html: string) {
+  return html.replace(/<[^>]*>/g, "").trim().length > 0
+}
 
 export default function EmailComposerClient() {
   const [mode, setMode] = useState<Mode>("all")
@@ -13,6 +18,7 @@ export default function EmailComposerClient() {
   const [subjectEn, setSubjectEn] = useState("")
   const [bodyAm, setBodyAm] = useState("")
   const [bodyEn, setBodyEn] = useState("")
+  const [editorKey, setEditorKey] = useState(0)
 
   // Member search / selection
   const [query, setQuery] = useState("")
@@ -75,9 +81,10 @@ export default function EmailComposerClient() {
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? "Failed to send."); return }
       setResult(data)
-      // Reset form after success
+      // Reset form
       setSubjectAm(""); setSubjectEn(""); setBodyAm(""); setBodyEn("")
       setSelected(new Map()); setQuery(""); setSearchResults([])
+      setEditorKey(k => k + 1)
     } catch {
       setError("Network error. Please try again.")
     } finally {
@@ -85,7 +92,7 @@ export default function EmailComposerClient() {
     }
   }
 
-  const canSend = subjectAm.trim() && subjectEn.trim() && bodyAm.trim() && bodyEn.trim() &&
+  const canSend = subjectAm.trim() && subjectEn.trim() && hasText(bodyAm) && hasText(bodyEn) &&
     (mode === "all" || selected.size > 0)
 
   const recipientLabel = mode === "all"
@@ -108,7 +115,6 @@ export default function EmailComposerClient() {
             <span className="text-sm font-semibold text-gray-700">Recipients</span>
           </div>
           <div className="p-4 space-y-3">
-            {/* Mode toggle */}
             <div className="flex gap-2">
               {(["all", "specific"] as Mode[]).map(m => (
                 <button
@@ -125,7 +131,6 @@ export default function EmailComposerClient() {
 
             {mode === "specific" && (
               <div className="space-y-2">
-                {/* Selected chips */}
                 {selected.size > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {[...selected.values()].map(m => (
@@ -136,7 +141,6 @@ export default function EmailComposerClient() {
                     ))}
                   </div>
                 )}
-                {/* Search box */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <input
@@ -147,7 +151,6 @@ export default function EmailComposerClient() {
                   />
                   {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 animate-spin" />}
                 </div>
-                {/* Results */}
                 {searchResults.length > 0 && (
                   <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-48 overflow-y-auto">
                     {searchResults.map(m => (
@@ -189,13 +192,13 @@ export default function EmailComposerClient() {
               dir="auto"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <textarea
+            <RichTextEditor
+              key={`am-${editorKey}`}
               value={bodyAm}
-              onChange={e => setBodyAm(e.target.value)}
+              onChange={setBodyAm}
               placeholder="ይዘት (Body in Amharic)"
               dir="auto"
-              rows={6}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              minHeight="160px"
             />
           </div>
         </div>
@@ -212,12 +215,12 @@ export default function EmailComposerClient() {
               placeholder="Subject in English"
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <textarea
+            <RichTextEditor
+              key={`en-${editorKey}`}
               value={bodyEn}
-              onChange={e => setBodyEn(e.target.value)}
+              onChange={setBodyEn}
               placeholder="Body in English"
-              rows={6}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              minHeight="160px"
             />
           </div>
         </div>

@@ -8,6 +8,9 @@ export const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
 })
 
 export function buildEmailHtml({
@@ -23,12 +26,16 @@ export function buildEmailHtml({
   bodyEn: string
   unsubscribeUrl: string
 }): string {
-  const amLines = bodyAm.split("\n").map(l => `<p style="margin:0 0 10px">${l || "&nbsp;"}</p>`).join("")
-  const enLines = bodyEn.split("\n").map(l => `<p style="margin:0 0 10px">${l || "&nbsp;"}</p>`).join("")
+  const bodyStyles = `<style>
+    .bc p{margin:0 0 10px}.bc ul{margin:0 0 10px;padding-left:20px;list-style:disc}
+    .bc ol{margin:0 0 10px;padding-left:20px;list-style:decimal}.bc li{margin:0 0 4px}
+    .bc strong{font-weight:700}.bc em{font-style:italic}.bc u{text-decoration:underline}
+    .bc s{text-decoration:line-through}.bc a{color:#1a3a5c}
+  </style>`
 
   return `<!DOCTYPE html>
 <html lang="am">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">${bodyStyles}</head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px">
     <tr><td align="center">
@@ -44,7 +51,7 @@ export function buildEmailHtml({
         <tr><td style="padding:32px 32px 24px">
           <p style="margin:0 0 6px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#6b7280">አማርኛ</p>
           <h2 style="margin:0 0 16px;font-size:18px;color:#111827;line-height:1.4" dir="auto">${subjectAm}</h2>
-          <div style="font-size:15px;color:#374151;line-height:1.8" dir="auto">${amLines}</div>
+          <div class="bc" style="font-size:15px;color:#374151;line-height:1.8" dir="auto">${bodyAm}</div>
         </td></tr>
 
         <!-- Divider -->
@@ -54,7 +61,7 @@ export function buildEmailHtml({
         <tr><td style="padding:24px 32px 32px">
           <p style="margin:0 0 6px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;color:#6b7280">English</p>
           <h2 style="margin:0 0 16px;font-size:18px;color:#111827;line-height:1.4">${subjectEn}</h2>
-          <div style="font-size:15px;color:#374151;line-height:1.8">${enLines}</div>
+          <div class="bc" style="font-size:15px;color:#374151;line-height:1.8">${bodyEn}</div>
         </td></tr>
 
         <!-- CTA -->

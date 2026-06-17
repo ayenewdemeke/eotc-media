@@ -23,16 +23,16 @@ export const translations = {
     nav_quiz_admin:     "Quiz admin",
 
     // ── Hymns sidebar ───────────────────────────
-    hymn_all:           "All Hymns",
+    hymn_all:           "All hymns",
     hymn_channels:      "Channels",
     hymn_favorites:     "Favorites",
     hymn_my_lists:      "My lists",
-    hymn_my_uploads:    "My Uploads",
+    hymn_my_uploads:    "My uploads",
 
     // ── Hymns page ──────────────────────────────
     hymn_featured:      "Featured",
-    hymn_submit:        "Submit a Hymn",
-    hymn_all_channels:  "All Channels",
+    hymn_submit:        "Submit a hymn",
+    hymn_all_channels:  "All channels",
 
     // ── Hymns search filters ─────────────────────
     hymn_search_placeholder: "Search hymns…",
@@ -43,10 +43,10 @@ export const translations = {
     hymn_by_singer:          "By the singer",
 
     // ── Sermons sidebar ─────────────────────────
-    sermon_all:         "All Sermons",
+    sermon_all:         "All sermons",
     sermon_channels:    "Channels",
     sermon_favorites:   "Favorites",
-    sermon_my_uploads:  "My Uploads",
+    sermon_my_uploads:  "My uploads",
 
     // ── Search & filters (generic) ───────────────
     search_placeholder: "Search…",
@@ -91,7 +91,7 @@ export const translations = {
 
     // ── Feedback widget ─────────────────────────
     feedback_btn:              "Feedback",
-    feedback_title:            "Send Feedback",
+    feedback_title:            "Send feedback",
     feedback_placeholder:      "Your message…",
     feedback_send:             "Send",
     feedback_thanks:           "Thank you!",
@@ -126,7 +126,7 @@ export const translations = {
     bible_scope_whole:      "Whole Bible",
     bible_scope_ot:         "Old Testament",
     bible_scope_nt:         "New Testament",
-    bible_scope_book:       "This Book",
+    bible_scope_book:       "This book",
     bible_no_text:          "No text available",
     bible_highlighted:      "highlighted",
 
@@ -212,7 +212,7 @@ export const translations = {
     col_no_verses_yet:    "No verses in this collection yet.",
 
     // ── Misc ────────────────────────────────────
-    media_resources:    "Media Resources",
+    media_resources:    "Media resources",
   },
 
   am: {
