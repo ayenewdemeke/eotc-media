@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Mic, MicOff, Loader2 } from "lucide-react"
+import { useLocale } from "@/lib/i18n/LocaleContext"
 
 interface Props {
   language: string
@@ -17,6 +18,7 @@ const MAX_RECORDING_MS = 8000
 
 export default function VoiceNavigateButton({ language, version, className = "", variant = "icon" }: Props) {
   const router = useRouter()
+  const { t } = useLocale()
   const [uiState, setUiState] = useState<State>("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const stateRef = useRef<State>("idle")
@@ -105,30 +107,40 @@ export default function VoiceNavigateButton({ language, version, className = "",
   const isError = uiState === "error"
 
   if (variant === "pill") {
-    const label =
+    const popupText =
       isListening  ? (language === "amharic" ? "እየሰማ ነው…" : "Listening…") :
       isProcessing ? (language === "amharic" ? "እየፈለገ ነው…" : "Processing…") :
-      isError      ? errorMsg :
-                     (language === "amharic" ? "ምዕራፍ ለማግኘት ተናገሩ" : "Say a chapter…")
+      isError      ? errorMsg : null
     return (
-      <button
-        onClick={handleClick}
-        className={`flex-1 flex items-center gap-2 h-9 px-3 rounded-xl text-sm font-semibold transition-all min-w-0 ${
-          isListening  ? "bg-red-500 text-white animate-pulse" :
-          isProcessing ? "bg-blue-500 text-white" :
-          isError      ? "bg-amber-50 text-amber-700 border border-amber-200" :
-                         "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
-        } ${className}`}
-      >
-        {isProcessing ? (
-          <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-        ) : isListening ? (
-          <MicOff className="w-4 h-4 flex-shrink-0" />
-        ) : (
-          <Mic className="w-4 h-4 flex-shrink-0" />
+      <div className="relative flex-shrink-0">
+        <button
+          onClick={handleClick}
+          className={`flex items-center gap-2 h-9 px-3 rounded-xl text-sm font-semibold transition-all ${
+            isListening  ? "bg-red-500 text-white animate-pulse" :
+            isProcessing ? "bg-blue-500 text-white" :
+            isError      ? "bg-amber-50 text-amber-700 border border-amber-200" :
+                           "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+          } ${className}`}
+        >
+          {isProcessing ? (
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+          ) : isListening ? (
+            <MicOff className="w-4 h-4 flex-shrink-0" />
+          ) : (
+            <Mic className="w-4 h-4 flex-shrink-0" />
+          )}
+          <span>{t("bible_voice_search")}</span>
+        </button>
+
+        {popupText && (
+          <div
+            className="absolute top-full left-0 mt-1.5 z-50 text-xs font-medium px-2.5 py-1.5 rounded-lg shadow-lg pointer-events-none whitespace-nowrap leading-snug"
+            style={{ background: isListening ? "#dc2626" : isProcessing ? "#2563eb" : "#1e293b", color: "#fff" }}
+          >
+            {popupText}
+          </div>
         )}
-        <span className="truncate">{label}</span>
-      </button>
+      </div>
     )
   }
 

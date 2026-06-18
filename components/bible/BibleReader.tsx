@@ -583,10 +583,11 @@ export default function BibleReader({
           <VoiceNavigateButton language={language} version={version} variant="pill" />
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex items-center justify-center w-9 h-9 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex-shrink-0"
+            className="flex-1 flex items-center justify-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-sm font-medium min-w-0"
             title="Search"
           >
-            <Search className="w-4 h-4" />
+            <Search className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">{t("bible_search")}</span>
           </button>
           <Select
             value={`${language}__${version}`}
