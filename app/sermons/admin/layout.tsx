@@ -9,7 +9,6 @@ const BASE = "/sermons/admin"
 const nav: AdminNavItem[] = [
   { title: "Dashboard", href: BASE, icon: "dashboard", exact: true },
   { title: "New sermons", href: `${BASE}/sermons?status=pending`, icon: "messageSquare", status: "pending" },
-  { title: "Description suggestions", href: `${BASE}/description-suggestions`, icon: "fileText" },
   { title: "All sermons", href: `${BASE}/sermons`, icon: "messageSquare", status: "none" },
   { title: "Languages", href: `${BASE}/languages`, icon: "globe" },
   { title: "Categories", href: `${BASE}/categories`, icon: "tag" },

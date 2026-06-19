@@ -76,7 +76,7 @@ export default async function HymnsPage({ searchParams }: PageProps) {
           <HymnSidebar userId={userId} />
 
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
-            {featuredHymns.length > 0 && (
+            {featuredHymns.length > 0 && (!language || language === "all") && (
               <section className="mb-8">
                 <div className="flex items-center gap-1.5 mb-3">
                   <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
