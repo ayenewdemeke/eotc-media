@@ -122,7 +122,7 @@ export const translations = {
     bible_tip:              "Tip: Click any verse number to highlight it.",
     bible_signin_save:      " Sign in to save highlights.",
     bible_search:           "Search",
-    bible_voice_search:     "Search with Voice",
+    bible_voice_search:     "Search with voice",
     bible_search_placeholder: "Search verses…",
     bible_scope_whole:      "Whole Bible",
     bible_scope_ot:         "Old Testament",
