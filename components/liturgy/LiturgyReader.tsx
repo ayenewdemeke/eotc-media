@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useMemo, useEffect } from "react"
-import { Play, Pause, Music, BookOpenText, Check, Info } from "lucide-react"
+import { Play, Pause, Music, BookOpenText, Check } from "lucide-react"
 import { useLocale } from "@/lib/i18n/LocaleContext"
 
 // ── Types ──────────────────────────────────────────────
@@ -369,12 +369,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
 
                     {/* Remark */}
                     {text.remark && (
-                      <div className="mt-4 flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-3">
-                        <Info className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-[1px]" />
-                        <p className="text-[13px] text-amber-800 leading-relaxed">
-                          <span className="font-semibold">{t("liturgy_note")}</span>{" "}{text.remark}
-                        </p>
-                      </div>
+                      <p className="mt-3 text-[12px] text-slate-400 leading-relaxed italic">{text.remark}</p>
                     )}
                   </div>
                 </div>

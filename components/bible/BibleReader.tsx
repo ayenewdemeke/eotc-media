@@ -803,31 +803,34 @@ export default function BibleReader({
           className="hidden lg:flex lg:flex-col border-l border-slate-100 sticky top-16 self-start h-[calc(100vh-4rem)]"
           data-selection-zone
         >
-          <div className="flex-shrink-0 px-5 py-3 border-b border-slate-100">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-slate-100 space-y-2">
+            {/* Row 1: Version selector */}
+            <Select
+              value={`${language}__${version}`}
+              onValueChange={value => {
+                const [l, v] = value.split("__")
+                router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
+              }}
+            >
+              <SelectTrigger className="w-full h-9 text-xs bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
+                <SelectItem value="english__kjv">English KJV</SelectItem>
+                <SelectItem value="oromifa__v1">Oromifa</SelectItem>
+              </SelectContent>
+            </Select>
+            {/* Row 2: Voice + Search */}
             <div className="flex items-center gap-2">
-              <Select
-                value={`${language}__${version}`}
-                onValueChange={value => {
-                  const [l, v] = value.split("__")
-                  router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
-                }}
-              >
-                <SelectTrigger className="flex-1 h-8 text-xs bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-lg">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
-                  <SelectItem value="english__kjv">English KJV</SelectItem>
-                  <SelectItem value="oromifa__v1">Oromifa</SelectItem>
-                </SelectContent>
-              </Select>
-              <VoiceNavigateButton language={language} version={version} />
+              <VoiceNavigateButton language={language} version={version} variant="pill" />
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center justify-center w-8 h-8 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex-shrink-0"
+                className="flex-1 flex items-center justify-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-sm font-medium min-w-0"
                 title="Search"
               >
-                <Search className="w-3.5 h-3.5" />
+                <Search className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{t("bible_search")}</span>
               </button>
             </div>
           </div>
