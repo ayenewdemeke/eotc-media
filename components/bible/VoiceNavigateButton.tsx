@@ -112,10 +112,10 @@ export default function VoiceNavigateButton({ language, version, className = "",
       isProcessing ? (language === "amharic" ? "እየፈለገ ነው…" : "Processing…") :
       isError      ? errorMsg : null
     return (
-      <div className="relative flex-1 min-w-0">
+      <div className="relative flex-[3] min-w-0">
         <button
           onClick={handleClick}
-          className={`w-full flex items-center gap-2 h-9 px-3 rounded-xl text-sm font-semibold transition-all ${
+          className={`w-full flex items-center gap-2 h-9 px-3 rounded-xl text-xs font-medium transition-all ${
             isListening  ? "bg-red-500 text-white animate-pulse" :
             isProcessing ? "bg-blue-500 text-white" :
             isError      ? "bg-amber-50 text-amber-700 border border-amber-200" :
