@@ -112,6 +112,13 @@ export default function SubmitHymnPage() {
       })
       if (res.status === 401) { router.push("/auth/login"); return }
       if (!res.ok) { const d = await res.json(); setError(d.error ?? "Failed to submit"); return }
+      setVideoInput("")
+      setSinger("")
+      setLyrics("")
+      setDescription("")
+      setSelectedLanguageIds([])
+      setSelectedCategoryIds([])
+      setSelectedSubCategoryIds([])
       setSubmitted(true)
     } finally {
       setSaving(false)
@@ -120,24 +127,6 @@ export default function SubmitHymnPage() {
 
   const parsedId = parseVideoId(videoInput)
   const showParsedId = videoInput.trim() && parsedId !== videoInput.trim()
-
-  // ── Success screen ────────────────────────────────────────────────────────
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center pt-16">
-          <div className="max-w-sm px-4 text-center">
-            <CheckCircle className="mx-auto mb-4 h-16 w-16 text-success" />
-            <h1 className="mb-2 text-2xl font-bold">Hymn submitted!</h1>
-            <p className="mb-6 text-muted-foreground">Your hymn has been submitted and is pending review. Thank you!</p>
-            <Button onClick={() => router.push("/hymns/my-hymns")}>View my hymns</Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // ── Form ──────────────────────────────────────────────────────────────────
 
@@ -155,6 +144,13 @@ export default function SubmitHymnPage() {
                 <h1 className="text-xl font-semibold">Add new hymn</h1>
                 <p className="mt-0.5 text-sm text-muted-foreground">Submit a YouTube hymn for review</p>
               </div>
+
+              {submitted && (
+                <div className="mb-5 flex items-center gap-2.5 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Hymn submitted successfully. It&apos;s pending review — you can submit another one below.
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
 
