@@ -245,15 +245,22 @@ export function VerseCorrectionsClient({
             </div>
           </div>
 
-          {/* Scan button */}
-          <Button onClick={handleScan} disabled={!canScan}>
-            {scanning ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Scanning…
-              </>
-            ) : "Scan"}
-          </Button>
+          {/* Scan / Stop buttons */}
+          <div className="flex items-end gap-2">
+            <Button onClick={handleScan} disabled={!canScan}>
+              {scanning ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Scanning…
+                </>
+              ) : "Scan"}
+            </Button>
+            {scanning && (
+              <Button variant="outline" onClick={() => { abortRef.current = true }}>
+                Stop
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
