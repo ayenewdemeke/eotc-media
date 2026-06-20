@@ -11,26 +11,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { cn } from "@/lib/utils"
 
 const PAGE_SIZE = 20
 
 interface PageProps {
-  searchParams: Promise<{ page?: string; status?: string }>
+  searchParams: Promise<{ page?: string }>
 }
 
 export default async function AdminBooksPage({ searchParams }: PageProps) {
-  const { page: pageParam, status } = await searchParams
+  const { page: pageParam } = await searchParams
   const page = Math.max(1, parseInt(pageParam ?? "1") || 1)
-  const isPending = status === "pending"
 
-  let approvalStatusId: number | undefined
-  if (isPending) {
-    const s = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: "Submitted", mode: "insensitive" } } })
-    approvalStatusId = s?.id
-  }
-
-  const where = approvalStatusId ? { approvalStatusId } : {}
+  const where = {}
 
   const [books, total] = await Promise.all([
     prisma.cbBook.findMany({
@@ -53,33 +45,14 @@ export default async function AdminBooksPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   function buildUrl(p: number) {
-    const params = new URLSearchParams()
-    params.set("page", String(p))
-    if (status) params.set("status", status)
-    return `/books/admin/books?${params}`
+    return `/books/admin/books?page=${p}`
   }
 
-  const toggleClass = (active: boolean) =>
-    cn(
-      "rounded-md border px-3 py-1.5 text-sm transition-colors",
-      active
-        ? "bg-primary text-primary-foreground border-primary"
-        : "border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-    )
   const linkClass = "px-3 py-1.5 text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
 
   return (
     <div className="space-y-4 p-4 lg:p-6">
-      <PageHeader
-        title={isPending ? "New books" : "All books"}
-        description={`${total.toLocaleString()} books`}
-        actions={
-          <div className="flex gap-2">
-            <Link href="/books/admin/books" className={toggleClass(!isPending)}>All</Link>
-            <Link href="/books/admin/books?status=pending" className={toggleClass(isPending)}>Pending</Link>
-          </div>
-        }
-      />
+      <PageHeader title="All books" description={`${total.toLocaleString()} books`} />
 
       <Card>
         <CardContent className="p-0">
