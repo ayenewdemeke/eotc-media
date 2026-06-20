@@ -10,6 +10,7 @@ const nav: AdminNavItem[] = [
   { title: "Dashboard", href: `${BASE}/dashboard`, icon: "dashboard" },
   { title: "Users", href: `${BASE}/users`, icon: "users" },
   { title: "Feedbacks", href: `${BASE}/feedbacks`, icon: "messageSquare" },
+  { title: "Comments", href: `${BASE}/comments`, icon: "messageCircle" },
   { title: "Featured items", href: `${BASE}/featured`, icon: "star" },
   { title: "Verse corrections", href: `${BASE}/verse-corrections`, icon: "bookOpen" },
   { title: "Email members", href: `${BASE}/email`, icon: "mail" },

@@ -583,7 +583,7 @@ export default function BibleReader({
           <VoiceNavigateButton language={language} version={version} variant="pill" />
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex-[2] flex items-center justify-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium min-w-0"
+            className="flex-shrink-0 flex items-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium"
             title="Search"
           >
             <Search className="w-4 h-4 flex-shrink-0" />
@@ -826,7 +826,7 @@ export default function BibleReader({
               <VoiceNavigateButton language={language} version={version} variant="pill" />
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex-[2] flex items-center justify-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium min-w-0"
+                className="flex-shrink-0 flex items-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium"
                 title="Search"
               >
                 <Search className="w-4 h-4 flex-shrink-0" />
