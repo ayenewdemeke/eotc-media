@@ -26,7 +26,7 @@ export default async function AdminBooksPage({ searchParams }: PageProps) {
 
   let approvalStatusId: number | undefined
   if (isPending) {
-    const s = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: "Pending", mode: "insensitive" } } })
+    const s = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: "Submitted", mode: "insensitive" } } })
     approvalStatusId = s?.id
   }
 

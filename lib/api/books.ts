@@ -92,7 +92,8 @@ export async function getBooks(params: GetBooksParams = {}) {
     approvalStatusId = status?.id
   } else if (view !== 'my-books') {
     const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Accepted' } })
-    approvalStatusId = approved?.id
+    // -1 is an impossible ID — if the status row doesn't exist, show nothing publicly
+    approvalStatusId = approved?.id ?? -1
   }
 
   const where: Record<string, unknown> = {}
