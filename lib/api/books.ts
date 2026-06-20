@@ -90,14 +90,14 @@ export async function getBooks(params: GetBooksParams = {}) {
   if (approvalStatusName) {
     const status = await prisma.cbApprovalStatus.findFirst({ where: { name: { contains: approvalStatusName, mode: 'insensitive' } } })
     approvalStatusId = status?.id
-  } else if (view !== 'my-books') {
-    const approved = await prisma.cbApprovalStatus.findFirst({ where: { name: 'Accepted' } })
-    // -1 is an impossible ID — if the status row doesn't exist, show nothing publicly
-    approvalStatusId = approved?.id ?? -1
   }
 
   const where: Record<string, unknown> = {}
-  if (approvalStatusId) where.approvalStatusId = approvalStatusId
+  if (approvalStatusId) {
+    where.approvalStatusId = approvalStatusId
+  } else if (view !== 'my-books') {
+    where.approvalStatus = { name: 'Accepted' }
+  }
   if (view === 'my-books' && userId) where.userId = userId
   if (languageId) where.languages = { some: { languageId } }
   if (categoryId) where.categories = { some: { categoryId } }
