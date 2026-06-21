@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar"
 import QuizSidebar from "@/components/quiz/QuizSidebar"
 import { Users, Crown, Copy, Check, Plus, Loader2, ChevronRight } from "lucide-react"
 
+interface FilterOption { id: number; name: string }
+
 interface Member {
   id: number
   userId: number
@@ -71,6 +73,16 @@ export default function RoomPage() {
   const [error, setError] = useState("")
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // Filter options (loaded once)
+  const [categories, setCategories] = useState<FilterOption[]>([])
+  const [difficulties, setDifficulties] = useState<FilterOption[]>([])
+  const [languages, setLanguages] = useState<FilterOption[]>([])
+
+  // Selected round filters (host only)
+  const [selectedCategory, setSelectedCategory] = useState("")
+  const [selectedDifficulty, setSelectedDifficulty] = useState("")
+  const [selectedLanguage, setSelectedLanguage] = useState("")
+
   const fetchRoom = useCallback(async () => {
     const res = await fetch(`/api/quiz/rooms/${roomId}`)
     if (res.ok) {
@@ -87,10 +99,30 @@ export default function RoomPage() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [fetchRoom])
 
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/quiz/admin/categories").then(r => r.json()),
+      fetch("/api/quiz/admin/difficulties").then(r => r.json()),
+      fetch("/api/quiz/admin/languages").then(r => r.json()),
+    ]).then(([cats, diffs, langs]) => {
+      setCategories(cats)
+      setDifficulties(diffs)
+      setLanguages(langs)
+    })
+  }, [])
+
   async function startRound() {
     setStartingRound(true)
     setError("")
-    const res = await fetch(`/api/quiz/rooms/${roomId}/rounds`, { method: "POST" })
+    const res = await fetch(`/api/quiz/rooms/${roomId}/rounds`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        categoryId:   selectedCategory   || null,
+        difficultyId: selectedDifficulty || null,
+        languageId:   selectedLanguage   || null,
+      }),
+    })
     if (res.ok) {
       const round = await res.json()
       router.push(`/quiz/rooms/${roomId}/rounds/${round.id}`)
@@ -123,7 +155,7 @@ export default function RoomPage() {
           <main className="min-w-0 px-4 sm:px-6 lg:px-8 py-6">
 
             {/* Header */}
-            <div className="flex items-start justify-between mb-6 gap-4">
+            <div className="flex items-start justify-between mb-4 gap-4">
               <div>
                 <h1 className="text-xl font-semibold text-slate-900">
                   {room.name || "Quiz Room"}
@@ -133,13 +165,6 @@ export default function RoomPage() {
                   <span className="text-xs text-slate-400">Share this code to invite others</span>
                 </div>
               </div>
-              {isHost && !activeRound && (
-                <button onClick={startRound} disabled={startingRound}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer flex-shrink-0">
-                  {startingRound ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  Start round
-                </button>
-              )}
               {activeRound && (
                 <button onClick={() => router.push(`/quiz/rooms/${roomId}/rounds/${activeRound.id}`)}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors cursor-pointer flex-shrink-0">
@@ -148,6 +173,37 @@ export default function RoomPage() {
                 </button>
               )}
             </div>
+
+            {/* Host round filter panel */}
+            {isHost && !activeRound && (
+              <div className="mb-6 bg-white border border-slate-200 rounded-xl p-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Round filters</p>
+                <div className="flex flex-wrap gap-3 items-end">
+                  {[
+                    { label: "Language", value: selectedLanguage, setter: setSelectedLanguage, options: languages, placeholder: "All languages" },
+                    { label: "Category", value: selectedCategory, setter: setSelectedCategory, options: categories, placeholder: "All categories" },
+                    { label: "Difficulty", value: selectedDifficulty, setter: setSelectedDifficulty, options: difficulties, placeholder: "All difficulties" },
+                  ].map(({ label, value, setter, options, placeholder }) => (
+                    <div key={label} className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-slate-500">{label}</label>
+                      <select
+                        value={value}
+                        onChange={e => setter(e.target.value)}
+                        className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white cursor-pointer"
+                      >
+                        <option value="">{placeholder}</option>
+                        {options.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                      </select>
+                    </div>
+                  ))}
+                  <button onClick={startRound} disabled={startingRound}
+                    className="flex items-center gap-2 h-9 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer">
+                    {startingRound ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    Start round
+                  </button>
+                </div>
+              </div>
+            )}
 
             {error && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 mb-4">{error}</p>}
 

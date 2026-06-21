@@ -5,12 +5,17 @@ import { prisma } from '@/lib/prisma'
 type Params = { params: Promise<{ id: string }> }
 
 // POST /api/quiz/rooms/[id]/rounds — host starts a new round
-export async function POST(_req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, { params }: Params) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = parseInt(session.user.id)
   const { id } = await params
   const roomId = parseInt(id)
+
+  const body = await req.json().catch(() => ({}))
+  const categoryId   = body.categoryId   ? parseInt(body.categoryId)   : null
+  const difficultyId = body.difficultyId ? parseInt(body.difficultyId) : null
+  const languageId   = body.languageId   ? parseInt(body.languageId)   : null
 
   const room = await prisma.qzRoom.findUnique({
     where: { id: roomId },
@@ -27,13 +32,15 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
   const roundNumber = room.totalRoundsPlayed + 1
 
-  // Create round with status "waiting" and snapshot members into QzRoomMemberRound
   const round = await prisma.qzRound.create({
     data: {
       roomId,
       roundNumber,
       status: 'waiting',
       timerSeconds: 30,
+      categoryId,
+      difficultyId,
+      languageId,
       memberRounds: {
         create: room.members.map(m => ({ roomMemberId: m.id, isReady: false })),
       },
