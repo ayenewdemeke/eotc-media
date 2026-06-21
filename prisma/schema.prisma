@@ -983,6 +983,7 @@ model QzSubCategory {
 
   category  QzCategory              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   questions QzQuestionSubCategory[]
+  rounds    QzRound[]
 
   @@map("qz_sub_categories")
 }
@@ -1153,16 +1154,18 @@ model QzRound {
   status       String    @default("active") // active, finished
   startedAt    DateTime? @map("started_at")
   endedAt      DateTime? @map("ended_at")
-  categoryId   Int?      @map("category_id")
-  difficultyId Int?      @map("difficulty_id")
-  languageId   Int?      @map("language_id")
+  categoryId    Int?      @map("category_id")
+  subCategoryId Int?      @map("sub_category_id")
+  difficultyId  Int?      @map("difficulty_id")
+  languageId    Int?      @map("language_id")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  room       QzRoom        @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  category   QzCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  difficulty QzDifficulty? @relation(fields: [difficultyId], references: [id], onDelete: SetNull)
-  language   QzLanguage?   @relation(fields: [languageId], references: [id], onDelete: SetNull)
+  room        QzRoom         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  category    QzCategory?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subCategory QzSubCategory? @relation(fields: [subCategoryId], references: [id], onDelete: SetNull)
+  difficulty  QzDifficulty?  @relation(fields: [difficultyId], references: [id], onDelete: SetNull)
+  language    QzLanguage?    @relation(fields: [languageId], references: [id], onDelete: SetNull)
 
   questions    QzRoundQuestion[]
   results      QzRoundResult[]

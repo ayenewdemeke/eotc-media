@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Navbar from "@/components/Navbar"
 import QuizSidebar from "@/components/quiz/QuizSidebar"
-import { Users, Crown, Copy, Check, Plus, Loader2, ChevronRight } from "lucide-react"
+import { Users, Crown, Copy, Check, Plus, Loader2, ChevronRight, SlidersHorizontal } from "lucide-react"
 
 interface FilterOption { id: number; name: string }
 
@@ -75,11 +75,14 @@ export default function RoomPage() {
 
   // Filter options (loaded once)
   const [categories, setCategories] = useState<FilterOption[]>([])
+  const [subCategories, setSubCategories] = useState<(FilterOption & { categoryId: number })[]>([])
   const [difficulties, setDifficulties] = useState<FilterOption[]>([])
   const [languages, setLanguages] = useState<FilterOption[]>([])
 
   // Selected round filters (host only)
+  const [showFilters, setShowFilters] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("")
+  const [selectedSubCategory, setSelectedSubCategory] = useState("")
   const [selectedDifficulty, setSelectedDifficulty] = useState("")
   const [selectedLanguage, setSelectedLanguage] = useState("")
 
@@ -102,10 +105,12 @@ export default function RoomPage() {
   useEffect(() => {
     Promise.all([
       fetch("/api/quiz/admin/categories").then(r => r.json()),
+      fetch("/api/quiz/admin/sub-categories").then(r => r.json()),
       fetch("/api/quiz/admin/difficulties").then(r => r.json()),
       fetch("/api/quiz/admin/languages").then(r => r.json()),
-    ]).then(([cats, diffs, langs]) => {
+    ]).then(([cats, subs, diffs, langs]) => {
       setCategories(cats)
+      setSubCategories(subs)
       setDifficulties(diffs)
       setLanguages(langs)
     })
@@ -118,9 +123,10 @@ export default function RoomPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        categoryId:   selectedCategory   || null,
-        difficultyId: selectedDifficulty || null,
-        languageId:   selectedLanguage   || null,
+        categoryId:    selectedCategory    || null,
+        subCategoryId: selectedSubCategory || null,
+        difficultyId:  selectedDifficulty  || null,
+        languageId:    selectedLanguage    || null,
       }),
     })
     if (res.ok) {
@@ -174,34 +180,73 @@ export default function RoomPage() {
               )}
             </div>
 
-            {/* Host round filter panel */}
+            {/* Host: start round + optional filter panel */}
             {isHost && !activeRound && (
-              <div className="mb-6 bg-white border border-slate-200 rounded-xl p-4">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Round filters</p>
-                <div className="flex flex-wrap gap-3 items-end">
-                  {[
-                    { label: "Language", value: selectedLanguage, setter: setSelectedLanguage, options: languages, placeholder: "All languages" },
-                    { label: "Category", value: selectedCategory, setter: setSelectedCategory, options: categories, placeholder: "All categories" },
-                    { label: "Difficulty", value: selectedDifficulty, setter: setSelectedDifficulty, options: difficulties, placeholder: "All difficulties" },
-                  ].map(({ label, value, setter, options, placeholder }) => (
-                    <div key={label} className="flex flex-col gap-1">
-                      <label className="text-xs font-medium text-slate-500">{label}</label>
-                      <select
-                        value={value}
-                        onChange={e => setter(e.target.value)}
-                        className="h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white cursor-pointer"
-                      >
-                        <option value="">{placeholder}</option>
-                        {options.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                      </select>
-                    </div>
-                  ))}
+              <div className="mb-6">
+                <div className="flex items-center gap-3">
                   <button onClick={startRound} disabled={startingRound}
-                    className="flex items-center gap-2 h-9 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer">
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer">
                     {startingRound ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     Start round
                   </button>
+                  <button onClick={() => setShowFilters(f => !f)}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-colors cursor-pointer ${
+                      showFilters
+                        ? "bg-slate-100 border-slate-300 text-slate-700"
+                        : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                    }`}>
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    Filters
+                    {(selectedCategory || selectedDifficulty || selectedLanguage || selectedSubCategory) && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-0.5" />
+                    )}
+                  </button>
                 </div>
+
+                {showFilters && (
+                  <div className="mt-3 bg-white border border-slate-200 rounded-xl p-4">
+                    <div className="flex flex-wrap gap-3 items-end">
+                      {(() => {
+                        const selCls = "h-9 px-3 text-sm border border-slate-200 rounded-lg outline-none focus:border-blue-400 bg-white cursor-pointer disabled:opacity-40"
+                        const filteredSubs = selectedCategory
+                          ? subCategories.filter(s => s.categoryId === parseInt(selectedCategory))
+                          : []
+                        return (
+                          <>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-medium text-slate-500">Language</label>
+                              <select value={selectedLanguage} onChange={e => setSelectedLanguage(e.target.value)} className={selCls}>
+                                <option value="">All languages</option>
+                                {languages.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                              </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-medium text-slate-500">Category</label>
+                              <select value={selectedCategory} onChange={e => { setSelectedCategory(e.target.value); setSelectedSubCategory("") }} className={selCls}>
+                                <option value="">All categories</option>
+                                {categories.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                              </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-medium text-slate-500">Sub-category</label>
+                              <select value={selectedSubCategory} onChange={e => setSelectedSubCategory(e.target.value)} className={selCls} disabled={filteredSubs.length === 0}>
+                                <option value="">All sub-categories</option>
+                                {filteredSubs.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                              </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-medium text-slate-500">Difficulty</label>
+                              <select value={selectedDifficulty} onChange={e => setSelectedDifficulty(e.target.value)} className={selCls}>
+                                <option value="">All difficulties</option>
+                                {difficulties.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                              </select>
+                            </div>
+                          </>
+                        )
+                      })()}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

@@ -38,9 +38,10 @@ export async function POST(_req: NextRequest, { params }: Params) {
   if (allOtherReady) {
     // Pick 10 random questions using the round's stored filters
     const questions = await getRandomQuestions({
-      categoryId:   round.categoryId   ?? undefined,
-      difficultyId: round.difficultyId ?? undefined,
-      languageId:   round.languageId   ?? undefined,
+      categoryId:    round.categoryId    ?? undefined,
+      subCategoryId: round.subCategoryId ?? undefined,
+      difficultyId:  round.difficultyId  ?? undefined,
+      languageId:    round.languageId    ?? undefined,
       count: 10,
     })
 

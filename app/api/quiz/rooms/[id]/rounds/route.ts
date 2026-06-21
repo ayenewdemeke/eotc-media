@@ -13,9 +13,10 @@ export async function POST(req: NextRequest, { params }: Params) {
   const roomId = parseInt(id)
 
   const body = await req.json().catch(() => ({}))
-  const categoryId   = body.categoryId   ? parseInt(body.categoryId)   : null
-  const difficultyId = body.difficultyId ? parseInt(body.difficultyId) : null
-  const languageId   = body.languageId   ? parseInt(body.languageId)   : null
+  const categoryId    = body.categoryId    ? parseInt(body.categoryId)    : null
+  const subCategoryId = body.subCategoryId ? parseInt(body.subCategoryId) : null
+  const difficultyId  = body.difficultyId  ? parseInt(body.difficultyId)  : null
+  const languageId    = body.languageId    ? parseInt(body.languageId)    : null
 
   const room = await prisma.qzRoom.findUnique({
     where: { id: roomId },
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       status: 'waiting',
       timerSeconds: 30,
       categoryId,
+      subCategoryId,
       difficultyId,
       languageId,
       memberRounds: {
