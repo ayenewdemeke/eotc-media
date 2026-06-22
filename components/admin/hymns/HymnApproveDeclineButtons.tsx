@@ -186,10 +186,21 @@ export default function HymnApproveDeclineButtons({ hymnId, hymnTitle }: Props) 
           {!singersLoading && !singersError && (
             <div className="mt-2">
               {selectedIds.length > 0 && (
-                <p className="mb-1.5 text-xs text-muted-foreground">
-                  {selectedIds.length} selected:{" "}
-                  {selectedIds.map(id => singers.find(s => s.id === id)?.name).filter(Boolean).join(", ")}
-                </p>
+                <div className="mb-2 flex flex-wrap gap-1.5">
+                  {selectedIds.map(id => {
+                    const name = singers.find(s => s.id === id)?.name
+                    if (!name) return null
+                    return (
+                      <span key={id} className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                        {name}
+                        <button type="button" onClick={() => toggleSinger(id)}
+                          className="ml-0.5 cursor-pointer text-primary/60 hover:text-primary leading-none">
+                          ×
+                        </button>
+                      </span>
+                    )
+                  })}
+                </div>
               )}
               <input
                 ref={searchRef}
