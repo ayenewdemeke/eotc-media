@@ -122,7 +122,6 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
                 <TableHead className="px-4">Language</TableHead>
                 <TableHead className="px-4">Category</TableHead>
                 <TableHead className="px-4">Subcategory</TableHead>
-                <TableHead className="px-4" />
                 <TableHead className="px-4">Singer</TableHead>
                 <TableHead className="px-4">Status</TableHead>
                 <TableHead className="px-4" />
@@ -138,7 +137,7 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
             <TableBody>
               {hymns.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={isPending ? 11 : 8} className="py-14 text-center text-muted-foreground">
+                  <TableCell colSpan={isPending ? 10 : 7} className="py-14 text-center text-muted-foreground">
                     No hymns found
                   </TableCell>
                 </TableRow>
@@ -149,9 +148,6 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
                   <TableCell className="px-4 text-xs text-muted-foreground">{hymn.languages.map(l => l.language.name).join(", ") || "—"}</TableCell>
                   <TableCell className="px-4 text-xs text-muted-foreground">{hymn.categories.map(c => c.category.name).join(", ") || "—"}</TableCell>
                   <TableCell className="px-4 text-xs text-muted-foreground">{hymn.subCategories.map(s => s.subCategory.name).join(", ") || "—"}</TableCell>
-                  <TableCell className="px-4 font-medium">
-                    {hymn.title.length > 40 ? hymn.title.slice(0, 40) + "…" : hymn.title}
-                  </TableCell>
                   <TableCell className="px-4 text-xs text-muted-foreground">{hymn.singer ?? "—"}</TableCell>
                   <TableCell className="px-4">
                     <Badge variant={statusVariant[hymn.approvalStatus.name] ?? "secondary"}>
