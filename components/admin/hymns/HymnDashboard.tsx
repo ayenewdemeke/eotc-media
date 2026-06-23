@@ -73,7 +73,7 @@ function TrendChart({ data, color }: { data: DayPoint[]; color: string }) {
           }}
           labelStyle={{ color: "#475569", fontWeight: 500, marginBottom: 2 }}
           itemStyle={{ color }}
-          formatter={(v: number | string | undefined) => [typeof v === "number" ? v.toLocaleString() : String(v ?? ""), "Value"]}
+          formatter={(v) => [typeof v === "number" ? v.toLocaleString() : String(v ?? ""), "Value"]}
         />
         <Area
           type="monotone"
