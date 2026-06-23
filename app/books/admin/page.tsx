@@ -17,7 +17,7 @@ export default async function BookAdminDashboard() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatsCard title="Total books" value={total} icon={BookOpen} />
         <StatsCard title="Pending" value={pending} icon={Clock} />
-        <StatsCard title="Approved" value={approved} icon={CheckCircle2} />
+        <StatsCard title="Accepted" value={approved} icon={CheckCircle2} />
         <StatsCard title="Rejected" value={rejected} icon={XCircle} />
       </div>
     </div>

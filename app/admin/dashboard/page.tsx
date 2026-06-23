@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     prisma.user.count(),
     prisma.hmHymn.count({ where: { approvalStatus: { name: "Accepted" } } }),
     prisma.smSermon.count({ where: { approvalStatus: { name: "Accepted" } } }),
-    prisma.cbBook.count({ where: { approvalStatus: { name: "Approved" } } }),
+    prisma.cbBook.count({ where: { approvalStatus: { name: "Accepted" } } }),
     prisma.hmHymn.aggregate({ _sum: { clicksCount: true } }),
     prisma.smSermon.aggregate({ _sum: { clicksCount: true } }),
     prisma.contactUs.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),

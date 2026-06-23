@@ -1,6 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
+} from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageHeader } from "@/components/admin/shared/PageHeader"
 
@@ -21,59 +25,67 @@ interface Props {
   dailyClicksData: DayPoint[]
 }
 
-function LineChart({ data, color }: { data: DayPoint[]; color: string }) {
+function TrendChart({ data, color }: { data: DayPoint[]; color: string }) {
   if (data.length === 0) {
-    return <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No data available</div>
+    return (
+      <div className="flex h-48 items-center justify-center text-sm text-slate-400">
+        No data available
+      </div>
+    )
   }
 
-  const W = 800
-  const H = 200
-  const PL = 44, PR = 16, PT = 12, PB = 32
-  const cW = W - PL - PR
-  const cH = H - PT - PB
-
-  const maxVal = Math.max(...data.map(d => d.value), 1)
-  const yTicks = 4
-  const xPos = (i: number) => PL + (i / (data.length - 1 || 1)) * cW
-  const yPos = (v: number) => PT + cH - (v / maxVal) * cH
-  const points = data.map((d, i) => `${xPos(i)},${yPos(d.value)}`).join(" ")
-
-  // Show ~7 labels
-  const step = Math.max(1, Math.floor(data.length / 7))
+  const formatted = data.map(d => ({
+    label: new Date(d.date).toLocaleDateString("en", { month: "short", day: "numeric" }),
+    value: d.value,
+  }))
 
   return (
-    <div className="w-full overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" style={{ minWidth: 300 }}>
-        {/* Y grid + labels */}
-        {Array.from({ length: yTicks + 1 }, (_, i) => {
-          const v = Math.round((maxVal * i) / yTicks)
-          const y = yPos(v)
-          return (
-            <g key={i}>
-              <line x1={PL} y1={y} x2={W - PR} y2={y} stroke="#e2e8f0" strokeWidth={1} />
-              <text x={PL - 6} y={y + 4} textAnchor="end" fontSize={9} fill="#94a3b8">{v}</text>
-            </g>
-          )
-        })}
-
-        {/* Area fill */}
-        <polygon
-          points={`${xPos(0)},${PT + cH} ${points} ${xPos(data.length - 1)},${PT + cH}`}
-          fill={color}
-          fillOpacity={0.08}
+    <ResponsiveContainer width="100%" height={220}>
+      <AreaChart data={formatted} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
+        <defs>
+          <linearGradient id={`fill-${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.18} />
+            <stop offset="95%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+        <XAxis
+          dataKey="label"
+          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tickLine={false}
+          axisLine={false}
+          interval="preserveStartEnd"
         />
-
-        {/* Line */}
-        <polyline points={points} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" />
-
-        {/* X-axis labels */}
-        {data.map((d, i) => i % step === 0 && (
-          <text key={i} x={xPos(i)} y={H - 6} textAnchor="middle" fontSize={8} fill="#94a3b8">
-            {new Date(d.date).toLocaleDateString("en", { month: "short", day: "numeric" })}
-          </text>
-        ))}
-      </svg>
-    </div>
+        <YAxis
+          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          tickLine={false}
+          axisLine={false}
+          width={36}
+          allowDecimals={false}
+        />
+        <Tooltip
+          cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: "4 2" }}
+          contentStyle={{
+            fontSize: 12,
+            borderRadius: 8,
+            border: "1px solid #e2e8f0",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          }}
+          labelStyle={{ color: "#475569", fontWeight: 500, marginBottom: 2 }}
+          itemStyle={{ color }}
+          formatter={(v: number) => [v.toLocaleString(), "Value"]}
+        />
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={color}
+          strokeWidth={2}
+          fill={`url(#fill-${color.slice(1)})`}
+          dot={false}
+          activeDot={{ r: 4, strokeWidth: 0, fill: color }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   )
 }
 
@@ -85,16 +97,16 @@ export default function HymnDashboard({
   const [clicksType, setClicksType] = useState("total_clicks")
 
   const hymnsMap: Record<string, { data: DayPoint[]; color: string }> = {
-    uploaded_hymns: { data: uploadedData, color: "#1e90ff" },
+    uploaded_hymns: { data: uploadedData, color: "#3b82f6" },
     accepted_hymns: { data: acceptedData, color: "#22c55e" },
     declined_hymns: { data: declinedData, color: "#ef4444" },
   }
   const clicksMap: Record<string, { data: DayPoint[]; color: string }> = {
-    total_clicks:  { data: totalClicksData, color: "#ff9800" },
-    daily_clicks:  { data: dailyClicksData,  color: "#a855f7" },
+    total_clicks: { data: totalClicksData, color: "#f59e0b" },
+    daily_clicks: { data: dailyClicksData,  color: "#a855f7" },
   }
 
-  const activeHymns = hymnsMap[hymnsType] ?? hymnsMap.uploaded_hymns
+  const activeHymns  = hymnsMap[hymnsType]  ?? hymnsMap.uploaded_hymns
   const activeClicks = clicksMap[clicksType] ?? clicksMap.total_clicks
 
   const stats = [
@@ -128,14 +140,13 @@ export default function HymnDashboard({
         <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b">
           <CardTitle className="text-sm">Trendline of hymns</CardTitle>
           <select value={hymnsType} onChange={e => setHymnsType(e.target.value)} className={selectClass}>
-            <option value="">Select category</option>
             <option value="uploaded_hymns">Uploaded hymns</option>
             <option value="accepted_hymns">Accepted hymns</option>
             <option value="declined_hymns">Declined hymns</option>
           </select>
         </CardHeader>
-        <CardContent className="px-4 py-4">
-          <LineChart data={activeHymns.data} color={activeHymns.color} />
+        <CardContent className="px-4 pb-4 pt-3">
+          <TrendChart data={activeHymns.data} color={activeHymns.color} />
         </CardContent>
       </Card>
 
@@ -144,13 +155,12 @@ export default function HymnDashboard({
         <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b">
           <CardTitle className="text-sm">Trendline of clicks</CardTitle>
           <select value={clicksType} onChange={e => setClicksType(e.target.value)} className={selectClass}>
-            <option value="">Select category</option>
             <option value="total_clicks">Total clicks</option>
             <option value="daily_clicks">Daily clicks</option>
           </select>
         </CardHeader>
-        <CardContent className="px-4 py-4">
-          <LineChart data={activeClicks.data} color={activeClicks.color} />
+        <CardContent className="px-4 pb-4 pt-3">
+          <TrendChart data={activeClicks.data} color={activeClicks.color} />
         </CardContent>
       </Card>
     </div>
