@@ -69,16 +69,16 @@ export default function BookSidebar({ books, currentBook, language, version }: B
   if (otherBooks.length > 0) orderedSections.push({ name: otherLabel, books: otherBooks })
 
   return (
-    <div className="flex flex-col h-full gap-2">
+    <div className="flex flex-col h-full gap-3">
       {/* Search */}
       <div className="relative flex-shrink-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
         <input
           type="text"
           placeholder={t("bible_find_book")}
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-400/60 focus:border-blue-400/60 transition-all"
+          className="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-100/70 border border-transparent rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-400/70 focus:ring-2 focus:ring-blue-400/15 transition-all"
         />
       </div>
 
@@ -86,38 +86,49 @@ export default function BookSidebar({ books, currentBook, language, version }: B
       <div
         ref={listRef}
         onScroll={handleScroll}
-        className="flex-1 min-h-0 overflow-y-auto"
+        className="flex-1 min-h-0 overflow-y-auto -mx-1 px-1"
         style={{ scrollbarWidth: "none" }}
       >
         {orderedSections.length === 0 ? (
           <p className="text-xs text-slate-400 text-center mt-8">{t("bible_no_books")}</p>
         ) : (
           orderedSections.map(section => (
-            <div key={section.name} className="mb-1">
+            <div key={section.name} className="mb-2">
               {/* Section header */}
-              <div className="px-2 pt-4 pb-1 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 sticky top-0 bg-white z-10">
-                {section.name}
+              <div className="flex items-center gap-2 px-2 pt-3 pb-1.5 sticky top-0 bg-white/95 backdrop-blur-sm z-10">
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                  {section.name}
+                </span>
+                <span className="h-px flex-1 bg-slate-100" />
+                <span className="text-[10px] font-medium text-slate-300 tabular-nums">
+                  {section.books.length}
+                </span>
               </div>
               {/* Books */}
-              {section.books.map(book => {
-                const isActive = book.id === currentBook.id
-                return (
-                  <Link
-                    key={book.id}
-                    href={`/bible/${language}/${version}/${book.id}/1`}
-                    className={`flex items-center gap-2 px-3 py-1.5 mx-0.5 rounded-lg text-xs transition-all duration-100 ${
-                      isActive
-                        ? "bg-blue-50 text-blue-700 font-semibold"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
-                  >
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-                    )}
-                    <span className="truncate">{getBookName(book, language)}</span>
-                  </Link>
-                )
-              })}
+              <div className="space-y-0.5">
+                {section.books.map(book => {
+                  const isActive = book.id === currentBook.id
+                  return (
+                    <Link
+                      key={book.id}
+                      href={`/bible/${language}/${version}/${book.id}/1`}
+                      className={`group relative flex items-center gap-2.5 pl-3.5 pr-3 py-2 rounded-lg text-sm transition-all duration-100 ${
+                        isActive
+                          ? "bg-blue-50 text-blue-700 font-semibold"
+                          : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900"
+                      }`}
+                    >
+                      {/* Active accent bar */}
+                      <span
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-full bg-blue-500 transition-all ${
+                          isActive ? "h-5 opacity-100" : "h-0 opacity-0"
+                        }`}
+                      />
+                      <span className="truncate">{getBookName(book, language)}</span>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           ))
         )}
