@@ -122,7 +122,7 @@ export default async function AdminSermonsPage({ searchParams }: PageProps) {
                 <TableHead className="px-4">Language</TableHead>
                 <TableHead className="px-4">Category</TableHead>
                 <TableHead className="px-4">Subcategory</TableHead>
-                <TableHead className="px-4">Title</TableHead>
+                <TableHead className="px-4">Preacher</TableHead>
                 <TableHead className="px-4">Status</TableHead>
                 <TableHead className="px-4" />
                 {isPending && (
@@ -148,9 +148,7 @@ export default async function AdminSermonsPage({ searchParams }: PageProps) {
                   <TableCell className="px-4 text-xs text-muted-foreground">{sermon.languages.map(l => l.language.name).join(", ") || "—"}</TableCell>
                   <TableCell className="px-4 text-xs text-muted-foreground">{sermon.categories.map(c => c.category.name).join(", ") || "—"}</TableCell>
                   <TableCell className="px-4 text-xs text-muted-foreground">{sermon.subCategories.map(s => s.subCategory.name).join(", ") || "—"}</TableCell>
-                  <TableCell className="px-4 font-medium">
-                    {sermon.title.length > 40 ? sermon.title.slice(0, 40) + "…" : sermon.title}
-                  </TableCell>
+                  <TableCell className="px-4 text-xs text-muted-foreground">{sermon.preacher ?? "—"}</TableCell>
                   <TableCell className="px-4">
                     <Badge variant={statusVariant[sermon.approvalStatus.name] ?? "secondary"}>
                       {sermon.approvalStatus.name}
