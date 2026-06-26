@@ -583,28 +583,30 @@ export default function BibleReader({
           <VoiceNavigateButton language={language} version={version} variant="pill" />
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex-shrink-0 flex items-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium"
+            className="flex-1 min-w-0 flex items-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium"
             title="Search"
           >
             <Search className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">{t("bible_search")}</span>
           </button>
-          <Select
-            value={`${language}__${version}`}
-            onValueChange={value => {
-              const [l, v] = value.split("__")
-              router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
-            }}
-          >
-            <SelectTrigger className="h-9 text-xs w-[112px] bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-xl flex-shrink-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
-              <SelectItem value="english__kjv">English KJV</SelectItem>
-              <SelectItem value="oromifa__v1">Oromifa</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex-1 min-w-0">
+            <Select
+              value={`${language}__${version}`}
+              onValueChange={value => {
+                const [l, v] = value.split("__")
+                router.push(`/bible/${l}/${v}/${currentBook.id}/${currentChapter}`)
+              }}
+            >
+              <SelectTrigger className="h-9 text-xs w-full bg-slate-100 border-0 text-slate-700 hover:bg-slate-200 focus:ring-0 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="amharic__1954">Amharic 1954</SelectItem>
+                <SelectItem value="english__kjv">English KJV</SelectItem>
+                <SelectItem value="oromifa__v1">Oromifa</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -826,7 +828,7 @@ export default function BibleReader({
               <VoiceNavigateButton language={language} version={version} variant="pill" />
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex-shrink-0 flex items-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium"
+                className="flex-1 min-w-0 flex items-center gap-1.5 h-9 px-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-xs font-medium"
                 title="Search"
               >
                 <Search className="w-4 h-4 flex-shrink-0" />
