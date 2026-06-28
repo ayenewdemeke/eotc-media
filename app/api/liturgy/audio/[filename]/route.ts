@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { readFile } from "fs/promises"
-import { existsSync } from "fs"
 import path from "path"
+import { getObject } from "@/lib/storage"
 
 export async function GET(
   request: NextRequest,
@@ -12,21 +11,11 @@ export async function GET(
 
     // Sanitize filename to prevent path traversal
     const sanitizedFilename = path.basename(filename)
-    const filePath = path.join(
-      process.cwd(),
-      "storage",
-      "uploads",
-      "liturgy",
-      "audio",
-      sanitizedFilename
-    )
 
-    // Check if file exists
-    if (!existsSync(filePath)) {
+    const object = await getObject(`liturgy/audio/${sanitizedFilename}`)
+    if (!object) {
       return new NextResponse("Audio file not found", { status: 404 })
     }
-
-    const fileBuffer = await readFile(filePath)
 
     // Determine content type based on file extension
     const ext = path.extname(filename).toLowerCase()
@@ -39,11 +28,11 @@ export async function GET(
         ".m4a": "audio/mp4",
       }[ext] || "audio/mpeg"
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(object.body, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Length": fileBuffer.length.toString(),
+        "Content-Length": object.contentLength.toString(),
       },
     })
   } catch (error) {

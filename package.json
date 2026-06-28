@@ -5,17 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "node .next/standalone/server.js",
-    "postbuild": "cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static && cp -r generated .next/standalone/generated",
-    "lint": "next lint",
-    "db:refresh:liturgy": "tsx scripts/reset-and-seed-liturgy.ts",
-    "db:refresh:bible": "tsx scripts/reset-and-seed-bible.ts",
-    "db:refresh:base": "tsx scripts/reset-and-seed-base.ts",
-    "db:refresh:hymn": "tsx scripts/reset-and-seed-hymn.ts",
-    "db:refresh:sermon": "tsx scripts/reset-and-seed-sermon.ts",
-    "db:refresh:book": "tsx scripts/reset-and-seed-book.ts",
-    "db:refresh:quiz": "tsx scripts/reset-and-seed-quiz.ts",
-    "db:extract:sql": "tsx scripts/extract-sql-to-json.ts"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -40,6 +31,7 @@
     "@tiptap/extension-underline": "^3.21.0",
     "@tiptap/react": "^3.21.0",
     "@tiptap/starter-kit": "^3.21.0",
+    "aws4fetch": "^1.0.20",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -71,7 +63,6 @@
     "@types/react-easy-crop": "^1.16.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "mysql2": "^3.16.1",
     "nodemailer": "^7.0.13",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",

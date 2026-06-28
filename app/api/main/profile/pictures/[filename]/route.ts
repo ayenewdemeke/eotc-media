@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "fs/promises";
 import path from "path";
+import { getObject } from "@/lib/storage";
 
 export async function GET(
   request: NextRequest,
@@ -9,21 +9,24 @@ export async function GET(
   try {
     // Next.js 16: params is now a Promise and must be awaited
     const { filename } = await params;
-    const filePath = path.join(process.cwd(), "storage", "uploads", "profiles", filename);
+    const sanitized = path.basename(filename);
 
-    const fileBuffer = await readFile(filePath);
+    const object = await getObject(`profiles/${sanitized}`);
+    if (!object) {
+      return new NextResponse("Image not found", { status: 404 });
+    }
 
     // Determine content type based on file extension
-    const ext = path.extname(filename).toLowerCase();
+    const ext = path.extname(sanitized).toLowerCase();
     const contentType = {
       ".jpg": "image/jpeg",
       ".jpeg": "image/jpeg",
       ".png": "image/png",
       ".gif": "image/gif",
       ".webp": "image/webp",
-    }[ext] || "application/octet-stream";
+    }[ext] || object.contentType;
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(object.body, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",

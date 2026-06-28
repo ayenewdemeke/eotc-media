@@ -7,10 +7,10 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 // Create PostgreSQL connection pool.
-// On shared hosting Passenger spawns many Node processes, each with its own
-// pool — so cap connections per process to avoid exhausting Postgres' global
-// connection limit, and time out (rather than hang forever) when the pool is
-// saturated so a stuck request frees its process instead of piling up.
+// On serverless each function instance keeps its own small pool behind Neon's
+// connection pooler, so cap connections per instance and fail fast (rather than
+// hang) if the pool is momentarily saturated. Point DATABASE_URL at the Neon
+// POOLED connection string.
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5,

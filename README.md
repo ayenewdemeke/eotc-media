@@ -31,9 +31,6 @@ cp .env.example .env
 # Run database migrations
 npx prisma migrate dev
 
-# Seed initial data (optional)
-npm run db:refresh:base
-
 # Start the development server
 npm run dev
 ```
@@ -42,16 +39,24 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Environment Variables
 
+See `.env.example` for the full list. The essentials:
+
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/eotc_media"
-NEXTAUTH_SECRET="your-secret-key"
+DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech/neondb?sslmode=require"
+AUTH_SECRET="your-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
-GOOGLE_AI_API_KEY="your-google-ai-key"
+GEMINI_API_KEY="your-gemini-key"
+
+# Cloudflare R2 (uploads: book files/covers, liturgy audio, profile pictures)
+R2_ACCOUNT_ID=""
+R2_ACCESS_KEY_ID=""
+R2_SECRET_ACCESS_KEY=""
+R2_BUCKET_NAME="eotc-media-uploads"
 ```
 
 Generate a secret key with:
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+openssl rand -base64 32
 ```
 
 ## Available Scripts
@@ -59,11 +64,21 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 ```bash
 npm run dev           # Start development server
 npm run build         # Build for production
-npm start             # Start production server
+npm start             # Start production server (next start)
 npm run lint          # Run ESLint
 npx prisma studio     # Open database GUI
 npx prisma migrate dev  # Run database migrations
 ```
+
+## Deployment
+
+The app is built for **Vercel** with:
+
+- **Neon** for PostgreSQL (use the pooled connection string in `DATABASE_URL`)
+- **Cloudflare R2** for uploaded files (book PDFs/covers, liturgy audio, profile pictures)
+- **Vercel Cron** (`vercel.json`) for the daily stats job
+
+Set the environment variables from `.env.example` in the Vercel project settings.
 
 ## How to Collaborate
 
@@ -108,9 +123,8 @@ eotc-media/
 │   ├── liturgy/       # Liturgy module
 │   └── quiz/          # Quiz module
 ├── components/        # Shared UI components
-├── lib/               # Utilities and helpers
-├── prisma/            # Database schema and migrations
-└── scripts/           # Database seed scripts
+├── lib/               # Utilities and helpers (incl. storage.ts for R2)
+└── prisma/            # Database schema and migrations
 ```
 
 ## License

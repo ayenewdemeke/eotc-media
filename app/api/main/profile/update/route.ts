@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir, unlink } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
+import { putObject, deleteObject } from '@/lib/storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,34 +53,23 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Create upload directory if it doesn't exist
-      const uploadDir = join(process.cwd(), 'public', 'storage', 'uploads', 'profiles')
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true })
-      }
-
       // Generate unique filename
-      const bytes = await image.arrayBuffer()
-      const buffer = Buffer.from(bytes)
+      const buffer = Buffer.from(await image.arrayBuffer())
       const timestamp = Date.now()
       const extension = image.name.split('.').pop()
       imageName = `${userId}_${timestamp}.${extension}`
-      const filepath = join(uploadDir, imageName)
 
-      // Delete old image if exists
-      if (user.image) {
-        const oldImagePath = join(uploadDir, user.image)
-        if (existsSync(oldImagePath) && user.image !== 'default.jpg') {
-          try {
-            await unlink(oldImagePath)
-          } catch (error) {
-            console.error('Error deleting old image:', error)
-          }
+      // Delete old image if exists (best-effort)
+      if (user.image && user.image !== 'default.jpg') {
+        try {
+          await deleteObject(`profiles/${user.image}`)
+        } catch (error) {
+          console.error('Error deleting old image:', error)
         }
       }
 
-      // Save new image
-      await writeFile(filepath, buffer)
+      // Save new image to R2 under profiles/<filename>
+      await putObject(`profiles/${imageName}`, buffer, image.type || 'image/jpeg')
     }
 
     // Update user

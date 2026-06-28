@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { writeFile, mkdir } from "fs/promises"
-import { existsSync } from "fs"
-import { join } from "path"
+import { putObject } from "@/lib/storage"
 import { hasLiturgyAdminAccess } from "@/lib/auth-helpers"
 
 // POST: Upload audio file
@@ -45,23 +43,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create upload directory if it doesn't exist
-    const uploadDir = join(process.cwd(), "storage", "uploads", "liturgy", "audio")
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
-
     // Generate unique filename
     const timestamp = Date.now()
     const extension = file.name.split(".").pop() || "mp3"
     const prefix = textId && audioType ? `${textId}_${audioType}` : "audio"
     const filename = `${prefix}_${timestamp}.${extension}`
-    const filepath = join(uploadDir, filename)
 
-    // Save file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
+    // Save file to R2 under liturgy/audio/<filename>
+    const buffer = Buffer.from(await file.arrayBuffer())
+    await putObject(`liturgy/audio/${filename}`, buffer, file.type || "audio/mpeg")
 
     return NextResponse.json({
       success: true,
