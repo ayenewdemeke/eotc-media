@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   // If locale cookie already set, nothing to do
   if (request.cookies.get("locale")) return response
 
-  // Cloudflare injects this header automatically when proxying cPanel
+  // Cloudflare injects this header automatically when proxying the app
   const cfCountry = request.headers.get("cf-ipcountry")
   if (cfCountry) {
     const locale = cfCountry === "ET" ? "am" : "en"

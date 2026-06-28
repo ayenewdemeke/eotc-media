@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 
 interface PageProps {
-  searchParams: Promise<{ status?: string; page?: string }>
+  searchParams: Promise<{ status?: string; page?: string; q?: string }>
 }
 
 const statusVariant: Record<string, "success" | "warning" | "destructive" | "secondary"> = {
@@ -25,10 +25,10 @@ const statusVariant: Record<string, "success" | "warning" | "destructive" | "sec
   Declined: "destructive",
 }
 
-function Pagination({ page, totalPages, status }: { page: number; totalPages: number; status?: string }) {
+function Pagination({ page, totalPages, status, q }: { page: number; totalPages: number; status?: string; q?: string }) {
   if (totalPages <= 1) return null
-  const q = status ? `&status=${status}` : ""
-  const href = (p: number) => `/hymns/admin/hymns?page=${p}${q}`
+  const qs = [status && `status=${status}`, q && `q=${encodeURIComponent(q)}`].filter(Boolean).join("&")
+  const href = (p: number) => `/hymns/admin/hymns?page=${p}${qs ? `&${qs}` : ""}`
 
   const pages: (number | "…")[] = []
   const add = (p: number) => { if (!pages.includes(p)) pages.push(p) }
@@ -74,9 +74,10 @@ function Pagination({ page, totalPages, status }: { page: number; totalPages: nu
 }
 
 export default async function AdminHymnsPage({ searchParams }: PageProps) {
-  const { status, page: pageParam } = await searchParams
+  const { status, page: pageParam, q } = await searchParams
   const page = Math.max(1, parseInt(pageParam ?? "1") || 1)
   const PAGE_SIZE = 20
+  const search = q?.trim() || undefined
 
   const where: Record<string, unknown> = {}
   if (status === "pending") {
@@ -85,6 +86,12 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
     where.approvalStatus = { name: "Accepted" }
   } else if (status === "rejected") {
     where.approvalStatus = { name: "Declined" }
+  }
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { singer: { contains: search, mode: "insensitive" } },
+    ]
   }
 
   const [hymns, total] = await Promise.all([
@@ -111,7 +118,19 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
     <div className="min-w-0 space-y-4 p-4 lg:p-6">
       <PageHeader title={pageTitle} description={`${total.toLocaleString()} hymns`} />
 
-      <Pagination page={page} totalPages={totalPages} status={status} />
+      <form method="GET" action="/hymns/admin/hymns" className="flex items-center gap-2 max-w-sm">
+        {status && <input type="hidden" name="status" value={status} />}
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="Search by title or singer…"
+          className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-[color,box-shadow]"
+        />
+        <button type="submit" className="h-9 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">Search</button>
+      </form>
+
+      <Pagination page={page} totalPages={totalPages} status={status} q={search} />
 
       <Card>
         <CardContent className="p-0">
@@ -180,7 +199,7 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} status={status} />
+      <Pagination page={page} totalPages={totalPages} status={status} q={search} />
     </div>
   )
 }

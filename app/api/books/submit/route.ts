@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { putObject } from '@/lib/storage'
 
 function generateSlug(name: string): string {
   return name.trim().replace(/\s+/g, '-').replace(/[^\w\u1200-\u137F-]/g, '').slice(0, 120) + '-' + Date.now().toString(36)
 }
 
+// dir is the R2 key prefix ("files" for PDFs, "images" for covers). Returns the
+// stored filename; the matching serve route reads books/<dir>/<filename>.
 async function saveFile(file: File, dir: string): Promise<string> {
   const ext = file.name.split('.').pop() ?? 'bin'
   const filename = `book_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}.${ext}`
-  const uploadDir = path.join(process.cwd(), 'storage', 'uploads', 'books', dir)
-  await mkdir(uploadDir, { recursive: true })
   const buffer = Buffer.from(await file.arrayBuffer())
-  await writeFile(path.join(uploadDir, filename), buffer)
+  await putObject(`books/${dir}/${filename}`, buffer, file.type || 'application/octet-stream')
   return filename
 }
 

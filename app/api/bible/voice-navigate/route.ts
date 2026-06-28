@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+export const maxDuration = 60
+
 let genAI: GoogleGenerativeAI | null = null
 let cachedBooks: { id: number; englishName: string; amharicName: string | null; oromifaName: string | null }[] | null = null
 let cachedBookList: string | null = null

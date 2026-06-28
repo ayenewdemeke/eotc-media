@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { readFile } from "fs/promises"
-import { existsSync } from "fs"
 import path from "path"
+import { getObject } from "@/lib/storage"
 
 export async function GET(
   _request: NextRequest,
@@ -10,13 +9,12 @@ export async function GET(
   try {
     const { filename } = await params
     const sanitized = path.basename(filename)
-    const filePath = path.join(process.cwd(), "storage", "uploads", "books", "images", sanitized)
 
-    if (!existsSync(filePath)) {
+    const object = await getObject(`books/images/${sanitized}`)
+    if (!object) {
       return new NextResponse("Image not found", { status: 404 })
     }
 
-    const fileBuffer = await readFile(filePath)
     const ext = path.extname(sanitized).toLowerCase()
     const contentType: Record<string, string> = {
       ".jpg": "image/jpeg",
@@ -26,9 +24,9 @@ export async function GET(
       ".webp": "image/webp",
     }
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(object.body, {
       headers: {
-        "Content-Type": contentType[ext] ?? "application/octet-stream",
+        "Content-Type": contentType[ext] ?? object.contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     })
