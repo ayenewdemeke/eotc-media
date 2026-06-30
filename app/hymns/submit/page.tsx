@@ -54,6 +54,7 @@ export default function SubmitHymnPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [submitted, setSubmitted] = useState(false)
+  const [editorKey, setEditorKey] = useState(0)
 
   useEffect(() => {
     Promise.all([
@@ -119,6 +120,7 @@ export default function SubmitHymnPage() {
       setSelectedLanguageIds([])
       setSelectedCategoryIds([])
       setSelectedSubCategoryIds([])
+      setEditorKey(k => k + 1)
       setSubmitted(true)
     } finally {
       setSaving(false)
@@ -219,7 +221,7 @@ export default function SubmitHymnPage() {
                     <CardDescription className="text-xs">Optional but highly appreciated. Pasted formatting is preserved.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RichTextEditor value={lyrics} onChange={setLyrics} placeholder="Paste or type hymn lyrics here…" />
+                    <RichTextEditor key={editorKey} value={lyrics} onChange={setLyrics} placeholder="Paste or type hymn lyrics here…" />
                   </CardContent>
                 </Card>
 
