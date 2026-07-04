@@ -15,26 +15,26 @@ async function run(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // Today and yesterday (UTC dates, time stripped)
+  // Today (UTC date, time stripped)
   const today = new Date()
   today.setUTCHours(0, 0, 0, 0)
 
-  const yesterday = new Date(today)
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-
-  // 1. Compute current cumulative totals
-  const [hymnAgg, sermonAgg, yesterdayStat] = await Promise.all([
+  // 1. Compute current cumulative totals + the most recent PRIOR recorded stat.
+  //    Using the latest prior row (not strictly "yesterday") means a gap or the
+  //    first run can't dump the whole cumulative total onto one day.
+  const [hymnAgg, sermonAgg, priorStat] = await Promise.all([
     prisma.hmHymn.aggregate({ _sum: { clicksCount: true } }),
     prisma.smSermon.aggregate({ _sum: { clicksCount: true } }),
-    prisma.dailyStat.findUnique({ where: { date: yesterday } }),
+    prisma.dailyStat.findFirst({ where: { date: { lt: today } }, orderBy: { date: "desc" } }),
   ])
 
   const hymnTotalClicks   = Number((hymnAgg   as { _sum: { clicksCount: bigint | null } })._sum.clicksCount   ?? 0)
   const sermonTotalClicks = Number((sermonAgg  as { _sum: { clicksCount: bigint | null } })._sum.clicksCount  ?? 0)
 
-  // 2. Daily delta = today's total minus yesterday's total (0 on first run)
-  const hymnDailyClicks   = hymnTotalClicks   - (yesterdayStat?.hymnTotalClicks   ?? 0)
-  const sermonDailyClicks = sermonTotalClicks - (yesterdayStat?.sermonTotalClicks ?? 0)
+  // 2. Daily delta vs. the last recorded totals (0 when there is no prior row).
+  //    The dashboard spreads this across any skipped days when charting.
+  const hymnDailyClicks   = priorStat ? Math.max(0, hymnTotalClicks   - priorStat.hymnTotalClicks)   : 0
+  const sermonDailyClicks = priorStat ? Math.max(0, sermonTotalClicks - priorStat.sermonTotalClicks) : 0
 
   // 3. Upsert today's row
   await prisma.dailyStat.upsert({

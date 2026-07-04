@@ -62,7 +62,7 @@ export default async function HymnAdminDashboard() {
     // Clean click data from daily_stats (populated by cron job)
     prisma.dailyStat.findMany({
       orderBy: { date: "asc" },
-      select: { date: true, hymnTotalClicks: true, hymnDailyClicks: true },
+      select: { date: true, hymnTotalClicks: true },
     }),
   ])
 
@@ -71,15 +71,31 @@ export default async function HymnAdminDashboard() {
   const toPoints = (rows: RawPoint[]) =>
     rows.map(r => ({ date: new Date(r.date).toISOString(), value: Number(r.value) }))
 
-  const totalClicksData = dailyStats.map(r => ({
-    date: new Date(r.date).toISOString(),
-    value: r.hymnTotalClicks,
-  }))
+  // Build the click series from the cumulative totals (reliable) rather than the
+  // stored per-day deltas (which spike to the full total on the first run and on
+  // any day the cron missed). Daily clicks are the change in the cumulative
+  // total, spread evenly across skipped days; the first recorded day has no prior
+  // reference, so its daily value is 0.
+  const DAY_MS = 24 * 60 * 60 * 1000
+  const clickRows = dailyStats.map(r => ({ date: new Date(r.date), total: r.hymnTotalClicks }))
 
-  const dailyClicksData = dailyStats.map(r => ({
-    date: new Date(r.date).toISOString(),
-    value: r.hymnDailyClicks,
-  }))
+  const totalClicksData = clickRows.map(r => ({ date: r.date.toISOString(), value: r.total }))
+
+  const dailyClicksData: { date: string; value: number }[] = []
+  for (let i = 0; i < clickRows.length; i++) {
+    const curr = clickRows[i]
+    if (i === 0) {
+      dailyClicksData.push({ date: curr.date.toISOString(), value: 0 })
+      continue
+    }
+    const prev = clickRows[i - 1]
+    const gapDays = Math.max(1, Math.round((curr.date.getTime() - prev.date.getTime()) / DAY_MS))
+    const perDay = Math.round(Math.max(0, curr.total - prev.total) / gapDays)
+    for (let d = 1; d <= gapDays; d++) {
+      const day = new Date(prev.date.getTime() + d * DAY_MS)
+      dailyClicksData.push({ date: day.toISOString(), value: perDay })
+    }
+  }
 
   return (
     <HymnDashboard

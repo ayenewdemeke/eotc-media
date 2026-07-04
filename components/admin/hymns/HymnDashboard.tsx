@@ -25,7 +25,7 @@ interface Props {
   dailyClicksData: DayPoint[]
 }
 
-function TrendChart({ data, color }: { data: DayPoint[]; color: string }) {
+function TrendChart({ data, color, baselineFromData = false }: { data: DayPoint[]; color: string; baselineFromData?: boolean }) {
   if (data.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center text-sm text-slate-400">
@@ -39,9 +39,20 @@ function TrendChart({ data, color }: { data: DayPoint[]; color: string }) {
     value: d.value,
   }))
 
+  // For cumulative series (e.g. total clicks) a 0-based axis makes the line look
+  // flat. Scale the axis to the data's own range so the trend is visible.
+  let yDomain: [number, number] | undefined
+  if (baselineFromData) {
+    const values = formatted.map(d => d.value)
+    const lo = Math.min(...values)
+    const hi = Math.max(...values)
+    const pad = Math.max(1, Math.round((hi - lo || hi) * 0.15))
+    yDomain = [Math.max(0, lo - pad), hi + pad]
+  }
+
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <AreaChart data={formatted} margin={{ top: 10, right: 12, left: -8, bottom: 0 }}>
+      <AreaChart data={formatted} margin={{ top: 10, right: 12, left: baselineFromData ? 6 : -8, bottom: 0 }}>
         <defs>
           <linearGradient id={`fill-${color.slice(1)}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor={color} stopOpacity={0.18} />
@@ -60,8 +71,9 @@ function TrendChart({ data, color }: { data: DayPoint[]; color: string }) {
           tick={{ fontSize: 11, fill: "#94a3b8" }}
           tickLine={false}
           axisLine={false}
-          width={36}
+          width={baselineFromData ? 52 : 36}
           allowDecimals={false}
+          domain={yDomain}
         />
         <Tooltip
           cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: "4 2" }}
@@ -160,7 +172,7 @@ export default function HymnDashboard({
           </select>
         </CardHeader>
         <CardContent className="px-4 pb-4 pt-3">
-          <TrendChart data={activeClicks.data} color={activeClicks.color} />
+          <TrendChart data={activeClicks.data} color={activeClicks.color} baselineFromData={clicksType === "total_clicks"} />
         </CardContent>
       </Card>
     </div>
