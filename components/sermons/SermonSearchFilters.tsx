@@ -112,18 +112,24 @@ export default function SermonSearchFilters({
           value={activeLanguage || "_"}
           onValueChange={raw => applyFilter("language", raw === "_" ? "" : raw)}
           options={languageOptions}
+          searchable
+          searchPlaceholder="ፈልግ…"
           className="w-full sm:w-[145px]"
         />
         <ScrollableSelect
           value={activeCategory || "_"}
           onValueChange={raw => applyFilter("category", raw === "_" ? "" : raw)}
           options={categoryOptions}
+          searchable
+          searchPlaceholder="ፈልግ…"
           className="w-full sm:w-[185px]"
         />
         <ScrollableSelect
           value={activeSubCategory || "_"}
           onValueChange={raw => applyFilter("subCategory", raw === "_" ? "" : raw)}
           options={subCategoryOptions}
+          searchable
+          searchPlaceholder="ፈልግ…"
           className="w-full sm:w-[185px]"
         />
       </div>

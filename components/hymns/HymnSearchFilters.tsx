@@ -128,18 +128,24 @@ export default function HymnSearchFilters({
           value={activeLanguage || "_"}
           onValueChange={raw => applyFilter("language", raw === "_" ? "" : raw)}
           options={languageOptions}
+          searchable
+          searchPlaceholder={t("search_placeholder")}
           className="w-full sm:w-[145px]"
         />
         <ScrollableSelect
           value={activeCategory || "_"}
           onValueChange={raw => applyFilter("category", raw === "_" ? "" : raw)}
           options={categoryOptions}
+          searchable
+          searchPlaceholder={t("search_placeholder")}
           className="w-full sm:w-[185px]"
         />
         <ScrollableSelect
           value={(isSingerMode ? activeSinger : activeSubCategory) || "_"}
           onValueChange={raw => isSingerMode ? applyFilter("singer", raw === "_" ? "" : raw) : applyFilter("subCategory", raw === "_" ? "" : raw)}
           options={thirdOptions}
+          searchable
+          searchPlaceholder={t("search_placeholder")}
           className="w-full sm:w-[185px]"
         />
       </div>
