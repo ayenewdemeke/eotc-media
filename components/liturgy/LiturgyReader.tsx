@@ -193,43 +193,45 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
 
   // ── Render ───────────────────────────────────────────
 
+  const sectionLinkClass = (active: boolean) =>
+    `px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer flex-shrink-0 lg:whitespace-normal ${
+      active
+        ? "bg-blue-50 text-blue-700"
+        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+    }`
+
   return (
     <div className="min-h-screen bg-white">
       <audio ref={audioRef} onEnded={() => setPlayingAudioId(null)} />
 
-      {/* ─── Sticky toolbar ─── */}
-      <div className="sticky top-16 z-20 bg-white border-b border-slate-100">
-        <div className="max-w-3xl mx-auto px-3 sm:px-6 flex items-center gap-2">
+      <div className="max-w-full mx-auto lg:grid lg:grid-cols-[220px_1fr]">
 
-          {/* Scrollable section tabs — pill style */}
-          <div
-            ref={sectionTabsRef}
-            className="flex-1 overflow-x-auto scrollbar-hide"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            <div className="flex items-center gap-1 py-2.5 min-w-max">
-              {sections.map((section) => {
-                const isActive = activeSectionId === section.id
-                return (
-                  <button
-                    key={section.id}
-                    data-section-id={section.id}
-                    onClick={() => handleSectionChange(section.id)}
-                    className={`px-3.5 py-1.5 text-[13px] font-medium rounded-full whitespace-nowrap transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-                    }`}
-                  >
-                    {locale === "am" ? section.nameAmharic : section.nameEnglish}
-                  </button>
-                )
-              })}
-            </div>
+        {/* ─── Sections — left sidebar on desktop, horizontal bar on mobile ─── */}
+        <aside className="
+          flex flex-row items-center gap-1 px-4 py-2 border-b border-slate-100
+          overflow-x-auto scrollbar-hide
+          lg:flex-col lg:items-stretch lg:gap-0.5 lg:overflow-x-visible lg:overflow-y-auto lg:border-b-0 lg:border-r lg:sticky lg:top-16 lg:self-start lg:h-[calc(100vh-4rem)] lg:px-3 lg:py-4
+        ">
+          <div ref={sectionTabsRef} className="flex flex-row items-center gap-1 flex-nowrap lg:flex-col lg:items-stretch lg:gap-0.5">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                data-section-id={section.id}
+                onClick={() => handleSectionChange(section.id)}
+                className={sectionLinkClass(activeSectionId === section.id)}
+              >
+                {locale === "am" ? section.nameAmharic : section.nameEnglish}
+              </button>
+            ))}
           </div>
+        </aside>
 
-          {/* Controls */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+        {/* ─── Main column ─── */}
+        <main className="min-w-0">
+
+        {/* ─── Sticky controls toolbar ─── */}
+        <div className="sticky top-16 z-20 bg-white border-b border-slate-100">
+          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-end gap-1.5">
             {/* Language selector */}
             <div className="relative">
               <button
@@ -298,10 +300,9 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
             )}
           </div>
         </div>
-      </div>
 
-      {/* ─── Content ─── */}
-      <div className="max-w-3xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
+        {/* ─── Content ─── */}
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
         {activeSection && activeSection.texts.length > 0 ? (
           <div className="space-y-3">
             {activeSection.texts.map((text) => {
@@ -389,7 +390,9 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
           </div>
         )}
 
-        <div className="h-16" />
+          <div className="h-16" />
+        </div>
+        </main>
       </div>
     </div>
   )
