@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
 import Navbar from "@/components/Navbar"
-import Footer from "@/components/Footer"
 import { LiturgyReader } from "@/components/liturgy/LiturgyReader"
 
 export const dynamic = "force-dynamic"
@@ -46,12 +45,11 @@ export default async function LiturgyPage() {
   const { sections, roles } = await getLiturgyData()
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
         <LiturgyReader sections={sections} roles={roles} />
       </div>
-      <Footer />
-    </>
+    </div>
   )
 }

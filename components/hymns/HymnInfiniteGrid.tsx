@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Music, Loader2, PlayCircle } from "lucide-react"
 import { HmHymn } from "@/types/models/hymn"
@@ -42,6 +42,7 @@ export default function HymnInfiniteGrid({
 }: HymnInfiniteGridProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const activeSort = searchParams.get("sort") ?? "trending"
   const { t } = useLocale()
 
@@ -109,7 +110,10 @@ export default function HymnInfiniteGrid({
     params.delete("page")
     if (value === "trending") params.delete("sort")
     else params.set("sort", value)
-    router.push(`/hymns?${params.toString()}`)
+    // Stay on the current page (main list, singer, channel, favorites,
+    // collection…) instead of always jumping back to /hymns.
+    const query = params.toString()
+    router.push(query ? `${pathname}?${query}` : pathname)
   }
 
   function buildPlayAllUrl() {
