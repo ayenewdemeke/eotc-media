@@ -36,7 +36,7 @@ export async function POST(
     response.cookies.set(COOKIE_NAME, updated.join(','), {
       httpOnly: true,
       path: '/',
-      maxAge: 60 * 60 * 2, // 2 hours
+      maxAge: 60 * 30, // 30 minutes
       sameSite: 'lax',
     })
     return response

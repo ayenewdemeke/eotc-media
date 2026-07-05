@@ -64,16 +64,16 @@ const AUDIO_LABELS: Record<AudioType, string> = {
 
 // ── Role styles ────────────────────────────────────────
 
-const ROLE_STYLES: Record<string, { accent: string; pill: string }> = {
-  priest:           { accent: "bg-rose-400",    pill: "bg-rose-50 text-rose-700 ring-rose-100" },
-  deacon:           { accent: "bg-blue-500",    pill: "bg-blue-50 text-blue-700 ring-blue-100" },
-  people:           { accent: "bg-emerald-500", pill: "bg-emerald-50 text-emerald-700 ring-emerald-100" },
-  choir:            { accent: "bg-violet-400",  pill: "bg-violet-50 text-violet-700 ring-violet-100" },
-  assistant_priest: { accent: "bg-orange-400",  pill: "bg-orange-50 text-orange-700 ring-orange-100" },
-  assistant_deacon: { accent: "bg-cyan-500",    pill: "bg-cyan-50 text-cyan-700 ring-cyan-100" },
+const ROLE_STYLES: Record<string, { accent: string; text: string }> = {
+  priest:           { accent: "bg-rose-400",    text: "text-rose-600" },
+  deacon:           { accent: "bg-blue-500",    text: "text-blue-600" },
+  people:           { accent: "bg-emerald-500", text: "text-emerald-600" },
+  choir:            { accent: "bg-violet-400",  text: "text-violet-600" },
+  assistant_priest: { accent: "bg-orange-400",  text: "text-orange-600" },
+  assistant_deacon: { accent: "bg-cyan-500",    text: "text-cyan-600" },
 }
 
-const DEFAULT_ROLE_STYLE = { accent: "bg-slate-300", pill: "bg-slate-100 text-slate-600 ring-slate-100" }
+const DEFAULT_ROLE_STYLE = { accent: "bg-slate-300", text: "text-slate-500" }
 
 // ── Helper: get available audio for a text ─────────────
 
@@ -194,7 +194,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
   // ── Render ───────────────────────────────────────────
 
   const sectionLinkClass = (active: boolean) =>
-    `px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer flex-shrink-0 lg:whitespace-normal ${
+    `px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer flex-shrink-0 lg:w-full lg:text-left lg:whitespace-normal ${
       active
         ? "bg-blue-50 text-blue-700"
         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -231,7 +231,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
 
         {/* ─── Sticky controls toolbar ─── */}
         <div className="sticky top-16 z-20 bg-white border-b border-slate-100">
-          <div className="max-w-3xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-end gap-1.5">
+          <div className="px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-end gap-1.5">
             {/* Language selector */}
             <div className="relative">
               <button
@@ -302,9 +302,9 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
         </div>
 
         {/* ─── Content ─── */}
-        <div className="max-w-3xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {activeSection && activeSection.texts.length > 0 ? (
-          <div className="space-y-3">
+          <div className="max-w-4xl divide-y divide-slate-100">
             {activeSection.texts.map((text) => {
               const style = getRoleStyle(text.role.roleKey)
               const audioPath = getAudioForText(text)
@@ -312,28 +312,24 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
               const isPlaying = playingAudioId === audioKey
 
               return (
-                <div
-                  key={text.id}
-                  className="relative rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-200 overflow-hidden"
-                >
-                  {/* Colored left accent */}
-                  <div className={`absolute inset-y-0 left-0 w-[3px] ${style.accent}`} />
+                <div key={text.id} className="flex gap-3 sm:gap-4 py-5 sm:py-6">
+                  {/* Colored role accent — the left color bar */}
+                  <div className={`w-1 self-stretch rounded-full flex-shrink-0 ${style.accent}`} />
 
-                  <div className="pl-5 sm:pl-7 pr-4 sm:pr-6 py-4 sm:py-5">
-
+                  <div className="flex-1 min-w-0">
                     {/* Role + audio row */}
-                    <div className="flex items-center justify-between gap-3 mb-3.5">
-                      <span className={`inline-flex items-center text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full ring-1 ring-inset ${style.pill}`}>
+                    <div className="flex items-center justify-between gap-3 mb-2.5">
+                      <span className={`text-[11px] font-bold uppercase tracking-widest ${style.text}`}>
                         {getRoleName(text.role)}
                       </span>
 
                       {audioPath && (
                         <button
                           onClick={() => playAudio(audioPath, text.id)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold transition-all cursor-pointer active:scale-95 ${
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium transition-colors cursor-pointer ${
                             isPlaying
                               ? "bg-blue-600 text-white"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              : "text-slate-500 hover:bg-slate-100"
                           }`}
                         >
                           {isPlaying
@@ -345,7 +341,7 @@ export function LiturgyReader({ sections }: LiturgyReaderProps) {
                     </div>
 
                     {/* Text content */}
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                       {languageVisibility.geez && text.textGeez && (
                         <p className="text-[17px] sm:text-[19px] leading-[1.85] text-slate-900 font-semibold tracking-wide">
                           {text.textGeez}
