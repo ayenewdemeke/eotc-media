@@ -1,17 +1,86 @@
-import nodemailer from "nodemailer"
+// ── Brevo (transactional) sender ──────────────────────────────────────────────
+// One API call sends personalized emails to up to ~1000 recipients using
+// "message versions" — so a 600-person newsletter goes out in a single fast
+// request (no per-recipient loop, no serverless timeout). Each recipient still
+// gets their own unsubscribe link via Brevo params ({{params.unsubscribeUrl}}).
+//
+// Env: BREVO_API_KEY, BREVO_SENDER_EMAIL (a verified Brevo sender), BREVO_SENDER_NAME.
 
-export const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT ?? "465"),
-  secure: (process.env.SMTP_PORT ?? "465") === "465",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-})
+const BREVO_BATCH = 500 // message versions per API call
+
+function getSender(): { email: string; name: string } {
+  const email = process.env.BREVO_SENDER_EMAIL ?? ""
+  const name = process.env.BREVO_SENDER_NAME ?? "EOTC Media"
+  return { email, name }
+}
+
+export interface CampaignRecipient {
+  email: string
+  name?: string | null
+  unsubscribeUrl: string
+}
+
+/**
+ * Send one bilingual HTML email to many recipients via Brevo.
+ * `htmlContent` must contain the literal placeholder {{params.unsubscribeUrl}}
+ * where the per-recipient unsubscribe link should go.
+ */
+export async function sendCampaign(opts: {
+  subject: string
+  htmlContent: string
+  recipients: CampaignRecipient[]
+}): Promise<{ sent: number; failed: number; error: string | null }> {
+  const apiKey = process.env.BREVO_API_KEY
+  if (!apiKey) {
+    return { sent: 0, failed: opts.recipients.length, error: "BREVO_API_KEY is not configured." }
+  }
+  const sender = getSender()
+  if (!sender.email) {
+    return { sent: 0, failed: opts.recipients.length, error: "BREVO_SENDER_EMAIL is not configured." }
+  }
+
+  const recipients = opts.recipients.filter(r => r.email)
+  let sent = 0
+  let failed = 0
+  let firstError: string | null = null
+
+  for (let i = 0; i < recipients.length; i += BREVO_BATCH) {
+    const chunk = recipients.slice(i, i + BREVO_BATCH)
+    const messageVersions = chunk.map(r => ({
+      to: [{ email: r.email, ...(r.name ? { name: r.name } : {}) }],
+      params: { unsubscribeUrl: r.unsubscribeUrl },
+    }))
+
+    try {
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": apiKey,
+          "content-type": "application/json",
+          accept: "application/json",
+        },
+        body: JSON.stringify({
+          sender,
+          subject: opts.subject,
+          htmlContent: opts.htmlContent,
+          messageVersions,
+        }),
+      })
+      if (res.ok) {
+        sent += chunk.length
+      } else {
+        failed += chunk.length
+        const detail = await res.text().catch(() => "")
+        if (!firstError) firstError = `Brevo ${res.status}: ${detail.slice(0, 300)}`
+      }
+    } catch (err) {
+      failed += chunk.length
+      if (!firstError) firstError = err instanceof Error ? err.message : String(err)
+    }
+  }
+
+  return { sent, failed, error: firstError }
+}
 
 export function buildEmailHtml({
   subjectAm,

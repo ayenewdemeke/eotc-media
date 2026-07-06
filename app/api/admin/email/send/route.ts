@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { hasMainAdminAccess } from "@/lib/auth-helpers"
-import { transporter, buildEmailHtml } from "@/lib/email"
+import { sendCampaign, buildEmailHtml } from "@/lib/email"
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token"
+
+export const maxDuration = 60
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://eotcmedia.com"
 
@@ -31,28 +33,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No eligible recipients." }, { status: 400 })
   }
 
-  let sent = 0
-  let failed = 0
-  let firstError: string | null = null
+  // Build the bilingual HTML once, with a Brevo placeholder for the per-recipient
+  // unsubscribe link; each recipient's real link is supplied via message params.
+  const htmlContent = buildEmailHtml({
+    subjectAm, subjectEn, bodyAm, bodyEn,
+    unsubscribeUrl: "{{params.unsubscribeUrl}}",
+  })
 
-  for (const user of recipients) {
-    try {
-      const unsubscribeUrl = `${SITE_URL}/unsubscribe?token=${generateUnsubscribeToken(user.id)}`
-      const html = buildEmailHtml({ subjectAm, subjectEn, bodyAm, bodyEn, unsubscribeUrl })
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM ?? `EOTC Media <${process.env.SMTP_USER}>`,
-        to: user.email,
-        subject,
-        html,
-      })
-      sent++
-    } catch (err) {
-      failed++
-      const msg = err instanceof Error ? err.message : String(err)
-      console.error(`[email] failed to send to ${user.email}:`, msg)
-      if (!firstError) firstError = msg
-    }
-  }
+  const { sent, failed, error } = await sendCampaign({
+    subject,
+    htmlContent,
+    recipients: recipients.map(u => ({
+      email: u.email,
+      name: u.name,
+      unsubscribeUrl: `${SITE_URL}/unsubscribe?token=${generateUnsubscribeToken(u.id)}`,
+    })),
+  })
 
-  return NextResponse.json({ sent, failed, total: recipients.length, error: firstError })
+  return NextResponse.json({ sent, failed, total: recipients.length, error })
 }
