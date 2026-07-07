@@ -13,7 +13,8 @@ function hasText(html: string) {
 }
 
 export default function EmailComposerClient() {
-  const [mode, setMode] = useState<Mode>("all")
+  // Default to "specific" so an all-members blast is never a single accidental click
+  const [mode, setMode] = useState<Mode>("specific")
   const [subjectAm, setSubjectAm] = useState("")
   const [subjectEn, setSubjectEn] = useState("")
   const [bodyAm, setBodyAm] = useState("")
@@ -116,7 +117,7 @@ export default function EmailComposerClient() {
           </div>
           <div className="p-4 space-y-3">
             <div className="flex gap-2">
-              {(["all", "specific"] as Mode[]).map(m => (
+              {(["specific", "all"] as Mode[]).map(m => (
                 <button
                   key={m}
                   onClick={() => setMode(m)}
