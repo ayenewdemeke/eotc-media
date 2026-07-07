@@ -28,6 +28,7 @@ export interface CampaignRecipient {
 export async function sendCampaign(opts: {
   subject: string
   htmlContent: string
+  textContent?: string
   recipients: CampaignRecipient[]
 }): Promise<{ sent: number; failed: number; error: string | null }> {
   const apiKey = process.env.BREVO_API_KEY
@@ -63,6 +64,7 @@ export async function sendCampaign(opts: {
           sender,
           subject: opts.subject,
           htmlContent: opts.htmlContent,
+          ...(opts.textContent ? { textContent: opts.textContent } : {}),
           messageVersions,
         }),
       })
@@ -82,18 +84,22 @@ export async function sendCampaign(opts: {
   return { sent, failed, error: firstError }
 }
 
+export type EmailVariant = "rich" | "simple"
+
 export function buildEmailHtml({
   subjectAm,
   subjectEn,
   bodyAm,
   bodyEn,
   unsubscribeUrl,
+  variant = "rich",
 }: {
   subjectAm: string
   subjectEn: string
   bodyAm: string
   bodyEn: string
   unsubscribeUrl: string
+  variant?: EmailVariant
 }): string {
   const bodyStyles = `<style>
     .bc p{margin:0 0 10px}.bc ul{margin:0 0 10px;padding-left:20px;list-style:disc}
@@ -101,6 +107,34 @@ export function buildEmailHtml({
     .bc strong{font-weight:700}.bc em{font-style:italic}.bc u{text-decoration:underline}
     .bc s{text-decoration:line-through}.bc a{color:#1a3a5c}
   </style>`
+
+  // ── Simple variant: minimal, text-like, no banner/CTA/images. Reads as an
+  //    "update/announcement" rather than a promotion, which Gmail is more likely
+  //    to keep out of the Promotions tab.
+  if (variant === "simple") {
+    return `<!DOCTYPE html>
+<html lang="am">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">${bodyStyles}</head>
+<body style="margin:0;padding:24px 16px;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#222222">
+  <div style="max-width:560px;margin:0 auto">
+    <p style="margin:0 0 20px;font-size:13px;color:#666666">EOTC Media</p>
+
+    <h2 style="margin:0 0 10px;font-size:17px;color:#111827;line-height:1.4" dir="auto">${subjectAm}</h2>
+    <div class="bc" style="font-size:15px;color:#333333;line-height:1.75" dir="auto">${bodyAm}</div>
+
+    <div style="border-top:1px solid #e5e7eb;margin:22px 0"></div>
+
+    <h2 style="margin:0 0 10px;font-size:17px;color:#111827;line-height:1.4">${subjectEn}</h2>
+    <div class="bc" style="font-size:15px;color:#333333;line-height:1.75">${bodyEn}</div>
+
+    <p style="margin:28px 0 0;font-size:12px;color:#999999">
+      You're receiving this as a member of EOTC Media.
+      <a href="${unsubscribeUrl}" style="color:#999999">Unsubscribe</a>.
+    </p>
+  </div>
+</body>
+</html>`
+  }
 
   return `<!DOCTYPE html>
 <html lang="am">
@@ -154,4 +188,34 @@ export function buildEmailHtml({
   </table>
 </body>
 </html>`
+}
+
+// Plain-text alternative — improves deliverability and makes the mail read as
+// more personal/transactional. Uses the same {{params.unsubscribeUrl}} placeholder.
+export function buildEmailText({
+  subjectAm,
+  subjectEn,
+  bodyAm,
+  bodyEn,
+  unsubscribeUrl,
+}: {
+  subjectAm: string
+  subjectEn: string
+  bodyAm: string
+  bodyEn: string
+  unsubscribeUrl: string
+}): string {
+  const strip = (html: string) =>
+    html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+
+  return `${subjectAm}\n\n${strip(bodyAm)}\n\n----\n\n${subjectEn}\n\n${strip(bodyEn)}\n\n—\nYou're receiving this as a member of EOTC Media.\nUnsubscribe: ${unsubscribeUrl}`
 }

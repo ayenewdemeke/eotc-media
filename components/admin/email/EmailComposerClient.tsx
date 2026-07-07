@@ -20,6 +20,9 @@ export default function EmailComposerClient() {
   const [bodyAm, setBodyAm] = useState("")
   const [bodyEn, setBodyEn] = useState("")
   const [editorKey, setEditorKey] = useState(0)
+  // "simple" reads as an update/announcement (more likely to stay out of Gmail's
+  // Promotions tab); "rich" is the branded template with header banner + button.
+  const [variant, setVariant] = useState<"simple" | "rich">("simple")
 
   // Member search / selection
   const [query, setQuery] = useState("")
@@ -72,6 +75,7 @@ export default function EmailComposerClient() {
     try {
       const body = {
         subjectAm, subjectEn, bodyAm, bodyEn,
+        variant,
         userIds: mode === "specific" ? [...selected.keys()] : [],
       }
       const res = await fetch("/api/admin/email/send", {
@@ -176,6 +180,36 @@ export default function EmailComposerClient() {
 
             <p className="text-xs text-gray-400">
               {recipientLabel} · Members who unsubscribed are automatically excluded.
+            </p>
+          </div>
+        </div>
+
+        {/* Email style */}
+        <div className="rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700">Email style</span>
+          </div>
+          <div className="p-4 space-y-2">
+            <div className="flex gap-2">
+              {([
+                { k: "simple", label: "Simple (better for inbox)" },
+                { k: "rich", label: "Standard (branded)" },
+              ] as const).map(o => (
+                <button
+                  key={o.k}
+                  onClick={() => setVariant(o.k)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    variant === o.k ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-400">
+              {variant === "simple"
+                ? "Plain, text-like layout — reads as an update, less likely to land in Gmail Promotions."
+                : "Branded layout with header banner and button — more likely to be filed under Promotions."}
             </p>
           </div>
         </div>

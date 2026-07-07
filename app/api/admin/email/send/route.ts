@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { hasMainAdminAccess } from "@/lib/auth-helpers"
-import { sendCampaign, buildEmailHtml } from "@/lib/email"
+import { sendCampaign, buildEmailHtml, buildEmailText, type EmailVariant } from "@/lib/email"
 import { generateUnsubscribeToken } from "@/lib/unsubscribe-token"
 
 export const maxDuration = 60
@@ -13,7 +13,8 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!hasMainAdminAccess(session)) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-  const { subjectAm, subjectEn, bodyAm, bodyEn, userIds } = await req.json()
+  const { subjectAm, subjectEn, bodyAm, bodyEn, userIds, variant } = await req.json()
+  const emailVariant: EmailVariant = variant === "rich" ? "rich" : "simple"
 
   const hasText = (s: string) => s?.replace(/<[^>]*>/g, "").trim().length > 0
   if (!subjectAm?.trim() || !subjectEn?.trim() || !hasText(bodyAm) || !hasText(bodyEn)) {
@@ -33,9 +34,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No eligible recipients." }, { status: 400 })
   }
 
-  // Build the bilingual HTML once, with a Brevo placeholder for the per-recipient
-  // unsubscribe link; each recipient's real link is supplied via message params.
+  // Build the bilingual HTML + plain-text once, with a Brevo placeholder for the
+  // per-recipient unsubscribe link; each recipient's real link is supplied via
+  // message params.
   const htmlContent = buildEmailHtml({
+    subjectAm, subjectEn, bodyAm, bodyEn,
+    unsubscribeUrl: "{{params.unsubscribeUrl}}",
+    variant: emailVariant,
+  })
+  const textContent = buildEmailText({
     subjectAm, subjectEn, bodyAm, bodyEn,
     unsubscribeUrl: "{{params.unsubscribeUrl}}",
   })
@@ -43,6 +50,7 @@ export async function POST(req: NextRequest) {
   const { sent, failed, error } = await sendCampaign({
     subject,
     htmlContent,
+    textContent,
     recipients: recipients.map(u => ({
       email: u.email,
       name: u.name,
