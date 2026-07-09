@@ -69,6 +69,44 @@ export async function fetchYoutubeVideo(videoId: string): Promise<YoutubeVideoDa
   }
 }
 
+/**
+ * Fetch many videos in one shot. The YouTube API accepts up to 50 comma-
+ * separated ids per call, so this uses ⌈N/50⌉ requests total. Videos missing
+ * from the response (deleted / private / removed) simply won't appear in the
+ * returned map — callers use that to detect unavailable videos.
+ */
+export async function fetchYoutubeVideosBatch(
+  videoIds: string[]
+): Promise<Map<string, YoutubeVideoData>> {
+  if (!YOUTUBE_API_KEY) throw new Error('YOUTUBE_API_KEY is not configured')
+  const result = new Map<string, YoutubeVideoData>()
+  const unique = [...new Set(videoIds.filter(Boolean))]
+
+  for (let i = 0; i < unique.length; i += 50) {
+    const chunk = unique.slice(i, i + 50)
+    const url = `https://www.googleapis.com/youtube/v3/videos?id=${chunk.join(',')}&key=${YOUTUBE_API_KEY}&part=snippet&maxResults=50`
+    const res = await fetch(url)
+    if (!res.ok) throw new Error(`YouTube API error: ${res.status}`)
+    const data = await res.json()
+    for (const item of data.items ?? []) {
+      const s = item.snippet
+      const t = s.thumbnails ?? {}
+      result.set(item.id, {
+        videoId: item.id,
+        title: s.title,
+        channelId: s.channelId,
+        publishedAt: s.publishedAt,
+        thumbnailDefault: t.default?.url ?? '',
+        thumbnailMedium: t.medium?.url ?? '',
+        thumbnailHigh: t.high?.url ?? '',
+        thumbnailStandard: t.standard?.url ?? null,
+        thumbnailMaxres: t.maxres?.url ?? null,
+      })
+    }
+  }
+  return result
+}
+
 export async function fetchYoutubeChannel(channelId: string): Promise<YoutubeChannelData> {
   if (!YOUTUBE_API_KEY) throw new Error('YOUTUBE_API_KEY is not configured')
 

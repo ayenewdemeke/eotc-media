@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import HymnApproveDeclineButtons from "@/components/admin/hymns/HymnApproveDeclineButtons"
 import HymnAdminActions from "@/components/admin/hymns/HymnAdminActions"
+import RefreshYoutubeButton from "@/components/admin/shared/RefreshYoutubeButton"
 import { PageHeader } from "@/components/admin/shared/PageHeader"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -129,6 +130,8 @@ export default async function AdminHymnsPage({ searchParams }: PageProps) {
         />
         <button type="submit" className="h-9 rounded-md border border-input bg-background px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">Search</button>
       </form>
+
+      {!isPending && <RefreshYoutubeButton module="hymns" />}
 
       <Pagination page={page} totalPages={totalPages} status={status} q={search} />
 
