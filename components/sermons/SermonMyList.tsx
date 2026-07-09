@@ -86,7 +86,7 @@ export default function SermonMyList({ sermons, total, page, totalPages, baseUrl
                       </Badge>
                     </TableCell>
                     <TableCell className="px-4">
-                      <Link href={`/sermons/my-sermons/${sermon.id}`} className="text-xs font-medium text-primary hover:underline">
+                      <Link href={`/sermons/my-sermons/${sermon.id}`} prefetch={false} className="text-xs font-medium text-primary hover:underline">
                         view
                       </Link>
                     </TableCell>

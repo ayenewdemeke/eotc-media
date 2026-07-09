@@ -58,7 +58,7 @@ export default function BookMyList({ books, page, totalPages, baseUrl }: BookMyL
                   )}
                 </td>
                 <td className="px-4 py-2.5">
-                  <Link href={`/books/my-books/${book.id}`} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                  <Link href={`/books/my-books/${book.id}`} prefetch={false} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
                     view
                   </Link>
                 </td>

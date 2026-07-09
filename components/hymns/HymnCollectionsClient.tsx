@@ -112,7 +112,7 @@ export default function HymnCollectionsClient({ initialCollections }: { initialC
                   className="flex-1 h-8 px-2 text-sm border border-blue-400 rounded outline-none"
                 />
               ) : (
-                <Link href={`/hymns/collections/${col.id}`} className="flex-1 min-w-0">
+                <Link href={`/hymns/collections/${col.id}`} prefetch={false} className="flex-1 min-w-0">
                   <span className="font-medium text-slate-900 text-sm truncate block">{col.name}</span>
                   <span className="text-xs text-slate-400">{col.hymnCount} {col.hymnCount === 1 ? "hymn" : "hymns"}</span>
                 </Link>
@@ -138,7 +138,7 @@ export default function HymnCollectionsClient({ initialCollections }: { initialC
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                    <Link href={`/hymns/collections/${col.id}`} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md cursor-pointer">
+                    <Link href={`/hymns/collections/${col.id}`} prefetch={false} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md cursor-pointer">
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </>
