@@ -38,6 +38,7 @@ export default function SermonCard({ sermon, userId: _userId }: SermonCardProps)
       {/* Thumbnail */}
       <Link
         href={`/sermons/${sermon.slug}`}
+        prefetch={false}
         className="relative block aspect-video rounded-xl overflow-hidden bg-neutral-100"
       >
         <Image
@@ -54,7 +55,7 @@ export default function SermonCard({ sermon, userId: _userId }: SermonCardProps)
       <div className="flex gap-2.5 min-w-0">
         {/* Channel avatar */}
         {channelAvatar ? (
-          <Link href={`/sermons/channels/${sermon.channel!.id}`} className="flex-shrink-0 mt-0.5">
+          <Link href={`/sermons/channels/${sermon.channel!.id}`} prefetch={false} className="flex-shrink-0 mt-0.5">
             <Image
               src={channelAvatar}
               alt={sermon.channel!.name}
@@ -67,6 +68,7 @@ export default function SermonCard({ sermon, userId: _userId }: SermonCardProps)
         ) : (
           <Link
             href={sermon.channel ? `/sermons/channels/${sermon.channel.id}` : `/sermons/${sermon.slug}`}
+            prefetch={false}
             className="flex-shrink-0 mt-0.5 w-9 h-9 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 text-sm font-semibold select-none"
           >
             {channelInitial}
@@ -75,7 +77,7 @@ export default function SermonCard({ sermon, userId: _userId }: SermonCardProps)
 
         {/* Text */}
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-          <Link href={`/sermons/${sermon.slug}`}>
+          <Link href={`/sermons/${sermon.slug}`} prefetch={false}>
             <h3 className="text-[13px] font-semibold text-neutral-900 leading-snug line-clamp-2">
               {sermon.title}
             </h3>
@@ -85,6 +87,7 @@ export default function SermonCard({ sermon, userId: _userId }: SermonCardProps)
             {sermon.channel?.name && (
               <Link
                 href={`/sermons/channels/${sermon.channel.id}`}
+                prefetch={false}
                 className="text-[12px] text-neutral-500 hover:text-neutral-800 transition-colors truncate"
               >
                 {sermon.channel.name}

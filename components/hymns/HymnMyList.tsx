@@ -82,7 +82,7 @@ export default function HymnMyList({ hymns, total, page, totalPages, baseUrl }: 
                       </Badge>
                     </TableCell>
                     <TableCell className="px-4">
-                      <Link href={`/hymns/my-hymns/${hymn.id}`} className="text-xs font-medium text-primary hover:underline">
+                      <Link href={`/hymns/my-hymns/${hymn.id}`} prefetch={false} className="text-xs font-medium text-primary hover:underline">
                         view
                       </Link>
                     </TableCell>

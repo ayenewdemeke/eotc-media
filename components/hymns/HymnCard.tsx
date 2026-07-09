@@ -28,6 +28,8 @@ function timeAgo(date: Date | null): string {
   return `${Math.floor(months / 12)}y ago`
 }
 
+// prefetch={false} on every link: these cards render in large grids, and Next's
+// default prefetch would fire a DB-querying request per visible link on load.
 export default function HymnCard({ hymn, userId }: HymnCardProps) {
   const thumbnail = hymn.thumbnailMedium || hymn.thumbnailDefault
   const channelAvatar = hymn.channel?.thumbnailDefault || hymn.channel?.thumbnailMedium || hymn.channel?.thumbnailHigh
@@ -39,6 +41,7 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
       {/* Thumbnail */}
       <Link
         href={`/hymns/${hymn.slug}`}
+        prefetch={false}
         className="relative block aspect-video rounded-xl overflow-hidden bg-neutral-100"
       >
         <Image
@@ -55,7 +58,7 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
       <div className="flex gap-2.5 min-w-0 items-start">
         {/* Channel avatar */}
         {channelAvatar ? (
-          <Link href={`/hymns/channels/${hymn.channel!.id}`} className="flex-shrink-0 mt-0.5">
+          <Link href={`/hymns/channels/${hymn.channel!.id}`} prefetch={false} className="flex-shrink-0 mt-0.5">
             <Image
               src={channelAvatar}
               alt={hymn.channel!.title}
@@ -68,6 +71,7 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
         ) : (
           <Link
             href={hymn.channel ? `/hymns/channels/${hymn.channel.id}` : `/hymns/${hymn.slug}`}
+            prefetch={false}
             className="flex-shrink-0 mt-0.5 w-9 h-9 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 text-sm font-semibold select-none"
           >
             {channelInitial}
@@ -77,7 +81,7 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
         {/* Text + three-dot menu */}
         <div className="flex gap-1 min-w-0 flex-1">
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-          <Link href={`/hymns/${hymn.slug}`}>
+          <Link href={`/hymns/${hymn.slug}`} prefetch={false}>
             <h3 className="text-[13px] font-semibold text-neutral-900 leading-snug line-clamp-2">
               {hymn.title}
             </h3>
@@ -87,6 +91,7 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
             {hymn.channel?.title && (
               <Link
                 href={`/hymns/channels/${hymn.channel.id}`}
+                prefetch={false}
                 className="text-[12px] text-neutral-500 hover:text-neutral-800 transition-colors truncate"
               >
                 {hymn.channel.title}
@@ -110,6 +115,7 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
                   <span key={s.id}>
                     <Link
                       href={`/hymns/singer/${s.id}`}
+                      prefetch={false}
                       className="font-medium text-neutral-500 hover:text-neutral-700 transition-colors"
                     >
                       {s.name}

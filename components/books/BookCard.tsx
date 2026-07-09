@@ -10,7 +10,7 @@ export default function BookCard({ book }: BookCardProps) {
   const coverUrl = book.image ? `/api/books/images/${book.image}` : null
 
   return (
-    <Link href={`/books/${book.slug}`} className="group flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
+    <Link href={`/books/${book.slug}`} prefetch={false} className="group flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow">
       {/* Cover */}
       <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden flex-shrink-0">
         {coverUrl ? (

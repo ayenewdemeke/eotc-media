@@ -130,6 +130,7 @@ export default function ChannelInfiniteGrid({
           <Link
             key={channel.id}
             href={`/hymns/channels/${channel.id}`}
+            prefetch={false}
             className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 transition-colors text-center"
           >
             <div className="relative w-14 h-14 rounded-full flex-shrink-0 overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
