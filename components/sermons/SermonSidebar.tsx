@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import Link from "@/components/NoPrefetchLink"
 import { usePathname } from "next/navigation"
 import { MessageSquare, Heart, User, Tv } from "lucide-react"
 import { useLocale } from "@/lib/i18n/LocaleContext"
