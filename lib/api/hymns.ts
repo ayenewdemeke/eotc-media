@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { HmHymn, HmCategory, HmSubCategory, HmLanguage, HmSinger, HmComment } from '@/types/models/hymn'
 
@@ -68,13 +69,16 @@ function mapHymn(raw: {
   }
 }
 
-export async function getHymnsFilterData(): Promise<{
+// Filter data (categories/subcategories/languages/singers) is identical for
+// every user and changes only via admin edits, so cache it across requests.
+export const getHymnsFilterData = unstable_cache(
+  async (): Promise<{
   categories: HmCategory[]
   subCategories: HmSubCategory[]
   languages: HmLanguage[]
   singers: HmSinger[]
   singersByLanguage: Record<string, number[]>
-}> {
+}> => {
   const [categories, subCategories, languages, singers, singerLangRows] = await Promise.all([
     prisma.hmCategory.findMany({ orderBy: { id: 'asc' } }),
     prisma.hmSubCategory.findMany({ orderBy: { id: 'asc' } }),
@@ -93,7 +97,10 @@ export async function getHymnsFilterData(): Promise<{
     singersByLanguage[key].push(singer_id)
   }
   return { categories, subCategories, languages, singers, singersByLanguage }
-}
+  },
+  ["hymns-filter-data"],
+  { revalidate: 1800 }
+)
 
 export async function getHymns({
   page = 1,

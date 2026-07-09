@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { SmSermon, SmCategory, SmSubCategory, SmLanguage, SmPreacher } from '@/types/models/sermon'
 
@@ -62,13 +63,16 @@ function mapSermon(raw: {
   }
 }
 
-export async function getSermonsFilterData(): Promise<{
+// Filter data is identical for every user and changes only via admin edits, so
+// cache it across requests to avoid re-querying on every sermons page load.
+export const getSermonsFilterData = unstable_cache(
+  async (): Promise<{
   categories: SmCategory[]
   subCategories: SmSubCategory[]
   languages: SmLanguage[]
   preachers: SmPreacher[]
   categoriesByLanguage: Record<string, number[]>
-}> {
+}> => {
   const [categories, subCategories, languages, preachers, catLangRows] = await Promise.all([
     prisma.smCategory.findMany({ orderBy: { id: 'asc' }, select: { id: true, name: true } }),
     prisma.smSubCategory.findMany({ orderBy: { id: 'asc' } }),
@@ -87,7 +91,10 @@ export async function getSermonsFilterData(): Promise<{
     if (!categoriesByLanguage[key].includes(category_id)) categoriesByLanguage[key].push(category_id)
   }
   return { categories, subCategories, languages, preachers, categoriesByLanguage }
-}
+  },
+  ["sermons-filter-data"],
+  { revalidate: 1800 }
+)
 
 export async function getSermons({
   page = 1,
