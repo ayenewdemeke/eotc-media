@@ -42,7 +42,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 See `.env.example` for the full list. The essentials:
 
 ```env
-DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres"
 AUTH_SECRET="your-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 GEMINI_API_KEY="your-gemini-key"
@@ -74,7 +74,7 @@ npx prisma migrate dev  # Run database migrations
 
 The app is built for **Vercel** with:
 
-- **Neon** for PostgreSQL (use the pooled connection string in `DATABASE_URL`)
+- **Supabase** for PostgreSQL (use the Transaction pooler connection string in `DATABASE_URL`)
 - **Cloudflare R2** for uploaded files (book PDFs/covers, liturgy audio, profile pictures)
 - **Vercel Cron** (`vercel.json`) for the daily stats job
 

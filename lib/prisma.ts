@@ -7,10 +7,10 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 // Create PostgreSQL connection pool.
-// On serverless each function instance keeps its own small pool behind Neon's
-// connection pooler, so cap connections per instance and fail fast (rather than
-// hang) if the pool is momentarily saturated. Point DATABASE_URL at the Neon
-// POOLED connection string.
+// On serverless each function instance keeps its own small pool behind the
+// provider's connection pooler, so cap connections per instance and fail fast
+// (rather than hang) if the pool is momentarily saturated. Point DATABASE_URL
+// at the POOLED connection string (Supabase: the Supavisor pooler URL).
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5,
