@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Navbar from "@/components/Navbar"
 import QuizSidebar from "@/components/quiz/QuizSidebar"
-import { Users, Crown, Copy, Check, Plus, Loader2, ChevronRight, SlidersHorizontal } from "lucide-react"
+import { Users, Crown, Copy, Check, Plus, Loader2, ChevronRight, SlidersHorizontal, Trash2 } from "lucide-react"
 
 interface FilterOption { id: number; name: string }
 
@@ -70,6 +70,7 @@ export default function RoomPage() {
   const [room, setRoom] = useState<Room | null>(null)
   const [loading, setLoading] = useState(true)
   const [startingRound, setStartingRound] = useState(false)
+  const [deletingRound, setDeletingRound] = useState(false)
   const [error, setError] = useState("")
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -139,6 +140,19 @@ export default function RoomPage() {
     setStartingRound(false)
   }
 
+  async function deleteRound(roundId2: number, roundNumber: number) {
+    if (!confirm(`Delete round ${roundNumber}? Progress in this round will be lost.`)) return
+    setDeletingRound(true)
+    setError("")
+    const res = await fetch(`/api/quiz/rooms/${roomId}/rounds/${roundId2}`, { method: "DELETE" })
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      setError(d.error ?? "Failed to delete round")
+    }
+    await fetchRoom()
+    setDeletingRound(false)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -172,11 +186,22 @@ export default function RoomPage() {
                 </div>
               </div>
               {activeRound && (
-                <button onClick={() => router.push(`/quiz/rooms/${roomId}/rounds/${activeRound.id}`)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors cursor-pointer flex-shrink-0">
-                  <ChevronRight className="w-4 h-4" />
-                  Go to round {activeRound.roundNumber}
-                </button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button onClick={() => router.push(`/quiz/rooms/${roomId}/rounds/${activeRound.id}`)}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
+                    <ChevronRight className="w-4 h-4" />
+                    Go to round {activeRound.roundNumber}
+                  </button>
+                  {isHost && (
+                    <button onClick={() => deleteRound(activeRound.id, activeRound.roundNumber)}
+                      disabled={deletingRound}
+                      title="Delete this round"
+                      className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors cursor-pointer">
+                      {deletingRound ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      Delete
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 

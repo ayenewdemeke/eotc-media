@@ -76,3 +76,32 @@ export async function GET(_req: NextRequest, { params }: Params) {
     results: resultsWithUsers,
   })
 }
+
+// DELETE /api/quiz/rooms/[id]/rounds/[roundId] — host deletes an unfinished
+// (waiting/active) round, e.g. one that was abandoned and is blocking the room.
+// Finished rounds are kept as history and cannot be deleted here.
+export async function DELETE(_req: NextRequest, { params }: Params) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = parseInt(session.user.id)
+  const { id, roundId } = await params
+  const roomId = parseInt(id)
+  const roundIdNum = parseInt(roundId)
+
+  const room = await prisma.qzRoom.findUnique({ where: { id: roomId } })
+  if (!room) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (room.hostUserId !== userId) {
+    return NextResponse.json({ error: 'Forbidden — only the host can delete a round' }, { status: 403 })
+  }
+
+  const round = await prisma.qzRound.findFirst({ where: { id: roundIdNum, roomId } })
+  if (!round) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (round.status === 'finished') {
+    return NextResponse.json({ error: 'Finished rounds cannot be deleted' }, { status: 422 })
+  }
+
+  // Round questions, answers, results and member-round rows cascade on delete
+  await prisma.qzRound.delete({ where: { id: roundIdNum } })
+
+  return NextResponse.json({ ok: true })
+}
