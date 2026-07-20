@@ -4,6 +4,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { MousePointerClick } from "lucide-react"
 import { HmHymn } from "@/types/models/hymn"
+import { cardThumbCandidates } from "@/lib/thumbnails"
+import FallbackImage from "@/components/FallbackImage"
 import SaveToListButton from "./SaveToListButton"
 
 interface HymnCardProps {
@@ -31,7 +33,7 @@ function timeAgo(date: Date | null): string {
 // prefetch={false} on every link: these cards render in large grids, and Next's
 // default prefetch would fire a DB-querying request per visible link on load.
 export default function HymnCard({ hymn, userId }: HymnCardProps) {
-  const thumbnail = hymn.thumbnailMedium || hymn.thumbnailDefault
+  const thumbCandidates = cardThumbCandidates(hymn)
   const channelAvatar = hymn.channel?.thumbnailDefault || hymn.channel?.thumbnailMedium || hymn.channel?.thumbnailHigh
   const singers = hymn.singers && hymn.singers.length > 0 ? hymn.singers : null
   const channelInitial = (hymn.channel?.title || "M").charAt(0).toUpperCase()
@@ -44,12 +46,10 @@ export default function HymnCard({ hymn, userId }: HymnCardProps) {
         prefetch={false}
         className="relative block aspect-video rounded-xl overflow-hidden bg-neutral-100"
       >
-        <Image
-          src={thumbnail}
+        <FallbackImage
+          candidates={thumbCandidates}
           alt={hymn.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
       </Link>

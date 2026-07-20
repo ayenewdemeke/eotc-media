@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import FallbackImage from "@/components/FallbackImage"
+import { bestThumbCandidates, cardThumbCandidates } from "@/lib/thumbnails"
 import { ArrowLeft, Play } from "lucide-react"
 import { HmHymn } from "@/types/models/hymn"
 import FavoriteButton from "./FavoriteButton"
@@ -158,11 +160,11 @@ export default function PlayAllPlayer({ hymns: initialHymns, userId }: Props) {
                 className="absolute inset-0 cursor-pointer"
                 onClick={handleInitialPlay}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={currentHymn.thumbnailMaxres || currentHymn.thumbnailStandard || currentHymn.thumbnailHigh || currentHymn.thumbnailMedium || currentHymn.thumbnailDefault}
+                <FallbackImage
+                  candidates={bestThumbCandidates(currentHymn)}
                   alt={currentHymn.title}
                   className="w-full h-full object-cover"
+                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors duration-200" />
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -272,9 +274,8 @@ export default function PlayAllPlayer({ hymns: initialHymns, userId }: Props) {
                     }`}
                   >
                     <div className="relative flex-shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={hymn.thumbnailMedium || hymn.thumbnailDefault}
+                      <FallbackImage
+                        candidates={cardThumbCandidates(hymn)}
                         alt={hymn.title}
                         className="w-20 h-12 object-cover rounded-lg"
                       />
