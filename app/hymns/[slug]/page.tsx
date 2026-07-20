@@ -6,6 +6,7 @@ import { getHymn, getRelatedHymns } from "@/lib/api/hymns"
 import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import HymnPlayer from "@/components/hymns/HymnPlayer"
+import { bestThumbCandidates } from "@/lib/thumbnails"
 import LyricsPanel from "@/components/hymns/LyricsPanel"
 import FavoriteButton from "@/components/hymns/FavoriteButton"
 import SaveToListButton from "@/components/hymns/SaveToListButton"
@@ -121,7 +122,7 @@ export default async function HymnPage({ params }: PageProps) {
             <div>
               {/* On mobile: player sticks below navbar; parent div now includes lyrics so sticky lasts until after lyrics */}
               <div className="sticky top-16 z-10 bg-white pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6 lg:static lg:top-auto lg:z-auto lg:bg-transparent lg:mx-0 lg:px-0 lg:pb-0">
-                <HymnPlayer videoId={hymn.videoId} slug={hymn.slug} thumbnail={hymn.thumbnailMaxres || hymn.thumbnailStandard || hymn.thumbnailHigh} title={hymn.title} />
+                <HymnPlayer videoId={hymn.videoId} slug={hymn.slug} thumbnailCandidates={bestThumbCandidates(hymn)} title={hymn.title} />
               </div>
 
               {/* Lyrics panel — mobile only */}

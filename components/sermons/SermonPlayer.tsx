@@ -1,24 +1,27 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import Image from "next/image"
+import FallbackImage from "@/components/FallbackImage"
 import { Play } from "lucide-react"
 import { whenYTReady } from "@/lib/youtube-iframe-api"
 
 interface SermonPlayerProps {
   videoId: string
   slug: string
-  thumbnail?: string | null
+  thumbnailCandidates?: string[]
   title?: string
 }
 
-export default function SermonPlayer({ videoId, slug, thumbnail, title }: SermonPlayerProps) {
+export default function SermonPlayer({ videoId, slug, thumbnailCandidates, title }: SermonPlayerProps) {
   const [playing, setPlaying] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null)
   const mountRef = useRef<HTMLDivElement>(null)
 
-  const thumbSrc = thumbnail || `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
+  // hqdefault always exists for a live video, unlike maxres/standard
+  const candidates = thumbnailCandidates?.length
+    ? thumbnailCandidates
+    : [`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`]
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,14 +63,11 @@ export default function SermonPlayer({ videoId, slug, thumbnail, title }: Sermon
           className="absolute inset-0 group cursor-pointer"
           onClick={handlePlay}
         >
-          <Image
-            src={thumbSrc}
+          <FallbackImage
+            candidates={candidates}
             alt={title || "Play video"}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 800px"
-            unoptimized
-            priority
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
           />
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors duration-200" />
           <div className="absolute inset-0 flex items-center justify-center">

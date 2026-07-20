@@ -6,6 +6,7 @@ import { getSermon, getRelatedSermons } from "@/lib/api/sermons"
 import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import SermonPlayer from "@/components/sermons/SermonPlayer"
+import { bestThumbCandidates } from "@/lib/thumbnails"
 import SermonFavoriteButton from "@/components/sermons/SermonFavoriteButton"
 import SermonCard from "@/components/sermons/SermonCard"
 
@@ -106,7 +107,7 @@ export default async function SermonPage({ params }: PageProps) {
             <div>
               {/* Sticky player on mobile */}
               <div className="sticky top-16 z-10 bg-white pb-2 -mx-4 sm:-mx-6 px-4 sm:px-6 lg:static lg:top-auto lg:z-auto lg:bg-transparent lg:mx-0 lg:px-0 lg:pb-0">
-                <SermonPlayer videoId={sermon.videoId} slug={sermon.slug} thumbnail={sermon.thumbnailMaxres || sermon.thumbnailStandard || sermon.thumbnailHigh} title={sermon.title} />
+                <SermonPlayer videoId={sermon.videoId} slug={sermon.slug} thumbnailCandidates={bestThumbCandidates(sermon)} title={sermon.title} />
               </div>
 
               {/* Title + favorite */}

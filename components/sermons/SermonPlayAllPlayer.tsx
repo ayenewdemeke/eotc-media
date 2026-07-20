@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import FallbackImage from "@/components/FallbackImage"
+import { bestThumbCandidates, cardThumbCandidates } from "@/lib/thumbnails"
 import { ArrowLeft, Play } from "lucide-react"
 import { SmSermon } from "@/types/models/sermon"
 import SermonFavoriteButton from "./SermonFavoriteButton"
@@ -156,11 +158,11 @@ export default function SermonPlayAllPlayer({ sermons: initialSermons, userId }:
                 className="absolute inset-0 cursor-pointer"
                 onClick={handleInitialPlay}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={currentSermon.thumbnailMaxres || currentSermon.thumbnailStandard || currentSermon.thumbnailHigh || currentSermon.thumbnailMedium || currentSermon.thumbnailDefault}
+                <FallbackImage
+                  candidates={bestThumbCandidates(currentSermon)}
                   alt={currentSermon.title}
                   className="w-full h-full object-cover"
+                  loading="eager"
                 />
                 <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-colors duration-200" />
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -267,9 +269,8 @@ export default function SermonPlayAllPlayer({ sermons: initialSermons, userId }:
                     }`}
                   >
                     <div className="relative flex-shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={sermon.thumbnailMedium || sermon.thumbnailDefault}
+                      <FallbackImage
+                        candidates={cardThumbCandidates(sermon)}
                         alt={sermon.title}
                         className="w-20 h-12 object-cover rounded-lg"
                       />

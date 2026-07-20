@@ -4,6 +4,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { MousePointerClick } from "lucide-react"
 import { SmSermon } from "@/types/models/sermon"
+import { cardThumbCandidates } from "@/lib/thumbnails"
+import FallbackImage from "@/components/FallbackImage"
 
 interface SermonCardProps {
   sermon: SmSermon
@@ -28,7 +30,7 @@ function timeAgo(date: Date | null): string {
 }
 
 export default function SermonCard({ sermon, userId: _userId }: SermonCardProps) {
-  const thumbnail = sermon.thumbnailMedium || sermon.thumbnailDefault
+  const thumbCandidates = cardThumbCandidates(sermon)
   const channelAvatar = sermon.channel?.thumbnailDefault || sermon.channel?.thumbnailMedium || sermon.channel?.thumbnailHigh
   const preachers = sermon.preachers && sermon.preachers.length > 0 ? sermon.preachers : null
   const channelInitial = (sermon.channel?.name || "S").charAt(0).toUpperCase()
@@ -41,12 +43,10 @@ export default function SermonCard({ sermon, userId: _userId }: SermonCardProps)
         prefetch={false}
         className="relative block aspect-video rounded-xl overflow-hidden bg-neutral-100"
       >
-        <Image
-          src={thumbnail}
+        <FallbackImage
+          candidates={thumbCandidates}
           alt={sermon.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200" />
       </Link>
