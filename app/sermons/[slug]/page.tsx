@@ -6,6 +6,7 @@ import { getSermon, getRelatedSermons } from "@/lib/api/sermons"
 import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import SermonPlayer from "@/components/sermons/SermonPlayer"
+import ShareButton from "@/components/ShareButton"
 import { bestThumbCandidates } from "@/lib/thumbnails"
 import SermonFavoriteButton from "@/components/sermons/SermonFavoriteButton"
 import SermonCard from "@/components/sermons/SermonCard"
@@ -113,12 +114,14 @@ export default async function SermonPage({ params }: PageProps) {
               {/* Title + favorite */}
               <div className="mt-4 flex items-start justify-between gap-4">
                 <h1 className="text-base font-bold text-neutral-900 leading-snug">{sermon.title}</h1>
-                <SermonFavoriteButton
-                  sermonId={sermon.id}
-                  initialFavorited={isFavorited}
-                  userId={userId}
-                  className="flex-shrink-0 mt-0.5"
-                />
+                <div className="flex items-center gap-3 flex-shrink-0 mt-0.5">
+                  <ShareButton path={`/s/${sermon.id}`} title={sermon.title} />
+                  <SermonFavoriteButton
+                    sermonId={sermon.id}
+                    initialFavorited={isFavorited}
+                    userId={userId}
+                  />
+                </div>
               </div>
 
               {/* Channel + preachers + clicks */}

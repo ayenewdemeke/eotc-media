@@ -6,6 +6,7 @@ import { getHymn, getRelatedHymns } from "@/lib/api/hymns"
 import { absoluteUrl, jsonLd } from "@/lib/seo"
 import Navbar from "@/components/Navbar"
 import HymnPlayer from "@/components/hymns/HymnPlayer"
+import ShareButton from "@/components/ShareButton"
 import { bestThumbCandidates } from "@/lib/thumbnails"
 import LyricsPanel from "@/components/hymns/LyricsPanel"
 import FavoriteButton from "@/components/hymns/FavoriteButton"
@@ -135,7 +136,8 @@ export default async function HymnPage({ params }: PageProps) {
               {/* Title + favorite + save to list */}
               <div className="mt-4 flex items-start justify-between gap-4">
                 <h1 className="text-base font-bold text-neutral-900 leading-snug">{hymn.title}</h1>
-                <div className="flex items-center gap-1.5 flex-shrink-0 mt-0.5">
+                <div className="flex items-center gap-3 flex-shrink-0 mt-0.5">
+                  <ShareButton path={`/h/${hymn.id}`} title={hymn.title} />
                   <FavoriteButton
                     hymnId={hymn.id}
                     initialFavorited={isFavorited}
